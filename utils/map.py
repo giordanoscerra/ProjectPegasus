@@ -123,12 +123,12 @@ class Map:
     #       A* may be too much
     #       it is easy now but may be harder with monster and secondary task
     #       the environment will not always be a rectangle
-    def go_near_pony(self, show_steps:bool=False, delay:float = 0.5) -> None:
+    def go_near_pony(self, show_steps:bool=False, delay:float = 0.5, maxDistance:int = 3) -> None:
         #until we are not close to the pony
         pony_pos = self.get_pony_position()
         agent_pos = self.get_agent_position()
-        while(not are_aligned(pony_pos, agent_pos) or not are_close(pony_pos, agent_pos, 3)):
-            if(not are_close(pony_pos, agent_pos, 3)):
+        while(not are_aligned(pony_pos, agent_pos) or not are_close(pony_pos, agent_pos, maxOffset=maxDistance)):
+            if(not are_close(pony_pos, agent_pos, maxOffset=maxDistance)):
                 move = ''
                 if(pony_pos[0] < agent_pos[0] - 1):
                     move += 'N'
