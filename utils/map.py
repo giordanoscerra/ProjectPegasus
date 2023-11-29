@@ -23,7 +23,9 @@ class Map:
                 nethack.Command.RIDE,
                 nethack.Command.EAT,
                 nethack.Command.DROP,
-                nethack.Command.APPLY
+                nethack.Command.APPLY,
+                nethack.Command.PICKUP,
+                nethack.Command.WHATIS
             ),
             character = "kn-hum-neu-mal",
             observation_keys = (
