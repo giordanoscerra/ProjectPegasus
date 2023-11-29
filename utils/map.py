@@ -17,6 +17,7 @@ class Map:
     def __init__(self):
         lvl = LevelGenerator(w=20,h=20)
         lvl.add_monster(name='pony', symbol="u", place=None)
+        lvl.add_object(name='saddle', symbol="(", place=None)
         env = gym.make(
             'MiniHack-Skill-Custom-v0',
             actions = tuple(nethack.CompassDirection) + (
@@ -24,7 +25,8 @@ class Map:
                 nethack.Command.RIDE,
                 nethack.Command.EAT,
                 nethack.Command.DROP,
-                nethack.Command.APPLY
+                nethack.Command.APPLY,
+                nethack.Command.PICKUP
             ),
             character = "kn-hum-neu-mal",
             observation_keys = (
@@ -65,7 +67,11 @@ class Map:
         if(what is not None and self._get_item_char(what) is None):
             raise Exception(f'Object <{what}> is not in inventory')
         elif(what is not None):
+            print(f'Object <{what}> is in inventory')
+            #print inventory
+            self.print_inventory()
             what = self._get_item_char(what)
+            print(f'Object <{what}> is in inventory')
 
         if(what is None and where is None):
             #action that require no further info, probably move
@@ -90,26 +96,25 @@ class Map:
         time.sleep(delay)
         self._env.render()
 
-    #TODO: optimize possibly using a KB to store position
-    def get_agent_position(self) -> (int,int):
-        for i in range(len(self.state['screen_descriptions'])):
-            for j in range(len(self.state['screen_descriptions'][0])):
-                description = decode(self.state['screen_descriptions'][i][j])
-                if('Agent' in description):
-                    return (i,j)
-        self.print_every_position()
-        raise Exception('no Agent is found in this state, kinda strange')
     
     #TODO: optimize possibly using a KB to store position
-    def get_pony_position(self) -> (int,int):
+    def get_element_position(self, element:str) -> (int,int):
         for i in range(len(self.state['screen_descriptions'])):
             for j in range(len(self.state['screen_descriptions'][0])):
                 description = decode(self.state['screen_descriptions'][i][j])
-                if('pony' in description):
+                if(element in description):
                     return (i,j)
-        self.print_every_position()
-        raise Exception('no pony is found in this state')
+        #TODO: check if is stepping on before raising exception
+        #self.print_every_position()
+        raise Exception(f'no {element} is found in this state')
 
+    def get_agent_position(self) -> (int,int):
+        return self.get_element_position('Agent')
+    def get_pony_position(self) -> (int,int):
+        return self.get_element_position('pony')
+    def get_saddle_position(self) -> (int,int):
+        return self.get_element_position('saddle')
+    
     # just an utility to check position during test
     def print_every_position(self):
         for i in range(len(self.state['screen_descriptions'])):
@@ -123,25 +128,30 @@ class Map:
     #       A* may be too much
     #       it is easy now but may be harder with monster and secondary task
     #       the environment will not always be a rectangle
-    def go_near_pony(self, show_steps:bool=False, delay:float = 0.5, maxDistance:int = 3) -> None:
+    #this will take agent in distance that is <= maxDistance and >= minDistance from the object
+    def go_to_element(self, element:str, show_steps:bool=False, delay:float = 0.5, maxDistance:int = 3, minDistance:int = 1) -> None:
         #until we are not close to the pony
-        pony_pos = self.get_pony_position()
+        element_pos = self.get_element_position(element=element)
         agent_pos = self.get_agent_position()
-        while(not are_aligned(pony_pos, agent_pos) or not are_close(pony_pos, agent_pos, maxOffset=maxDistance)):
-            if(not are_close(pony_pos, agent_pos, maxOffset=maxDistance)):
+        while(not are_aligned(element_pos, agent_pos) or not are_close(element_pos, agent_pos, maxOffset=maxDistance)):
+            if(not are_close(element_pos, agent_pos, maxOffset=maxDistance)):
                 move = ''
-                if(pony_pos[0] < agent_pos[0] - 1):
+                if(element_pos[0] < agent_pos[0] - minDistance):
                     move += 'N'
-                elif(pony_pos[0] > agent_pos[0] + 1):
+                elif(element_pos[0] > agent_pos[0] + minDistance):
                     move += 'S'
-                if(pony_pos[1] < agent_pos[1] - 1):
+                if(element_pos[1] < agent_pos[1] - minDistance):
                     move += 'W'
-                elif(pony_pos[1] > agent_pos[1] + 1):
+                elif(element_pos[1] > agent_pos[1] + minDistance):
                     move += 'E'
                 self.apply_action(move)
             else:
                 self.align_with_pony()
-            pony_pos = self.get_pony_position()
+            try:
+                element_pos = self.get_element_position(element=element)
+            except:
+                if(minDistance != 0):
+                    raise Exception(f'No {element} is found in this state')
             agent_pos = self.get_agent_position()
             if(show_steps):
                 time.sleep(delay)
@@ -168,7 +178,7 @@ class Map:
         if move != '':
             self.apply_action(move)
     
-    def throw_to_pony_direction(self) -> str:
+    def get_pony_direction(self) -> str:
         pony_pos = self.get_pony_position()
         agent_pos = self.get_agent_position()
         agent_pos = (agent_pos[0] - pony_pos[0], agent_pos[1] - pony_pos[1])
