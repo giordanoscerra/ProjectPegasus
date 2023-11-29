@@ -29,7 +29,8 @@ class Map:
             observation_keys = (
                 'glyphs',
                 'chars',
-                'screen_desctiptions',  # descrizioni testuali di ogni cella della mappa 
+                'colors', # Some characters have special colors that represent different things.
+                'screen_descriptions',  # descrizioni testuali di ogni cella della mappa 
                 'message',
                 'inv_strs',
                 'inv_letters',
