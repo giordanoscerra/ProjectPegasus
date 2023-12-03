@@ -14,9 +14,10 @@ DIRECTIONS = ['N','S','E','W','EN','NW','SE','SW']
 # if something does not works it is probably its fault
 # if something does work it is probably thanks to him
 class Map:
-    def __init__(self):
+    def __init__(self, pony:bool = True):
         lvl = LevelGenerator(w=20,h=20)
-        lvl.add_monster(name='pony', symbol="u", place=None)
+        if(pony):
+            lvl.add_monster(name='pony', symbol="u", place=None)
         lvl.add_object(name='saddle', symbol="(", place=None)
         env = gym.make(
             'MiniHack-Skill-Custom-v0',
