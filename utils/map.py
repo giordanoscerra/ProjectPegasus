@@ -27,7 +27,9 @@ class Map:
                 nethack.Command.EAT,
                 nethack.Command.DROP,
                 nethack.Command.APPLY,
-                nethack.Command.PICKUP
+                nethack.Command.PICKUP,
+                nethack.Command.INVENTORY,# included to allow use of saddle (i)
+                nethack.Command.RUSH,# included to allow use of apple (g)
             ),
             character = "kn-hum-neu-mal",
             observation_keys = (
