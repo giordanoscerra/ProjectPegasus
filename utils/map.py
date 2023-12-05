@@ -8,7 +8,7 @@ from typing import Optional
 from utils.general import decode, are_close, are_aligned
 
 
-DIRECTIONS = ['N','S','E','W','EN','NW','SE','SW']
+DIRECTIONS = ['N','S','E','W','NE','NW','SE','SW']
 
 # Most of the code is copied from Andrea's exercise
 # if something does not works it is probably its fault
@@ -18,7 +18,7 @@ class Map:
         lvl = LevelGenerator(w=20,h=20)
         if(pony):
             lvl.add_monster(name='pony', symbol="u", place=None)
-        lvl.add_object(name='saddle', symbol="(", place=None)
+        lvl.add_object(name='saddle', symbol="(", place=None, cursestate="blessed")
         env = gym.make(
             'MiniHack-Skill-Custom-v0',
             actions = tuple(nethack.CompassDirection) + (
@@ -43,7 +43,7 @@ class Map:
             des_file = lvl.get_des(),
         )
         self.state = env.reset()
-        env.render()
+        #env.render()
         self._env = env
 
     #get the action number from high level string
@@ -66,15 +66,15 @@ class Map:
         if(self._get_action_id(action=actionName) == -1):
             raise Exception(f'Not valid action <{actionName}>')
         if(where is not None and where not in DIRECTIONS):
-            raise Exception(f'Valid directions are {DIRECTIONS}')
+            raise Exception(f'Valid directions are {DIRECTIONS}, you gave: {where}')
         if(what is not None and self._get_item_char(what) is None):
             raise Exception(f'Object <{what}> is not in inventory')
         elif(what is not None):
-            print(f'Object <{what}> is in inventory')
+            #print(f'Object <{what}> is in inventory')
             #print inventory
-            self.print_inventory()
+            #self.print_inventory()
             what = self._get_item_char(what)
-            print(f'Object <{what}> is in inventory')
+            #print(f'Object <{what}> is in inventory')
 
         if(what is None and where is None):
             #action that require no further info, probably move
