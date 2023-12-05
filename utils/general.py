@@ -1,5 +1,5 @@
 from minihack import RewardManager
-from classes import PickCarrotEvent
+from utils.classes import PickCarrotEvent
 
 # decodifica le stringhe (ad esempio in state['message'])
 def decode(X):
