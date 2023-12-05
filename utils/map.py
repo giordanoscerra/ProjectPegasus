@@ -1,3 +1,4 @@
+from re import I
 import time
 import gym
 import numpy as np
@@ -14,10 +15,13 @@ DIRECTIONS = ['N','S','E','W','NE','NW','SE','SW']
 # if something does not works it is probably its fault
 # if something does work it is probably thanks to him
 class Map:
-    def __init__(self, pony:bool = True):
+    def __init__(self, pony:bool = True, sink:bool = False):
         lvl = LevelGenerator(w=20,h=20)
         if(pony):
             lvl.add_monster(name='pony', symbol="u", place=None)
+        if(sink):
+            lvl.set_start_rect((0,0),(2,2)) # creates an area in which the agent can spawn
+            lvl.add_sink((5,6))
         lvl.add_object(name='saddle', symbol="(", place=None, cursestate="blessed")
         env = gym.make(
             'MiniHack-Skill-Custom-v0',
@@ -200,6 +204,23 @@ class Map:
         for letter, stringa in \
             zip(decode(self.state["inv_letters"]), self.state["inv_strs"]):
             print(letter, " - ", decode(stringa))
+
+    # TODO: automatically compute the direction, either here
+    #       or in the main (with some function)
+    def throw_all(self, item:str, direction:str):
+        gen = (decode(s) for s in self.state["inv_strs"])
+        #pos = 0   # not a very pythonic way of doing it
+        number = 0
+        for stringa in gen:
+            if item in stringa:
+                number = int(stringa.split(" ")[0])
+                break
+            #else: pos += 1
+        if(number == 0):
+            raise Exception(f'Item {item} not in inventory')
+        for _ in range(number):
+            self.apply_action(actionName='THROW', what=item, where=direction)
+
 
 # ottiene la posizione dell'entità che nella mappa appare con symbol
 # Ovviamente, se ce n'è più di una vanno cambiate delle cose...
