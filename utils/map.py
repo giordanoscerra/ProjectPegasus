@@ -5,7 +5,8 @@ from minihack import LevelGenerator
 from nle import nethack
 
 from typing import Optional
-from utils.general import decode, are_close, are_aligned
+from .general import decode, are_close, are_aligned
+from .rewards import define_reward
 
 
 DIRECTIONS = ['N','S','E','W','EN','NW','SE','SW']
@@ -16,6 +17,8 @@ DIRECTIONS = ['N','S','E','W','EN','NW','SE','SW']
 class Map:
     def __init__(self, pony:bool = True):
         lvl = LevelGenerator(w=20,h=20)
+        self.rewards = []
+        reward_manager_defined = define_reward()
         if(pony):
             lvl.add_monster(name='pony', symbol="u", place=None)
         lvl.add_object(name='saddle', symbol="(", place=None)
@@ -43,6 +46,7 @@ class Map:
                 'inv_letters',
                 'pixel'),
             des_file = lvl.get_des(),
+            reward_manager = reward_manager_defined,
         )
         self.state = env.reset()
         env.render()
@@ -78,11 +82,12 @@ class Map:
             what = self._get_item_char(what)
             print(f'Object <{what}> is in inventory')
 
-        self.state,_,_,_ = self._env.step(self._get_action_id(action=actionName)) # action            
-        if(what is not None): self.state,_,_,_ = self._env.step(self._env.actions.index(ord(what)))# object
-        if(where is not None): self.state,_,_,_ = self._env.step(self._get_action_id(action=where)) # direction
+        self.state,reward,_,_ = self._env.step(self._get_action_id(action=actionName)) # action            
+        if(what is not None): self.state,reward,_,_ = self._env.step(self._env.actions.index(ord(what)))# object
+        if(where is not None): self.state,reward,_,_ = self._env.step(self._get_action_id(action=where)) # direction
         #TODO: if a KB is used it should be updated here since we have a new state
 
+        self.rewards.append(reward)
 
     def render(self, delay:float = 0.5):
         time.sleep(delay)
