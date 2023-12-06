@@ -9,7 +9,7 @@ from .general import decode, are_close, are_aligned
 from .rewards import define_reward
 
 
-DIRECTIONS = ['N','S','E','W','EN','NW','SE','SW']
+DIRECTIONS = ['N','S','E','W','NE','NW','SE','SW']
 
 # Most of the code is copied from Andrea's exercise
 # if something does not work it's probably his fault
