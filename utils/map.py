@@ -10,8 +10,8 @@ from utils.general import decode
 DIRECTIONS = ['N','S','E','W','EN','NW','SE','SW']
 
 # Most of the code is copied from Andrea's exercise
-# if something does not works it is probably its fault
-# if something does work it is probably thanks to him
+# if something does not work it's probably his fault
+# if something does work it's probably thanks to him
 class Map:
     def __init__(self):
         lvl = LevelGenerator(w=10,h=10)
