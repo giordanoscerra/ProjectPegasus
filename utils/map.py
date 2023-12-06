@@ -1,3 +1,4 @@
+from cgi import print_directory
 from re import I
 import time
 import gym
@@ -58,7 +59,7 @@ class Map:
                 return action_index
         return -1
     
-    #return the object letter from it's name
+    #return the object letter from its name
     def _get_item_char(self,item:str) -> Optional[str]:
         for item_char, stringa in zip(decode(self.state["inv_letters"]), self.state["inv_strs"]):
             if item in decode(stringa):
@@ -185,10 +186,29 @@ class Map:
         if move != '':
             self.apply_action(move)
     
-    def get_pony_direction(self) -> str:
-        pony_pos = self.get_pony_position()
-        agent_pos = self.get_agent_position()
-        agent_pos = (agent_pos[0] - pony_pos[0], agent_pos[1] - pony_pos[1])
+    #def get_pony_direction(self) -> str:
+    #    pony_pos = self.get_pony_position()
+    #    agent_pos = self.get_agent_position()
+    #    agent_pos = (agent_pos[0] - pony_pos[0], agent_pos[1] - pony_pos[1])
+    #    throw_direction = ''
+    #    if agent_pos[0] < 0:
+    #        throw_direction += 'S'
+    #    elif agent_pos[0] > 0:
+    #        throw_direction += 'N'
+    #    if agent_pos[1] < 0:
+    #        throw_direction += 'E'
+    #    elif agent_pos[1] > 0:
+    #        throw_direction += 'W'
+    #    return throw_direction
+    
+    # More general version of get_pony_direction. Basically same code.
+    # get_pony_direction() is just get_target_direction('pony')
+    # (Andrea:) I propose to just keep the more general one, 
+    #  but it's not really relevant.
+    def get_target_direction(self, target:str) -> str:
+        entity_pos = self.get_element_position(target)
+        agent_pos = self.get_element_position('Agent')
+        agent_pos = (agent_pos[0] - entity_pos[0], agent_pos[1] - entity_pos[1])
         throw_direction = ''
         if agent_pos[0] < 0:
             throw_direction += 'S'
@@ -199,6 +219,9 @@ class Map:
         elif agent_pos[1] > 0:
             throw_direction += 'W'
         return throw_direction
+    
+    def get_pony_direction(self):
+        return self.get_target_direction('pony')
 
     def print_inventory(self):
         for letter, stringa in \
@@ -207,19 +230,20 @@ class Map:
 
     # TODO: automatically compute the direction, either here
     #       or in the main (with some function)
-    def throw_all(self, item:str, direction:str):
+    def throw_all(self, item:str, direction:str, show_inventory:bool = False):
         gen = (decode(s) for s in self.state["inv_strs"])
-        #pos = 0   # not a very pythonic way of doing it
         number = 0
         for stringa in gen:
             if item in stringa:
                 number = int(stringa.split(" ")[0])
                 break
-            #else: pos += 1
         if(number == 0):
             raise Exception(f'Item {item} not in inventory')
         for _ in range(number):
             self.apply_action(actionName='THROW', what=item, where=direction)
+            if show_inventory:
+                self.render()
+                self.print_inventory()
 
 
 # ottiene la posizione dell'entità che nella mappa appare con symbol
