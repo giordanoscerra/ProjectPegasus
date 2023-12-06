@@ -14,13 +14,13 @@ DIRECTIONS = ['N','S','E','W','NE','NW','SE','SW']
 # if something does not works it is probably its fault
 # if something does work it is probably thanks to him
 class Map:
-    def __init__(self, pony:bool = True, sink:bool = False):
+    def __init__(self, pony:bool = True, lava:bool = False):
         lvl = LevelGenerator(w=20,h=20)
         if(pony):
             lvl.add_monster(name='pony', symbol="u", place=None)
-        if(sink):
+        if(lava):
             lvl.set_start_rect((0,0),(2,2)) # creates an area in which the agent can spawn
-            lvl.add_sink((5,6))
+            lvl.add_terrain(flag="L", coord=(5,6))
         lvl.add_object(name='saddle', symbol="(", place=None, cursestate="blessed")
         env = gym.make(
             'MiniHack-Skill-Custom-v0',
@@ -33,6 +33,7 @@ class Map:
                 nethack.Command.PICKUP,
                 nethack.Command.INVENTORY,# included to allow use of saddle (i)
                 nethack.Command.RUSH,# included to allow use of apple (g)
+                nethack.Command.KICK,
             ),
             character = "kn-hum-neu-mal",
             observation_keys = (
@@ -208,6 +209,8 @@ class Map:
             zip(decode(self.state["inv_letters"]), self.state["inv_strs"]):
             print(letter, " - ", decode(stringa))
 
+    def get_message(self):
+        return decode(self.state["message"])
 
 # ottiene la posizione dell'entità che nella mappa appare con symbol
 # Ovviamente, se ce n'è più di una vanno cambiate delle cose...
