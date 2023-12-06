@@ -1,5 +1,3 @@
-from cgi import print_directory
-from re import I
 import time
 import gym
 import numpy as np
@@ -118,6 +116,7 @@ class Map:
 
     def get_agent_position(self) -> (int,int):
         return self.get_element_position('Agent')
+    # Now unused within the class
     def get_pony_position(self) -> (int,int):
         return self.get_element_position('pony')
     def get_saddle_position(self) -> (int,int):
@@ -186,25 +185,6 @@ class Map:
         if move != '':
             self.apply_action(move)
     
-    #def get_pony_direction(self) -> str:
-    #    pony_pos = self.get_pony_position()
-    #    agent_pos = self.get_agent_position()
-    #    agent_pos = (agent_pos[0] - pony_pos[0], agent_pos[1] - pony_pos[1])
-    #    throw_direction = ''
-    #    if agent_pos[0] < 0:
-    #        throw_direction += 'S'
-    #    elif agent_pos[0] > 0:
-    #        throw_direction += 'N'
-    #    if agent_pos[1] < 0:
-    #        throw_direction += 'E'
-    #    elif agent_pos[1] > 0:
-    #        throw_direction += 'W'
-    #    return throw_direction
-    
-    # More general version of get_pony_direction. Basically same code.
-    # get_pony_direction() is just get_target_direction('pony')
-    # (Andrea:) I propose to just keep the more general one, 
-    #           but it's not really relevant.
     def get_target_direction(self, target:str) -> str:
         entity_pos = self.get_element_position(target)
         agent_pos = self.get_element_position('Agent')
