@@ -204,7 +204,7 @@ class Map:
     # More general version of get_pony_direction. Basically same code.
     # get_pony_direction() is just get_target_direction('pony')
     # (Andrea:) I propose to just keep the more general one, 
-    #  but it's not really relevant.
+    #           but it's not really relevant.
     def get_target_direction(self, target:str) -> str:
         entity_pos = self.get_element_position(target)
         agent_pos = self.get_element_position('Agent')
@@ -227,23 +227,6 @@ class Map:
         for letter, stringa in \
             zip(decode(self.state["inv_letters"]), self.state["inv_strs"]):
             print(letter, " - ", decode(stringa))
-
-    # TODO: automatically compute the direction, either here
-    #       or in the main (with some function)
-    def throw_all(self, item:str, direction:str, show_inventory:bool = False):
-        gen = (decode(s) for s in self.state["inv_strs"])
-        number = 0
-        for stringa in gen:
-            if item in stringa:
-                number = int(stringa.split(" ")[0])
-                break
-        if(number == 0):
-            raise Exception(f'Item {item} not in inventory')
-        for _ in range(number):
-            self.apply_action(actionName='THROW', what=item, where=direction)
-            if show_inventory:
-                self.render()
-                self.print_inventory()
 
 
 # ottiene la posizione dell'entità che nella mappa appare con symbol
