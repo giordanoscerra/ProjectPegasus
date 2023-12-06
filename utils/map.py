@@ -14,10 +14,13 @@ DIRECTIONS = ['N','S','E','W','NE','NW','SE','SW']
 # if something does not works it is probably its fault
 # if something does work it is probably thanks to him
 class Map:
-    def __init__(self, pony:bool = True):
+    def __init__(self, pony:bool = True, sink:bool = False):
         lvl = LevelGenerator(w=20,h=20)
         if(pony):
             lvl.add_monster(name='pony', symbol="u", place=None)
+        if(sink):
+            lvl.set_start_rect((0,0),(2,2)) # creates an area in which the agent can spawn
+            lvl.add_sink((5,6))
         lvl.add_object(name='saddle', symbol="(", place=None, cursestate="blessed")
         env = gym.make(
             'MiniHack-Skill-Custom-v0',
@@ -54,7 +57,7 @@ class Map:
                 return action_index
         return -1
     
-    #return the object letter from it's name
+    #return the object letter from its name
     def _get_item_char(self,item:str) -> Optional[str]:
         for item_char, stringa in zip(decode(self.state["inv_letters"]), self.state["inv_strs"]):
             if item in decode(stringa):
@@ -113,6 +116,7 @@ class Map:
 
     def get_agent_position(self) -> (int,int):
         return self.get_element_position('Agent')
+    # Now unused within the class
     def get_pony_position(self) -> (int,int):
         return self.get_element_position('pony')
     def get_saddle_position(self) -> (int,int):
@@ -181,10 +185,10 @@ class Map:
         if move != '':
             self.apply_action(move)
     
-    def get_pony_direction(self) -> str:
-        pony_pos = self.get_pony_position()
-        agent_pos = self.get_agent_position()
-        agent_pos = (agent_pos[0] - pony_pos[0], agent_pos[1] - pony_pos[1])
+    def get_target_direction(self, target:str) -> str:
+        entity_pos = self.get_element_position(target)
+        agent_pos = self.get_element_position('Agent')
+        agent_pos = (agent_pos[0] - entity_pos[0], agent_pos[1] - entity_pos[1])
         throw_direction = ''
         if agent_pos[0] < 0:
             throw_direction += 'S'
@@ -195,11 +199,15 @@ class Map:
         elif agent_pos[1] > 0:
             throw_direction += 'W'
         return throw_direction
+    
+    def get_pony_direction(self):
+        return self.get_target_direction('pony')
 
     def print_inventory(self):
         for letter, stringa in \
             zip(decode(self.state["inv_letters"]), self.state["inv_strs"]):
             print(letter, " - ", decode(stringa))
+
 
 # ottiene la posizione dell'entità che nella mappa appare con symbol
 # Ovviamente, se ce n'è più di una vanno cambiate delle cose...
