@@ -64,7 +64,7 @@ safe_direction(R, C, D,Direction) :- resulting_position(R, C, NewR, NewC, D),
                                       close_direction(D, ND), safe_direction(R, C, ND,Direction)
                                       ).
 
-% a square if unsafe if there is a trap or an enemy
+% a square is unsafe if there is a trap or an enemy
 unsafe_position(R, C) :- position(trap,_, R, C).
 unsafe_position(R, C) :- position(enemy,_, R, C).
 unsafe_position(R,C) :- 
@@ -112,4 +112,4 @@ unsafe_position(_,_) :- fail.
 safe_position(R,C) :- \+ unsafe_position(R,C).
 
 % we need to pick a carrot if we are stepping on it. 
-is_pickable(carrot).
+is_pickable(carrots).
