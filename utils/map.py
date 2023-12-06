@@ -21,6 +21,8 @@ class Map:
         reward_manager_defined = define_reward()
         if(pony):
             lvl.add_monster(name='pony', symbol="u", place=None)
+        lvl.add_object(name='carrot', symbol="%", place=(0,0))
+        lvl.add_object(name='carrot', symbol="%", place=(0,0))
         lvl.add_object(name='saddle', symbol="(", place=None)
         env = gym.make(
             'MiniHack-Skill-Custom-v0',
