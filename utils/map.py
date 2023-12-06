@@ -78,22 +78,9 @@ class Map:
             what = self._get_item_char(what)
             print(f'Object <{what}> is in inventory')
 
-        if(what is None and where is None):
-            #action that require no further info, probably move
-            self.state,_,_,_ = self._env.step(self._get_action_id(action=actionName))# action
-        elif(what is None and where is not None):
-            #action that require a direction e.g. ride or throw
-            self.state,_,_,_ = self._env.step(self._get_action_id(action=actionName))# action
-            self.state,_,_,_ = self._env.step(self._get_action_id(action=where)) # direction
-        elif(what is not None and where is None):
-            #action that require a object e.g. wear or read
-            self.state,_,_,_ = self._env.step(self._get_action_id(action=actionName))# action
-            self.state,_,_,_ = self._env.step(self._env.actions.index(ord(what)))# object
-        elif(what is not None and where is not None):
-            #action that require a direction and object e.g. throw
-            self.state,_,_,_ = self._env.step(self._get_action_id(action=actionName))
-            self.state,_,_,_ = self._env.step(self._env.actions.index(ord(what)))# object
-            self.state,_,_,_ = self._env.step(self._get_action_id(action=where))# direction
+        self.state,_,_,_ = self._env.step(self._get_action_id(action=actionName)) # action            
+        if(what is not None): self.state,_,_,_ = self._env.step(self._env.actions.index(ord(what)))# object
+        if(where is not None): self.state,_,_,_ = self._env.step(self._get_action_id(action=where)) # direction
         #TODO: if a KB is used it should be updated here since we have a new state
 
 
@@ -128,7 +115,7 @@ class Map:
                 if(description != '' and description != 'floor of a room'):
                     print(f'{description} in <{i},{j}>')
     
-    #TODO: discuss with the team on wich algorithm to use
+    #TODO: discuss with the team on which algorithm to use
     #   things to consider:
     #       A* may be too much
     #       it is easy now but may be harder with monster and secondary task
