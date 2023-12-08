@@ -21,12 +21,21 @@ class GetCarrotsEvent(Event):
         for letter, stringa in \
             zip(decode(previous_observation[env._original_observation_keys.index('inv_letters')]), previous_observation[env._original_observation_keys.index('inv_strs')]):
             if "carrot" in decode(stringa): 
-                prev_carrots = [int(s) for s in  re.findall(r'\d+',decode(stringa))][0]
+                try:
+                    prev_carrots = [int(s) for s in  re.findall(r'\d+',decode(stringa))][0]
+                except:
+                    #should fix the case in which the number of carrots is incremented but
+                    #because for example we picked 2 and we had one in the inventory
+                    #because the reward would be 2-1 = 1 instead of 2
+                    prev_carrots = 1
         carrots = 0
         for letter, stringa in zip(decode(observation[env._original_observation_keys.index('inv_letters')]), observation[env._original_observation_keys.index('inv_strs')]):
-            if "carrot" in decode(stringa): 
-                carrots = [int(s) for s in  re.findall(r'\d+',decode(stringa))][0]
-        return prev_carrots < carrots and action == env.actions.index(nethack.Command.PICKUP)
+            if "carrot" in decode(stringa):
+                try: 
+                    carrots = [int(s) for s in  re.findall(r'\d+',decode(stringa))][0]
+                except:
+                    carrots = 1
+        return (prev_carrots < carrots and action == env.actions.index(nethack.Command.PICKUP))*(carrots-prev_carrots)
     
     def reset(self):    
         pass
