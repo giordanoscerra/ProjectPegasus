@@ -19,8 +19,8 @@ class Map:
         if(pony):
             lvl.add_monster(name='pony', symbol="u", place=None)
         if(lava):
-            lvl.set_start_rect((0,0),(2,2)) # creates an area in which the agent can spawn
-            lvl.add_terrain(flag="L", coord=(5,6))
+            lvl.set_start_rect((6,3),(8,6)) # creates an area in which the agent can spawn
+            lvl.add_terrain(flag="L", coord=(0,0))
         lvl.add_object(name='saddle', symbol="(", place=None, cursestate="blessed")
         env = gym.make(
             'MiniHack-Skill-Custom-v0',
@@ -138,7 +138,7 @@ class Map:
     #       the environment will not always be a rectangle
     #this will take agent in distance that is <= maxDistance and >= minDistance from the object
     def go_to_element(self, element:str, show_steps:bool=False, delay:float = 0.5, maxDistance:int = 3, minDistance:int = 1) -> None:
-        #until we are not close to the pony
+        #until we are not close to the [pony] target
         element_pos = self.get_element_position(element=element)
         agent_pos = self.get_agent_position()
         while(not are_aligned(element_pos, agent_pos) or not are_close(element_pos, agent_pos, maxOffset=maxDistance)):
@@ -154,7 +154,7 @@ class Map:
                     move += 'E'
                 self.apply_action(move)
             else:
-                self.align_with_pony()
+                self.align_with_target(target=element)
             try:
                 element_pos = self.get_element_position(element=element)
             except:
@@ -165,11 +165,11 @@ class Map:
                 time.sleep(delay)
                 self.render()
         
-    # supposed that the distance between pony and agent is <= 3
-    def align_with_pony(self) -> str:
-        pony_pos = self.get_pony_position()
+    # supposed that the distance between [pony] target and agent is <= 3
+    def align_with_target(self, target:str) -> str:
+        target_pos = self.get_element_position(element=target)
         agent_pos = self.get_agent_position()
-        agent_pos = (agent_pos[0] - pony_pos[0], agent_pos[1] - pony_pos[1])
+        agent_pos = (agent_pos[0] - target_pos[0], agent_pos[1] - target_pos[1])
         if agent_pos[0] == agent_pos[1] or -agent_pos[0] == agent_pos[1]:
             return
         if agent_pos[0] == 0 or agent_pos[1] == 0:
@@ -185,6 +185,9 @@ class Map:
             move = 'E'
         if move != '':
             self.apply_action(move)
+
+    def align_with_pony(self):
+        return self.align_with_target(target='pony')
     
     def get_target_direction(self, target:str) -> str:
         entity_pos = self.get_element_position(target)
@@ -211,6 +214,22 @@ class Map:
 
     def get_message(self):
         return decode(self.state["message"])
+    
+    # used to throw away all the carrots
+    def throw_all(self, item:str, direction:str, show_inventory:bool = False):
+        gen = (decode(s) for s in self.state["inv_strs"])
+        number = 0
+        for stringa in gen:
+            if item in stringa:
+                number = int(stringa.split(" ")[0])
+                break
+        if(number == 0):
+            raise Exception(f'Item {item} not in inventory')
+        for _ in range(number):
+            self.apply_action(actionName='THROW', what=item, where=direction)
+            if show_inventory:
+                self.render()
+                self.print_inventory()
 
 # ottiene la posizione dell'entità che nella mappa appare con symbol
 # Ovviamente, se ce n'è più di una vanno cambiate delle cose...
