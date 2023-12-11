@@ -11,6 +11,7 @@ import re
 # previous_state and state are tuples: they are subdivided by the observation keys we defined in the map.py, apparently.
 
 # The PickCarrotEvent is used to reward the agent for picking up a carrot.
+# when we have a single carrot in the inventory it is shown as "an uncursed carrot"
 class GetCarrotsEvent(Event):
     def __init__(self, reward = 1, repeatable = True, terminal_required = False, terminal_sufficient = False):
         super().__init__(reward, repeatable, terminal_sufficient, terminal_required)
