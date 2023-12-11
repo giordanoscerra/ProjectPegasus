@@ -9,20 +9,11 @@
 - ownership of object (saddle in horse mouth) 
 - order of action (what to do, given a state) 
 ## Bugfixing
--Bug: 
-
-    Numero di carote prese 
-
-        An uncrushed carrot 
-
-    Loop if multiple elements 
-
-    Already saddled pony 
-
-    No object crash 
-
-    Errors in KB 
-
-        Number of carrots in inventory 
-
-        Other (it is empty) 
+Number of taken carrots 
+An uncrushed carrot 
+Loop if multiple elements 
+Already saddled pony 
+No object crash 
+Errors in KB 
+ Number of carrots in inventory 
+ Other (it is empty) 
