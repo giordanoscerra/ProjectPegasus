@@ -18,19 +18,16 @@ DIRECTIONS = ['N','S','E','W','NE','NW','SE','SW']
 # if something does not work it's probably his fault
 # if something does work it's probably thanks to him
 class Map:
-    def __init__(self, pony:bool = True, lava:bool = False):
+    def __init__(self, pony:bool = True):
         lvl = LevelGenerator(w=20,h=20)
         self.rewards = []
         reward_manager_defined = define_reward()
+        lvl.set_start_pos((5,2))
         if(pony):
-            lvl.add_monster(name='pony', symbol="u", place=None)
-        if(lava):
-            lvl.set_start_rect((6,3),(8,6)) # creates an area in which the agent can spawn
-            lvl.add_terrain(flag="L", coord=(0,0))
-        lvl.add_object(name='carrot', symbol="%", place=(0,0))
-        lvl.add_object(name='carrot', symbol="%", place=(0,0))
-        #lvl.add_object(name='carrot', symbol="%", place=None)
-        lvl.add_object(name='saddle', symbol="(", place=None)
+            lvl.add_monster(name='pony', symbol="u", place=(19,19))
+        lvl.add_object(name='carrot', symbol="%", place=(0,4))
+        lvl.add_object(name='carrot', symbol="%", place=(0,4))
+        lvl.add_object(name='saddle', symbol="(", place=(1,2))
         env = gym.make(
             'MiniHack-Skill-Custom-v0',
             actions = tuple(nethack.CompassDirection) + (
@@ -104,9 +101,9 @@ class Map:
         if(not graphic):
             self._env.render()
         else:
-            image = plt.imshow(self.state['pixel'][:, 400:800])
+            image = plt.imshow(self.state['pixel'][15:, 480:800])
             display.display(plt.gcf())
-            time.sleep(1.00)
+            print(bytes(self.state['message']).decode('utf-8').rstrip('\x00'))
             display.clear_output(wait=True)
     
     #TODO: optimize possibly using a KB to store position

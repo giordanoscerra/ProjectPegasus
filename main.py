@@ -2,6 +2,16 @@ from utils.map import Map
 
 level = Map()
 
+#print pony direction
+print(level.get_pony_direction())
+#print carrots direction
+print(level.get_target_direction('carrot'))
+#print saddle direction
+print(level.get_target_direction('saddle'))
+import time
+level.render()
+time.sleep(100)
+
 #go to saddle
 level.go_to_element(element='saddle',show_steps=True, maxDistance=0, minDistance=0)
 level.render()
