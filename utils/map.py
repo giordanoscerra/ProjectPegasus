@@ -18,12 +18,15 @@ DIRECTIONS = ['N','S','E','W','NE','NW','SE','SW']
 # if something does not work it's probably his fault
 # if something does work it's probably thanks to him
 class Map:
-    def __init__(self, pony:bool = True):
+    def __init__(self, pony:bool = True, lava:bool = False):
         lvl = LevelGenerator(w=20,h=20)
         self.rewards = []
         reward_manager_defined = define_reward()
         if(pony):
             lvl.add_monster(name='pony', symbol="u", place=None)
+        if(lava):
+            lvl.set_start_rect((6,3),(8,6)) # creates an area in which the agent can spawn
+            lvl.add_terrain(flag="L", coord=(0,0))
         lvl.add_object(name='carrot', symbol="%", place=(0,0))
         lvl.add_object(name='carrot', symbol="%", place=(0,0))
         #lvl.add_object(name='carrot', symbol="%", place=None)
@@ -40,6 +43,7 @@ class Map:
                 nethack.Command.WHATIS,
                 nethack.Command.INVENTORY,# included to allow use of saddle (i)
                 nethack.Command.RUSH,# included to allow use of apple (g)
+                nethack.Command.KICK,
             ),
             character = "kn-hum-neu-mal",
             observation_keys = (
@@ -55,7 +59,7 @@ class Map:
             reward_manager = reward_manager_defined,
         )
         self.state = env.reset()
-        env.render()
+        #env.render()
         self._env = env
 
     #get the action number from high level string
@@ -66,7 +70,7 @@ class Map:
                 return action_index
         return -1
     
-    #return the object letter from it's name
+    #return the object letter from its name
     def _get_item_char(self,item:str) -> Optional[str]:
         for item_char, stringa in zip(decode(self.state["inv_letters"]), self.state["inv_strs"]):
             if item in decode(stringa):
@@ -78,15 +82,15 @@ class Map:
         if(self._get_action_id(action=actionName) == -1):
             raise Exception(f'Not valid action <{actionName}>')
         if(where is not None and where not in DIRECTIONS):
-            raise Exception(f'Valid directions are {DIRECTIONS}')
+            raise Exception(f'Valid directions are {DIRECTIONS}, you gave: {where}')
         if(what is not None and self._get_item_char(what) is None):
             raise Exception(f'Object <{what}> is not in inventory')
         elif(what is not None):
-            print(f'Object <{what}> is in inventory')
+            #print(f'Object <{what}> is in inventory')
             #print inventory
-            self.print_inventory()
+            #self.print_inventory()
             what = self._get_item_char(what)
-            print(f'Object <{what}> is in inventory')
+            #print(f'Object <{what}> is in inventory')
 
         self.state,reward,_,_ = self._env.step(self._get_action_id(action=actionName)) # action            
         if(what is not None): self.state,reward,_,_ = self._env.step(self._env.actions.index(ord(what)))# object
@@ -118,6 +122,7 @@ class Map:
 
     def get_agent_position(self) -> (int,int):
         return self.get_element_position('Agent')
+    # Now unused within the class
     def get_pony_position(self) -> (int,int):
         return self.get_element_position('pony')
     def get_saddle_position(self) -> (int,int):
@@ -154,7 +159,7 @@ class Map:
                     move += 'E'
                 self.apply_action(move)
             else:
-                self.align_with_pony()
+                self.align_with_target(target=element)
             try:
                 element_pos = self.get_element_position(element=element)
             except:
@@ -165,11 +170,11 @@ class Map:
                 time.sleep(delay)
                 self.render(graphic=graphic)
         
-    # supposed that the distance between pony and agent is <= 3
-    def align_with_pony(self) -> str:
-        pony_pos = self.get_pony_position()
+    # supposed that the distance between [pony] target and agent is <= 3
+    def align_with_target(self, target:str) -> str:
+        target_pos = self.get_element_position(element=target)
         agent_pos = self.get_agent_position()
-        agent_pos = (agent_pos[0] - pony_pos[0], agent_pos[1] - pony_pos[1])
+        agent_pos = (agent_pos[0] - target_pos[0], agent_pos[1] - target_pos[1])
         if agent_pos[0] == agent_pos[1] or -agent_pos[0] == agent_pos[1]:
             return
         if agent_pos[0] == 0 or agent_pos[1] == 0:
@@ -185,11 +190,14 @@ class Map:
             move = 'E'
         if move != '':
             self.apply_action(move)
+
+    def align_with_pony(self):
+        return self.align_with_target(target='pony')
     
-    def get_pony_direction(self) -> str:
-        pony_pos = self.get_pony_position()
-        agent_pos = self.get_agent_position()
-        agent_pos = (agent_pos[0] - pony_pos[0], agent_pos[1] - pony_pos[1])
+    def get_target_direction(self, target:str) -> str:
+        entity_pos = self.get_element_position(target)
+        agent_pos = self.get_element_position('Agent')
+        agent_pos = (agent_pos[0] - entity_pos[0], agent_pos[1] - entity_pos[1])
         throw_direction = ''
         if agent_pos[0] < 0:
             throw_direction += 'S'
@@ -200,8 +208,30 @@ class Map:
         elif agent_pos[1] > 0:
             throw_direction += 'W'
         return throw_direction
+    
+    def get_pony_direction(self):
+        return self.get_target_direction('pony')
 
     def print_inventory(self):
         for letter, stringa in \
             zip(decode(self.state["inv_letters"]), self.state["inv_strs"]):
             print(letter, " - ", decode(stringa))
+
+    def get_message(self):
+        return decode(self.state["message"])
+    
+    # used to throw away all the carrots
+    def throw_all(self, item:str, direction:str, show_inventory:bool = False):
+        gen = (decode(s) for s in self.state["inv_strs"])
+        number = 0
+        for stringa in gen:
+            if item in stringa:
+                number = int(stringa.split(" ")[0])
+                break
+        if(number == 0):
+            raise Exception(f'Item {item} not in inventory')
+        for _ in range(number):
+            self.apply_action(actionName='THROW', what=item, where=direction)
+            if show_inventory:
+                self.render()
+                self.print_inventory()

@@ -11,11 +11,11 @@ level.apply_action('PICKUP')
 level.render()
 
 #go to pony and throw carrots
-for i in range(3):
+for i in range(9):
     level.go_to_element(element='pony',show_steps=True)
     throw_direction = level.get_pony_direction()
     level.apply_action('THROW', what='carrot', where=throw_direction)
-    level.render(delay=3)
+    level.render(delay=1)
 
 #saddle pony
 level.go_to_element(element='pony',show_steps=True, maxDistance=1)
