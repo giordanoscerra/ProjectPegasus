@@ -5,19 +5,25 @@ from minihack import LevelGenerator
 from nle import nethack
 
 from typing import Optional
-from utils.general import decode, are_close, are_aligned
+from .general import decode, are_close, are_aligned
+from .rewards import define_reward
 
 
-DIRECTIONS = ['N','S','E','W','EN','NW','SE','SW']
+DIRECTIONS = ['N','S','E','W','NE','NW','SE','SW']
 
 # Most of the code is copied from Andrea's exercise
-# if something does not works it is probably its fault
-# if something does work it is probably thanks to him
+# if something does not work it's probably his fault
+# if something does work it's probably thanks to him
 class Map:
     def __init__(self, pony:bool = True):
         lvl = LevelGenerator(w=20,h=20)
+        self.rewards = []
+        reward_manager_defined = define_reward()
         if(pony):
             lvl.add_monster(name='pony', symbol="u", place=None)
+        lvl.add_object(name='carrot', symbol="%", place=(0,0))
+        lvl.add_object(name='carrot', symbol="%", place=(0,0))
+        #lvl.add_object(name='carrot', symbol="%", place=None)
         lvl.add_object(name='saddle', symbol="(", place=None)
         env = gym.make(
             'MiniHack-Skill-Custom-v0',
@@ -28,6 +34,7 @@ class Map:
                 nethack.Command.DROP,
                 nethack.Command.APPLY,
                 nethack.Command.PICKUP,
+                nethack.Command.WHATIS,
                 nethack.Command.INVENTORY,# included to allow use of saddle (i)
                 nethack.Command.RUSH,# included to allow use of apple (g)
             ),
@@ -35,12 +42,14 @@ class Map:
             observation_keys = (
                 'glyphs',
                 'chars',
+                'colors', # Some characters have special colors that represent different things.
                 'screen_descriptions',  # descrizioni testuali di ogni cella della mappa 
                 'message',
                 'inv_strs',
                 'inv_letters',
                 'pixel'),
             des_file = lvl.get_des(),
+            reward_manager = reward_manager_defined,
         )
         self.state = env.reset()
         env.render()
@@ -76,24 +85,12 @@ class Map:
             what = self._get_item_char(what)
             print(f'Object <{what}> is in inventory')
 
-        if(what is None and where is None):
-            #action that require no further info, probably move
-            self.state,_,_,_ = self._env.step(self._get_action_id(action=actionName))# action
-        elif(what is None and where is not None):
-            #action that require a direction e.g. ride or throw
-            self.state,_,_,_ = self._env.step(self._get_action_id(action=actionName))# action
-            self.state,_,_,_ = self._env.step(self._get_action_id(action=where)) # direction
-        elif(what is not None and where is None):
-            #action that require a object e.g. wear or read
-            self.state,_,_,_ = self._env.step(self._get_action_id(action=actionName))# action
-            self.state,_,_,_ = self._env.step(self._env.actions.index(ord(what)))# object
-        elif(what is not None and where is not None):
-            #action that require a direction and object e.g. throw
-            self.state,_,_,_ = self._env.step(self._get_action_id(action=actionName))
-            self.state,_,_,_ = self._env.step(self._env.actions.index(ord(what)))# object
-            self.state,_,_,_ = self._env.step(self._get_action_id(action=where))# direction
+        self.state,reward,_,_ = self._env.step(self._get_action_id(action=actionName)) # action            
+        if(what is not None): self.state,reward,_,_ = self._env.step(self._env.actions.index(ord(what)))# object
+        if(where is not None): self.state,reward,_,_ = self._env.step(self._get_action_id(action=where)) # direction
         #TODO: if a KB is used it should be updated here since we have a new state
 
+        self.rewards.append(reward)
 
     def render(self, delay:float = 0.5):
         time.sleep(delay)
@@ -126,7 +123,7 @@ class Map:
                 if(description != '' and description != 'floor of a room'):
                     print(f'{description} in <{i},{j}>')
     
-    #TODO: discuss with the team on wich algorithm to use
+    #TODO: discuss with the team on which algorithm to use
     #   things to consider:
     #       A* may be too much
     #       it is easy now but may be harder with monster and secondary task
