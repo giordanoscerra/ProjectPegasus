@@ -4,6 +4,9 @@ import numpy as np
 from minihack import LevelGenerator
 from nle import nethack
 
+import matplotlib.pyplot as plt
+import IPython.display as display
+
 from typing import Optional
 from .general import decode, are_close, are_aligned
 from .rewards import define_reward
@@ -92,10 +95,15 @@ class Map:
 
         self.rewards.append(reward)
 
-    def render(self, delay:float = 0.5):
+    def render(self, graphic:bool=False,delay:float = 0.5):
         time.sleep(delay)
-        self._env.render()
-
+        if(not graphic):
+            self._env.render()
+        else:
+            image = plt.imshow(self.state['pixel'][:, 400:800])
+            display.display(plt.gcf())
+            time.sleep(1.00)
+            display.clear_output(wait=True)
     
     #TODO: optimize possibly using a KB to store position
     def get_element_position(self, element:str) -> (int,int):
@@ -129,7 +137,7 @@ class Map:
     #       it is easy now but may be harder with monster and secondary task
     #       the environment will not always be a rectangle
     #this will take agent in distance that is <= maxDistance and >= minDistance from the object
-    def go_to_element(self, element:str, show_steps:bool=False, delay:float = 0.5, maxDistance:int = 3, minDistance:int = 1) -> None:
+    def go_to_element(self, element:str, show_steps:bool=False, graphic:bool=False, delay:float = 0.5, maxDistance:int = 3, minDistance:int = 1) -> None:
         #until we are not close to the pony
         element_pos = self.get_element_position(element=element)
         agent_pos = self.get_agent_position()
@@ -155,7 +163,7 @@ class Map:
             agent_pos = self.get_agent_position()
             if(show_steps):
                 time.sleep(delay)
-                self.render()
+                self.render(graphic=graphic)
         
     # supposed that the distance between pony and agent is <= 3
     def align_with_pony(self) -> str:
@@ -197,9 +205,3 @@ class Map:
         for letter, stringa in \
             zip(decode(self.state["inv_letters"]), self.state["inv_strs"]):
             print(letter, " - ", decode(stringa))
-
-# ottiene la posizione dell'entità che nella mappa appare con symbol
-# Ovviamente, se ce n'è più di una vanno cambiate delle cose...
-def get_location(game_map: np.ndarray, symbol: str):
-    x, y = np.where(game_map == ord(symbol))
-    return x[0], y[0]
