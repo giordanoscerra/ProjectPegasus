@@ -59,10 +59,6 @@ class MountEvent(Event):
 # This defines the reward manager, passed to the environment as a variable during initialization
 def define_reward():
     reward_manager = RewardManager()
-    # reward_manager.add_message_event(["You mount the saddled pony."],
-    #                                     reward=100,
-    #                                     terminal_sufficient=True,
-    #                                     terminal_required=True)
     reward_manager.add_event(MountEvent())
     reward_manager.add_event(GetCarrotsEvent())
     return reward_manager

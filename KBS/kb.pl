@@ -47,6 +47,8 @@ is_close(R1,C1,R2,C2) :- (R1 is R2+1; R1 is R2-1), (C1 is C2+1; C1 is C2-1).
 % check if the direction leads to a safe position
 % D = temporary direction - may be unsafe
 %Direction = the definitive direction 
+%in the future we're going to need some more complex algorithm to search a path since rooms will not always be rectangular.
+%suggestion: implement those algorithms in Python 
 next_step(R1,C1,R2,C2, D) :-
     ( R1 == R2 -> ( C1 > C2 -> D = west; D = east );
     ( C1 == C2 -> ( R1 > R2 -> D = north; D = south);
