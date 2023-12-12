@@ -1,5 +1,7 @@
 :- dynamic position/4.
 :- dynamic stepping_on/3.
+:- action_count/2.
+:- tameness/2.
 
 % To translate into Prolog:
 % Chance of succeeding a mounting action is: 5 * (exp level + steed tameness)
@@ -38,6 +40,20 @@ action(throw) :- carrots > 0.
 action(pick) :- 
     stepping_on(agent,ObjClass,_),
     is_pickable(ObjClass). 
+
+% We need to count how many times we fed the steed to calculate its tameness.
+action_count(feed, 0).
+tameness(steed, 1).
+
+increment_action_count(A) :- retract(action_count(A, N)),  % remove the old value. At initialization the we assert action_count(A, 0) for A = feed
+                             NewN is N+1, % increment the value
+                             assert(action_count(A, NewN)). % assert the new value
+
+increment_tameness(X) :- retract(tameness(X, N)),  % remove the old value. At initialization we assert tameness(X, 1) for X = steed
+                         NewN is N+1, % increment the value
+                         assert(tameness(X, NewN)). % assert the new value
+
+feed(X) :- increment_action_count(feed), increment_tameness(X).
 
 % We need to check this if we are to throw carrots at a horse.
 is_aligned(R1,C1,R2,C2) :- R1 == R2; C1 == C2; ((R1 is R2+X;R1 is R2-X), (C1 is C2+X;C1 is C2-X)).
