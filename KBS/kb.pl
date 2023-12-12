@@ -1,5 +1,4 @@
 :- dynamic position/4.
-:- dynamic carrots.
 :- dynamic stepping_on/3.
 
 % To translate into Prolog:
@@ -16,6 +15,9 @@
 %     You are levitating and cannot come down at will.
 %     You are wearing rusty or corroded body armor.
 % 
+rideable(X) :- \+ riding(agent), \+ hallucinating(agent), \+ wounded_legs(agent), \+ encumbered(agent), \+ (blind(agent), \+ telepathic(agent)), \+ punished(agent)
+    , \+ trapped(agent), \+ (wearing(agent, Y), (rusty(Y); corroded(Y))). % I do not intend to implement everything but we can do what we can in the time we have, as a flex
+
 % You will always fail and slip if any of the following apply:[3]
 % 
 %     You are confused.
@@ -23,6 +25,10 @@
 %     You have slippery fingers.
 %     Your steed's saddle is cursed.
 
+slippery :- confused(agent); fumbling(agent); slippery_fingers(agent). % WHAT IF THE SADDLE IS CURSED?????? 
+
+% explodes with ERROR: /home/yuri/myGitShit/ProjectPegasus/KBS/kb.pl:30:
+% ERROR:    Type error: `callable' expected, found `0' (an integer)
 0 :- carrots.
 
 action(throw) :- carrots > 0.
