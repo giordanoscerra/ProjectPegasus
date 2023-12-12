@@ -1,4 +1,4 @@
-from uu import decode
+from utils.general import decode
 import numpy as np
 import os
 import sys
