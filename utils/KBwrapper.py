@@ -24,9 +24,10 @@ class KBwrapper():
     # this is very experimental
     def query_for_action(self):
         try:
-            action = list(self.kb.query("action(X)"))[0]
+            action = list(self._kb.query("action(X)"))[0]
             action = action['X']
         except Exception as e:
+            print(e)
             action = None
         return action
     
