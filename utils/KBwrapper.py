@@ -15,11 +15,11 @@ class KBwrapper():
         # Moreover, I don't really like this, but I don't have a 
         # good way to get the path of kb_handson2.pl relative to the
         # path of the script in current execution
-        current_dir = os.path.dirname(os.path.abspath(sys.argv[0]))
-        kb_path = os.path.join(current_dir, 'KBS/kb_handson2.pl')
-        self._kb.consult(kb_path)
+        # current_dir = os.path.dirname(os.path.abspath(sys.argv[0]))
+        # kb_path = os.path.join(current_dir, 'KBS/kb_handson2.pl')
+        # self._kb.consult(kb_path)
 
-        #self._kb.consult('../KBS/kb_handson2.pl')
+        self._kb.consult('KBS/kb_handson2.pl')
 
     # this is very experimental
     def query_for_action(self):
