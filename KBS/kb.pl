@@ -1,5 +1,6 @@
 :- dynamic encumbered/1, wounded_legs/1, hallucinating/1, riding/1, blind/1, telepathic/1, punished/1, trapped/1, wearing/2, rusty/1, corroded/1.
 :- dynamic confused/1, fumbling/1, slippery_fingers/1.
+:- dynamic hostile/1.
 :- dynamic stepping_on/3.
 :- dynamic position/4.
 :- dynamic action_count/2.
@@ -18,7 +19,6 @@
 %     You or your steed are trapped.
 %     You are levitating and cannot come down at will.
 %     You are wearing rusty or corroded body armor.
-% 
 rideable(X) :- \+ riding(agent), \+ hallucinating(agent), \+ wounded_legs(agent), \+ encumbered(agent), \+ (blind(agent), \+ telepathic(agent)), \+ punished(agent)
     , \+ trapped(agent), \+ (wearing(agent, Y), (rusty(Y); corroded(Y))). % I do not intend to implement everything but we can do what we can in the time we have, as a flex
 
@@ -28,13 +28,15 @@ rideable(X) :- \+ riding(agent), \+ hallucinating(agent), \+ wounded_legs(agent)
 %     You are fumbling.
 %     You have slippery fingers.
 %     Your steed's saddle is cursed.
-
 slippery :- confused(agent); fumbling(agent); slippery_fingers(agent). % WHAT IF THE SADDLE IS CURSED?????? 
 
-carrots(0).
-
-action(throw) :- carrots(X), X > 0.
 %TODO: it is currently unused
+carrots(0).
+action(throw) :- carrots(X), X > 0, is_aligned(AR,AC,SR,SC). % "A" coordinates are the agent's while "S" coordinates are the steed's
+
+%%% GENERAL SUBTASKS
+action(getCarrot) :- carrots(X), X == 0, \+ stepping_on(agent,carrot,_), position(carrot,_,_,_); hostile(steed).
+action(pacifySteed) :- hostile(steed), carrots(X), X > 0.
 
 % We will need to eventually pick the carrot
 action(pick) :- 
