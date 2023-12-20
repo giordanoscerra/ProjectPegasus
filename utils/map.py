@@ -7,6 +7,7 @@ from nle import nethack
 from typing import Optional
 from .general import decode, are_close, are_aligned
 from .rewards import define_reward
+from . import exceptions #import *
 
 
 DIRECTIONS = ['N','S','E','W','NE','NW','SE','SW']
@@ -96,6 +97,7 @@ class Map:
         time.sleep(delay)
         self._env.render()
 
+
     
     #TODO: optimize possibly using a KB to store position
     def get_element_position(self, element:str) -> (int,int):
@@ -106,7 +108,7 @@ class Map:
                     return (i,j)
         #TODO: check if is stepping on before raising exception
         #self.print_every_position()
-        raise Exception(f'no {element} is found in this state')
+        raise exceptions.ElemNotFoundException(f'no {element} is found in this state')
 
     def get_agent_position(self) -> (int,int):
         return self.get_element_position('Agent')
