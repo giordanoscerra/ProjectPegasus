@@ -1,7 +1,9 @@
-:- dynamic position/4.
+:- dynamic encumbered/1, wounded_legs/1, hallucinating/1, riding/1, blind/1, telepathic/1, punished/1, trapped/1, wearing/2, rusty/1, corroded/1.
+:- dynamic confused/1, fumbling/1, slippery_fingers/1.
 :- dynamic stepping_on/3.
-:- action_count/2.
-:- tameness/2.
+:- dynamic position/4.
+:- dynamic action_count/2.
+:- dynamic tameness/2.
 
 % To translate into Prolog:
 % Chance of succeeding a mounting action is: 5 * (exp level + steed tameness)
@@ -29,11 +31,9 @@ rideable(X) :- \+ riding(agent), \+ hallucinating(agent), \+ wounded_legs(agent)
 
 slippery :- confused(agent); fumbling(agent); slippery_fingers(agent). % WHAT IF THE SADDLE IS CURSED?????? 
 
-% explodes with ERROR: /home/yuri/myGitShit/ProjectPegasus/KBS/kb.pl:30:
-% ERROR:    Type error: `callable' expected, found `0' (an integer)
-0 :- carrots.
+carrots(0).
 
-action(throw) :- carrots > 0.
+action(throw) :- carrots(X), X > 0.
 %TODO: it is currently unused
 
 % We will need to eventually pick the carrot
