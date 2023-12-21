@@ -9,6 +9,7 @@ class Agent():
         # I'd say that the initialization of the agent
         # also first initializes the (possibly, a) KB
         self.kb = KBwrapper()        # as of now, KBWrapper uses the kb from handson2!
+        attributes = {}
 
     def look_for_element(self, game_map:Map, element:str='pony', return_coord:bool=False):
         '''Scans the whole map, via the get_element_position method of the
@@ -36,6 +37,7 @@ class Agent():
             self.kb.retract_element_position(element)
         except Exception as e:
             print(f"An error occurred: {e}")
+
 
     def percept(self, game_map:Map, interesting_item_list:list = ['carrot', 'saddle', 'pony', 'Agent']):
         # IDEA: rimediare all'inefficienza della versione precedente,
@@ -66,3 +68,15 @@ class Agent():
                     for interesting_item in interesting_item_list:
                         if interesting_item in description:
                             self.kb.assert_element_position(interesting_item,i,j)
+        # get the agent level
+        self.attributes["level"] = game_map.get_agent_level()
+
+    def chance_of_mount_succeeding(self, steed):
+        if steed not in self.kb.get_rideable_steeds():
+            return 0
+        exp_lvl = self.attributes["level"]
+        # Steed tameness isn't observable by the agent but can be inferred assuming it started as the lowest possible and
+        # increased by a certain amount (in our case 1) everytime the agent feeds the steed. It starts as 1 and can go up to 20.
+        # The tameness of new pets depends on their species, not on the method of taming. They usually start with 5. +1 everytime they eat
+        steed_tameness = self._kb.get_steed_tameness(steed) # did not yet test this
+        return 100/(5 * (exp_lvl + steed_tameness))

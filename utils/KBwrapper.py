@@ -88,3 +88,9 @@ class KBwrapper():
 
     def assert_element_position(self,element:str, x:int, y:int):
         self._kb.asserta(f'position({element},_,{x},{y})')
+    
+    def get_rideable_steeds(self):
+        return self._kb.query("rideable(X)")
+    
+    def get_steed_tameness(self, steed):
+        return self._kb.query(f"steed_tameness({steed}, X)")[0]['X']

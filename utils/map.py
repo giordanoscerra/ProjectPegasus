@@ -48,7 +48,8 @@ class Map:
                 'message',
                 'inv_strs',
                 'inv_letters',
-                'pixel'),
+                'pixel',
+                'blstats'),
             des_file = lvl.get_des(),
             reward_manager = reward_manager_defined,
         )
@@ -71,8 +72,7 @@ class Map:
                 return item_char
         return None
     
-    def apply_action(self,actionName: str, what:str = None, where:str = None):
-        
+    def apply_action(self,actionName: str, what:str = None, where:str = None):   
         if(self._get_action_id(action=actionName) == -1):
             raise Exception(f'Not valid action <{actionName}>')
         if(where is not None and where not in DIRECTIONS):
@@ -96,8 +96,6 @@ class Map:
     def render(self, delay:float = 0.5):
         time.sleep(delay)
         self._env.render()
-
-
     
     #TODO: optimize possibly using a KB to store position
     def get_element_position(self, element:str) -> (int,int):
@@ -112,10 +110,14 @@ class Map:
 
     def get_agent_position(self) -> (int,int):
         return self.get_element_position('Agent')
+    def get_agent_level(self) -> int:
+        return self.state['blstats'][18] # https://arxiv.org/pdf/2006.13760.pdf lmao
     def get_pony_position(self) -> (int,int):
         return self.get_element_position('pony')
     def get_saddle_position(self) -> (int,int):
         return self.get_element_position('saddle')
+    def get_rewards(self) -> [int]:
+        return self.rewards
     
     # just an utility to check position during test
     def print_every_position(self):
