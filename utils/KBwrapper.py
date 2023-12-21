@@ -9,6 +9,16 @@ from utils import exceptions
 
 
 class KBwrapper():
+    # It is hee on purpose: it is a class variable ("knowledge" shared
+    # among all instances of the class). I think it is more proper.
+    # changes to this reflect to all KBwrapper objects 
+    # (most probabily we'll have only one, so who cares...)
+    _categories = {
+        'enemy': ['kobold', 'giant mummy', 'goblin'],
+        'comestible': ['apple', 'carrot', 'food ration'],
+        'weapon': ['sword', 'lance', 'shield', 'dagger']
+    }
+
     def __init__(self):
         self._kb = Prolog()
         # for now, I consult the KB from the hands_on2
@@ -38,37 +48,10 @@ class KBwrapper():
         # c'è un'esplosione di if (ovvero di cose da dire). Non è più chiaro ed 
         # elegante dire la cosa giusta al momento giusto?
 
-    # Before you start killing me (I'm Andrea) here is why this function is
-    # comment and shouldn't be used: it is the agent through its percepts
-    # that must add informations to the kb (it does so with the intermediation
-    # of this class methods). My idea is that in the main.py we declare 
-    # the agent, and the agent possesses the (or more...) kb as attribute(s),
-    # which are instances of this class.
-    # 
-    #def assert_position_of_elements(self, scr_desc:np.ndarray):
-    #    # DavideB will kill me for this...
-    #    #
-    #    # IDEA: this function is called after each env.step().
-    #    # it scans the whole map, by the same approach we used in the Map class
-    #    # and asserts the position of each notable element. 
-    #    # When we need the position of an element we query the KB, instead of scanning 
-    #    # the whole map each time.
-    #    # We need to assert the position of the various notable elements because
-    #    # they might change after each env.step() (e.g. enemies move, carrots get stolen...)
-    #    self._kb.retractall("position(_,_,_,_)")
-    #    interesting_item_list = ['carrot', 'saddle', 'pony', 'Agent']
-    #    for i in range(len(scr_desc)):
-    #        for j in range(len(scr_desc[0])):
-    #            description = decode(scr_desc[i][j])
-    #            if(description != '' and description != 'floor of a room'):
-    #                for interesting_item in interesting_item_list:
-    #                    if interesting_item in description:
-    #                        self._kb.asserta(f'position({interesting_item},_,{i},{j})')
-
     # the idea is that the position of an element should be returned by 
     # the KB
-    # Q1: deal with multiple items in the map (e.g. two carrots)
-    # Q2: what if the element is not found? I'd raise an exception
+    # TODO: deal with multiple items in the map (e.g. two carrots).See also 
+    # comment on the _element_position() function
     def get_element_position(self, element:str):
         try:
             pos_query = list(self._kb.query(f'position({element},_,Row,Col)'))[0]
@@ -77,14 +60,40 @@ class KBwrapper():
             raise exceptions.ElemNotFoundException\
                 (f'query for the position of {element} unsuccessful. '
                 'Maybe is not in the environment?')
+        
+    def _get_key(self,value, dictionary):
+     for key, values in dictionary.items():
+        if value in values:
+            return key
+        return None   
     
-    # TODO: deal with the _ argument in the assertion, maybe by passing
-    # an optional further optional parameter, gathered in *args or **kwargs.
-    # it is important, as often we don't want to retract the position of 
-    # all (e.g.) enemies, but only specific ones.
-    # This is very much tied to the semantic of the handson2 kb, though
-    def retract_element_position(self, element:str):
-        self._kb.retractall(f'position({element},_,_,_)')
+    # TODO: deal with the second argument in the assertion.
+    # The problem is that we might want to distinguish
+    # certain elements among themselves by changing their "names"
+    # (2nd argument in the position(_,_,_,_) assertion), in order to store 
+    # their position independently (e.g carrot1 is in a certain position,
+    # carrot2 is somewhere else). But we also want to use their names for 
+    # inference!
+    # Maybe this is not a real problem, as we'll have different predicates of 
+    # the form position(*), and what makes them different is the coordinates 
+    # (arguments 3 and 4). 
+    # I think that we should consider adding a further parameter to the 
+    # position statement, to keep track of the indexing of the different 
+    # elements.     
+    def retract_element_position(self, element:str, x:str='_', y:str='_'):
+        category = self._get_key(element, self._categories)
+        if category is None:
+            # IDEA: if the element has no category, maybe it is a 
+            # category on its own (or at least dealt as such by the KB)
+            self._kb.retractall(f'position({element},_,{x},{y})')
+        else:
+            self._kb.retractall(f'position({category},{element},{x},{y})')
 
     def assert_element_position(self,element:str, x:int, y:int):
-        self._kb.asserta(f'position({element},_,{x},{y})')
+        category = self._get_key(element, self._categories)
+        if category is None:
+            self._kb.asserta(f'position({element},_,{x},{y})')
+        else:
+            # problem: keep the distinction between (e.g.) the carrot 
+            # and the specific carrot. This has to be dealt with.
+            self._kb.asserta(f'position({category},{element},{x},{y})')
