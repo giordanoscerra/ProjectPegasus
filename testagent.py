@@ -18,15 +18,14 @@ except exceptions.ElemNotFoundException as exc:
 knight.percept(level)
 
 #let's see in the knowledge base
-knb = knight.kb
 
-carrot_query = list(knb._kb.query('position(comestible,F,X,Y)'))
-# one can check that it didn't work
+carrot_query = knight.kbQuery('position(comestible,carrot,X,Y)')
 
-saddle_query = list(knb._kb.query('position(saddle,_,X,Y)'))
+saddle_query = knight.kbQuery('position(saddle,_,X,Y)')
 xsaddle, ysaddle = level.get_element_position('saddle')
 
-agent_query = list(knb._kb.query('position(Agent,_,X,Y)'))
+agent_query = knight.kbQuery('position(agent,_,X,Y)')
 xagent, yagent = level.get_element_position('Agent')
-# OK, non funziona nulla. Le asserzioni vengono fatte molto male
-# a quanto pare, per qualche motivo.
+# it seems to be working. Of course, this way of querying is very
+# "crude", and looks a real mess right now. Things will be fixed, 
+# and cleaned. Fear not.
