@@ -97,3 +97,9 @@ class KBwrapper():
             # problem: keep the distinction between (e.g.) the carrot 
             # and the specific carrot. This has to be dealt with.
             self._kb.asserta(f'position({category},{element},{x},{y})')
+
+    def get_rideable_steeds(self):
+        return self._kb.query("rideable(X)")
+    
+    def get_steed_tameness(self, steed):
+        return self._kb.query(f"steed_tameness({steed}, X)")[0]['X']
