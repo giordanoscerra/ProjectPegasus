@@ -10,29 +10,59 @@ class Agent():
         # also first initializes the (possibly, a) KB
         self.kb = KBwrapper()        # as of now, KBWrapper uses the kb from handson2!
 
-    def percept(self, game_map:Map):
-        # IDEA: game_map.get_element_position for all things of 
-        # interest.
-        # PROS: The semantic is clear & clean, based on the context 
-        # (e.g. the agent performing subtasks) the "interesting things"
-        # to perceive may be different (i.e. the things to assert in the kb)
-        #
-        # CONS: it is very inefficient, as the whole map is scanned multiple
-        # times!
+    def look_for_element(self, game_map:Map, element:str='pony', return_coord:bool=False):
+        '''Scans the whole map, via the get_element_position method of the
+        Map class, looking for the position of a specific element.
+        The kb is updated with this info, and the coordinates can be returned
+        if one so chooses.        
+        '''
 
-        # look for pony
+        # look for specific element, then store position in the KB
         try:
-            x,y = game_map.get_pony_position()
-            self.kb.retract_element_position('pony')
-            self.kb.assert_element_position('pony',x,y)
+            x,y = game_map.get_element_position(element)
+            self.kb.retract_element_position(element)
+            self.kb.assert_element_position(element,x,y)
+            if return_coord:
+                return x,y
         # Ho dichiarato un'altra eccezione perché mi sta sulle balle il fatto 
         # che quando si fa il catch Exception as e qualsiasi eccezione viene
         # catturata. Ma ci sono due eccezioni: quando l'elemento non 
         # viene trovato (e quindi basta levare l'info dalla kb), e le altre
         # eccezioni a caso che boh potrebbero accadere perché il mondo fa schifo
         except exceptions.ElemNotFoundException:
-            self.kb.retract_element_position('pony')
+            # Q: if the element is not perceived, does it mean that isn't there?
+            # (e.g. a local perception for an element that isn't in viewing range
+            # because for example the room is dark, or is in another room)
+            self.kb.retract_element_position(element)
         except Exception as e:
             print(f"An error occurred: {e}")
 
-        
+    def percept(self, game_map:Map, interesting_item_list:list = ['carrot', 'saddle', 'pony', 'Agent']):
+        # IDEA: rimediare all'inefficienza della versione precedente,
+        # (nel frattempo riadattata a uno scan per un elemento specifico nella mappa)
+        # facendo un unico scan della mappa, alla ricerca di elementi interessanti.
+        #
+        # PROS: più efficiente, customizzabile. Dovrebbe essere semplice manipolare il 
+        # "range" della percezione, per fare dei percept più "locali"
+        #
+        # CONS: (nella versione attuale) fa il retract di tutto, e questo potrebbe
+        # non essere ciò che si vuole (ad esempio, si vuole non aggiornare la 
+        # posizione di un qualche elemento specifico. Boh). 
+
+        # escamotage per fare il retract della posizione di tutti gli elementi :D
+        # self.kb.retract_element_position('_')   
+        for item in interesting_item_list:
+            # we retract the positions of the elements of interest from the KB,
+            # in order to re-add them (update)
+            #
+            # TODO: remove specific items (is a problem also in the KBWrapper class)
+            self.kb.retract_element_position(item)
+
+        scr_desc = game_map.state['screen_descriptions']
+        for i in range(len(scr_desc)):
+            for j in range(len(scr_desc[0])):
+                description = decode(scr_desc[i][j])
+                if(description != '' and description != 'floor of a room'):
+                    for interesting_item in interesting_item_list:
+                        if interesting_item in description:
+                            self.kb.assert_element_position(interesting_item,i,j)
