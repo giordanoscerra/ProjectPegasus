@@ -26,6 +26,8 @@ class Map:
         lvl.add_object(name='carrot', symbol="%", place=(0,0))
         #lvl.add_object(name='carrot', symbol="%", place=None)
         lvl.add_object(name='saddle', symbol="(", place=None)
+        # mura tutt'attorno. Più carino. E più challenging per il pathfinding
+        lvl.wallify()  
         env = gym.make(
             'MiniHack-Skill-Custom-v0',
             actions = tuple(nethack.CompassDirection) + (
@@ -99,7 +101,8 @@ class Map:
 
 
     
-    #TODO: optimize possibly using a KB to store position
+    #TODO: optimize possibly using a KB to store position: DONE (in a certain sense)
+    # This function is used by agent.look_for_element()
     def get_element_position(self, element:str) -> (int,int):
         for i in range(len(self.state['screen_descriptions'])):
             for j in range(len(self.state['screen_descriptions'][0])):

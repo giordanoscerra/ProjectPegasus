@@ -14,3 +14,4 @@ try:
 except exceptions.ElemNotFoundException as exc:
     print(f'L\' eccezione ElemNotFoundException è stata catturata '
         f'con successo, e restituisce il messaggio: {exc}')
+    

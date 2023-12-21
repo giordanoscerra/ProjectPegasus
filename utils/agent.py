@@ -20,6 +20,7 @@ class Agent():
         # look for specific element, then store position in the KB
         try:
             x,y = game_map.get_element_position(element)
+            #self.kb.retract_element_position(element,x,y)
             self.kb.retract_element_position(element)
             self.kb.assert_element_position(element,x,y)
             if return_coord:
@@ -38,6 +39,12 @@ class Agent():
             print(f"An error occurred: {e}")
 
     def percept(self, game_map:Map, interesting_item_list:list = ['carrot', 'saddle', 'pony', 'Agent']):
+        '''removes the position of all the items in interesting_item_list
+        from the kb. Then scans the whole map, looking for such elements and
+        inserting in the kbthe position of the interesting items that 
+        have been found.      
+        '''
+        
         # IDEA: rimediare all'inefficienza della versione precedente,
         # (nel frattempo riadattata a uno scan per un elemento specifico nella mappa)
         # facendo un unico scan della mappa, alla ricerca di elementi interessanti.
@@ -51,6 +58,7 @@ class Agent():
 
         # escamotage per fare il retract della posizione di tutti gli elementi :D
         # self.kb.retract_element_position('_')   
+
         for item in interesting_item_list:
             # we retract the positions of the elements of interest from the KB,
             # in order to re-add them (update)
@@ -65,4 +73,7 @@ class Agent():
                 if(description != '' and description != 'floor of a room'):
                     for interesting_item in interesting_item_list:
                         if interesting_item in description:
+                            # Q: store the position of different items of the same
+                            # "type" by keeping distinction (see comments in KBwrapper).
+                            # Maybe is not a real issue, maybe it is...
                             self.kb.assert_element_position(interesting_item,i,j)
