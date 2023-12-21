@@ -26,11 +26,6 @@ class Agent():
             self.kb.assert_element_position(element,x,y)
             if return_coord:
                 return x,y
-        # Ho dichiarato un'altra eccezione perché mi sta sulle balle il fatto 
-        # che quando si fa il catch Exception as e qualsiasi eccezione viene
-        # catturata. Ma ci sono due eccezioni: quando l'elemento non 
-        # viene trovato (e quindi basta levare l'info dalla kb), e le altre
-        # eccezioni a caso che boh potrebbero accadere perché il mondo fa schifo
         except exceptions.ElemNotFoundException:
             # Q: if the element is not perceived, does it mean that isn't there?
             # (e.g. a local perception for an element that isn't in viewing range
@@ -84,6 +79,10 @@ class Agent():
         
         # get the agent level
         self.attributes["level"] = game_map.get_agent_level()
+        # get the agent's health (percentage). It is stored also in the
+        # KB, since it might be useful for taking decisions
+        self.attributes["health"] = game_map.get_agent_health()
+        self.kb.update_health(self.attributes["health"])
 
     def chance_of_mount_succeeding(self, steed):
         if steed not in self.kb.get_rideable_steeds():

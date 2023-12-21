@@ -68,7 +68,7 @@ class Map:
                 return action_index
         return -1
     
-    #return the object letter from it's name
+    #return the object letter from its name
     def _get_item_char(self,item:str) -> Optional[str]:
         for item_char, stringa in zip(decode(self.state["inv_letters"]), self.state["inv_strs"]):
             if item in decode(stringa):
@@ -116,6 +116,10 @@ class Map:
         return self.get_element_position('Agent')
     def get_agent_level(self) -> int:
         return self.state['blstats'][18] # https://arxiv.org/pdf/2006.13760.pdf lmao
+    def get_agent_health(self) -> int:
+        current_health = self.state['blstats'][10]
+        max_health = self.state['blstats'][11]
+        return int(current_health/max_health*100)
     def get_pony_position(self) -> (int,int):
         return self.get_element_position('pony')
     def get_saddle_position(self) -> (int,int):

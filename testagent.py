@@ -12,8 +12,8 @@ try:
     x,y = knight.kb.get_element_position('pony')
     print(f'The KB says that there is a pony in position ({x},{y})')
 except exceptions.ElemNotFoundException as exc:
-    print(f'L\' eccezione ElemNotFoundException è stata catturata '
-        f'con successo, e restituisce il messaggio: {exc}')
+    print(f'ElemNotFoundException catturata con successo. '
+        f'Restituisce il messaggio: {exc}')
     
 knight.percept(level)
 

@@ -87,14 +87,20 @@ class KBwrapper():
     # I think that we should consider adding a further parameter to the 
     # position statement, to keep track of the indexing of the different 
     # elements.     
-    def retract_element_position(self, element:str):#, x:str='_', y:str='_'):
+    def retract_element_position(self, element:str, *args):
+        if(len(args) == 0):
+            x, y = '_','_'
+        else:
+            x, y = args
+            
+
         category = self._get_key(element, self._categories)
         if category is None:
             # IDEA: if the element has no category, maybe it is a 
             # category on its own (or at least dealt as such by the KB)
-            self._kb.retractall(f'position({element},_,_,_)')
+            self._kb.retractall(f'position({element},_,{x},{y})')
         else:
-            self._kb.retractall(f'position({category},{element},_,_)')
+            self._kb.retractall(f'position({category},{element},{x},{y})')
 
     def assert_element_position(self,element:str, x:int, y:int):
         category = self._get_key(element, self._categories)
@@ -110,3 +116,7 @@ class KBwrapper():
     
     def get_steed_tameness(self, steed):
         return self._kb.query(f"steed_tameness({steed}, X)")[0]['X']
+    
+    def update_health(self, health:int):
+        self._kb.retractall('health(_)')
+        self._kb.asserta(f'health({health})')
