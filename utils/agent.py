@@ -66,6 +66,8 @@ class Agent():
             # TODO: remove specific items (is a problem also in the KBWrapper class)
             self.kb.retract_element_position(item)
 
+        # Q: Consider an approach that uses np.where  
+        # (cfr. get_location, in map.py). Maybe more efficient? 
         scr_desc = game_map.state['screen_descriptions']
         for i in range(len(scr_desc)):
             for j in range(len(scr_desc[0])):

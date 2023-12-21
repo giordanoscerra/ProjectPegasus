@@ -24,7 +24,8 @@ class Map:
             lvl.add_monster(name='pony', symbol="u", place=None)
         lvl.add_object(name='carrot', symbol="%", place=(0,0))
         lvl.add_object(name='carrot', symbol="%", place=(0,0))
-        #lvl.add_object(name='carrot', symbol="%", place=None)
+        for _ in range(3):
+            lvl.add_object(name='carrot', symbol="%", place=None)
         lvl.add_object(name='saddle', symbol="(", place=None)
         # mura tutt'attorno. Più carino. E più challenging per il pathfinding
         lvl.wallify()  

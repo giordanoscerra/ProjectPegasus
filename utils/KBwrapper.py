@@ -16,7 +16,7 @@ class KBwrapper():
     _categories = {
         'enemy': ['kobold', 'giant mummy', 'goblin'],
         'comestible': ['apple', 'carrot', 'food ration'],
-        'weapon': ['sword', 'lance', 'shield', 'dagger']
+        'weapon': ['sword', 'lance', 'shield', 'dagger'],
     }
 
     def __init__(self):
@@ -62,9 +62,9 @@ class KBwrapper():
                 'Maybe is not in the environment?')
         
     def _get_key(self,value, dictionary):
-     for key, values in dictionary.items():
-        if value in values:
-            return key
+        for key, values in dictionary.items():
+            if value in values:
+                return key
         return None   
     
     # TODO: deal with the second argument in the assertion.
