@@ -9,7 +9,7 @@ from utils import exceptions
 
 
 class KBwrapper():
-    # It is hee on purpose: it is a class variable ("knowledge" shared
+    # It is here on purpose: it is a class variable ("knowledge" shared
     # among all instances of the class). I think it is more proper.
     # changes to this reflect to all KBwrapper objects 
     # (most probabily we'll have only one, so who cares...)
@@ -31,6 +31,13 @@ class KBwrapper():
         # self._kb.consult(kb_path)
 
         self._kb.consult('KBS/kb_handson2.pl')
+
+    def queryDirectly(self, sentence:str):
+        '''For rapid-test purposes only.
+        The function queries the kb for the sentence in input.
+        The query method is applied directly to sentence.
+        '''
+        return list(self._kb.query(sentence))
 
     # this is very experimental
     def query_for_action(self):
@@ -75,19 +82,19 @@ class KBwrapper():
     # carrot2 is somewhere else). But we also want to use their names for 
     # inference!
     # Maybe this is not a real problem, as we'll have different predicates of 
-    # the form position(*), and what makes them different is the coordinates 
+    # the form position(), and what makes them different is the coordinates 
     # (arguments 3 and 4). 
     # I think that we should consider adding a further parameter to the 
     # position statement, to keep track of the indexing of the different 
     # elements.     
-    def retract_element_position(self, element:str, x:str='_', y:str='_'):
+    def retract_element_position(self, element:str):#, x:str='_', y:str='_'):
         category = self._get_key(element, self._categories)
         if category is None:
             # IDEA: if the element has no category, maybe it is a 
             # category on its own (or at least dealt as such by the KB)
-            self._kb.retractall(f'position({element},_,{x},{y})')
+            self._kb.retractall(f'position({element},_,_,_)')
         else:
-            self._kb.retractall(f'position({category},{element},{x},{y})')
+            self._kb.retractall(f'position({category},{element},_,_)')
 
     def assert_element_position(self,element:str, x:int, y:int):
         category = self._get_key(element, self._categories)

@@ -80,7 +80,8 @@ class Agent():
                             # Q: store the position of different items of the same
                             # "type" by keeping distinction (see comments in KBwrapper).
                             # Maybe is not a real issue, maybe it is...
-                            self.kb.assert_element_position(interesting_item,i,j)
+                            self.kb.assert_element_position(interesting_item.lower(),i,j)
+        
         # get the agent level
         self.attributes["level"] = game_map.get_agent_level()
 
@@ -93,3 +94,11 @@ class Agent():
         # The tameness of new pets depends on their species, not on the method of taming. They usually start with 5. +1 everytime they eat
         steed_tameness = self._kb.get_steed_tameness(steed) # did not yet test this
         return 100/(5 * (exp_lvl + steed_tameness))
+
+    def kbQuery(self, query:str):
+        '''For rapid-test purposes only.
+        Dummy function that queries the kb for the string in input. 
+        For the sake of cleanness, this is done by calling an appropriate
+        method of the KBwrapper class
+        '''
+        return self.kb.queryDirectly(query)
