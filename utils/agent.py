@@ -9,7 +9,7 @@ class Agent():
         # I'd say that the initialization of the agent
         # also first initializes the (possibly, a) KB
         self.kb = KBwrapper()        # as of now, KBWrapper uses the kb from handson2!
-        attributes = {}
+        self.attributes = {}
 
     def look_for_element(self, game_map:Map, element:str='pony', return_coord:bool=False):
         '''Scans the whole map, via the get_element_position method of the
