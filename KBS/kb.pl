@@ -5,6 +5,8 @@
 :- dynamic position/4.
 :- dynamic action_count/2.
 :- dynamic tameness/2.
+:- dynamic carrots/1.
+:- dynamic saddles/1.
 
 % To translate into Prolog:
 % Chance of succeeding a mounting action is: 5 * (exp level + steed tameness)
@@ -32,11 +34,18 @@ slippery :- confused(agent); fumbling(agent); slippery_fingers(agent). % WHAT IF
 
 %TODO: it is currently unused
 carrots(0).
+saddles(0).
 action(throw) :- carrots(X), X > 0, is_aligned(AR,AC,SR,SC). % "A" coordinates are the agent's while "S" coordinates are the steed's
 
-%%% GENERAL SUBTASKS
+max_tameness(20).
+
+%%% GENERAL SUBTASKS feel free to add other conditions or comments to suggest them
 action(getCarrot) :- carrots(X), X == 0, \+ stepping_on(agent,carrot,_), position(carrot,_,_,_); hostile(steed).
+action(getSaddle) :- saddles(X), X == 0, \+ stepping_on(agent,saddle,_), position(saddle,_,_,_).
 action(pacifySteed) :- hostile(steed), carrots(X), X > 0.
+action(feedSteed) :- carrots(X), X > 0, \+ hostile(steed), tameness(steed, T), max_tameness(MT), T =< MT.
+action(rideSteed) :- rideable(steed), \+ hostile(steed), carrots(X), X == 0, \+ position(carrot,_,_,_).
+
 
 % We will need to eventually pick the carrot
 action(pick) :- 
@@ -53,6 +62,11 @@ increment_action_count(A) :- retract(action_count(A, N)),  % remove the old valu
 
 increment_tameness(X) :- retract(tameness(X, N)),  % remove the old value. At initialization we assert tameness(X, 1) for X = steed
                          NewN is N+1, % increment the value
+                         assert(tameness(X, NewN)). % assert the new value
+
+% Decreased when using the ride action
+decrease_tameness(X) :- retract(tameness(X, N)),  % remove the old value.
+                         NewN is N-1, % increment the value
                          assert(tameness(X, NewN)). % assert the new value
 
 feed(X) :- increment_action_count(feed), increment_tameness(X).
