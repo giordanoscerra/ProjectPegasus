@@ -5,6 +5,7 @@ import numpy as np
 # import string
 from nle import nethack
 from pyswip import Prolog
+from utils import exceptions
 
 
 class KBwrapper():
@@ -67,9 +68,15 @@ class KBwrapper():
     # the idea is that the position of an element should be returned by 
     # the KB
     # Q1: deal with multiple items in the map (e.g. two carrots)
+    # Q2: what if the element is not found? I'd raise an exception
     def get_element_position(self, element:str):
-        pos_query = list(self._kb.query(f'position({element},_,Row,Col)'))[0]
-        return (pos_query['Row'], pos_query['Col'])
+        try:
+            pos_query = list(self._kb.query(f'position({element},_,Row,Col)'))[0]
+            return (pos_query['Row'], pos_query['Col'])
+        except IndexError:
+            raise exceptions.ElemNotFoundException\
+                (f'query for the position of {element} unsuccessful. '
+                'Maybe is not in the environment?')
     
     # TODO: deal with the _ argument in the assertion, maybe by passing
     # an optional further optional parameter, gathered in *args or **kwargs.

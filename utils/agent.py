@@ -1,7 +1,7 @@
 from utils.general import decode
 from utils.KBwrapper import *
 from utils.map import Map
-from utils.exceptions import *
+from utils import exceptions 
 import numpy as np
 
 class Agent():
@@ -23,7 +23,6 @@ class Agent():
         # look for pony
         try:
             x,y = game_map.get_pony_position()
-            print(f'pony is in position ({x},{y})')
             self.kb.retract_element_position('pony')
             self.kb.assert_element_position('pony',x,y)
         # Ho dichiarato un'altra eccezione perché mi sta sulle balle il fatto 
@@ -31,8 +30,9 @@ class Agent():
         # catturata. Ma ci sono due eccezioni: quando l'elemento non 
         # viene trovato (e quindi basta levare l'info dalla kb), e le altre
         # eccezioni a caso che boh potrebbero accadere perché il mondo fa schifo
-        except ElemNotFoundException as e:
+        except exceptions.ElemNotFoundException:
             self.kb.retract_element_position('pony')
-            #print(e)
         except Exception as e:
             print(f"An error occurred: {e}")
+
+        
