@@ -1,6 +1,6 @@
 import numpy as np
 import time
-from typing import Callable
+from typing import Callable, Tuple
 from utils.KBwrapper import *
 from utils.map import Map
 from utils.exceptions import *
@@ -15,8 +15,8 @@ class Agent():
         self.actions = {
             "getCarrot": self.get_carrot,
             "pacifySteed": self.pacify_steed,
-            "feedSteed": self.feedSteed,
-            "rideSteed": self.rideSteed
+            "feedSteed": self.feed_steed,
+            "rideSteed": self.ride_steed
         }
 
     def look_for_element(self, game_map:Map, element:str='pony', return_coord:bool=False):
@@ -28,7 +28,7 @@ class Agent():
 
         # look for specific element, then store position in the KB
         try:
-            x,y = game_map.get_element_position(element)
+            x,y = game_map.get_element_position(element)[0]
             #self.kb.retract_element_position(element,x,y)
             self.kb.retract_element_position(element)
             self.kb.assert_element_position(element,x,y)
@@ -118,15 +118,15 @@ class Agent():
         '''
         return self.kb.queryDirectly(query)
     
-    def getCarrot(self, carrotPos):
+    def get_carrot(self, carrotPos):
         return "TO BE CONTINUED"
-    def getSaddle(self, saddlePos):
+    def get_saddle(self, saddlePos):
         return "TO BE CONTINUED"
-    def pacifySteed(self, steedPos):
+    def pacify_steed(self, steedPos):
         return "TO BE CONTINUED"
-    def feedSteed(self, steedPos):
+    def feed_steed(self, steedPos):
         return "TO BE CONTINUED"
-    def rideSteed(self, steedPos):
+    def ride_steed(self, steedPos):
         return "TO BE CONTINUED"
         
 
@@ -138,7 +138,7 @@ class Agent():
     # this will take agent in distance that is <= maxDistance and >= minDistance from the object
     # The heuristic should take in the list of positions of an element, the tuple indicating 
     # the position of the agent and return a tuple indicating the position of the element to go to
-    def go_to_element(self, game_map:Map, element:str, heuristic: Callable[[list(tuple),tuple],tuple], show_steps:bool=False, delay:float = 0.5, maxDistance:int = 3, minDistance:int = 1) -> None:
+    def go_to_element(self, game_map: Map, element, heuristic, show_steps=False, delay = 0.5, maxDistance = 3, minDistance = 1):
         if(positions := game_map.get_element_position(element) > 1): element_pos = heuristic(positions)
         else: element_pos = positions[0]
         agent_pos = game_map.get_agent_position()
@@ -165,4 +165,4 @@ class Agent():
             agent_pos = game_map.get_agent_position()
             if(show_steps):
                 time.sleep(delay)
-                self.render()
+                game_map.render()

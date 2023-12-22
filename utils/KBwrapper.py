@@ -66,7 +66,7 @@ class KBwrapper():
         except IndexError:
             raise exceptions.ElemNotFoundException\
                 (f'query for the position of {element} unsuccessful. '
-                'Maybe is not in the environment?')
+                'Maybe they are not in the environment?')
         
     def _get_key(self,value, dictionary):
         for key, values in dictionary.items():

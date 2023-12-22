@@ -4,7 +4,7 @@ import numpy as np
 from minihack import LevelGenerator
 from nle import nethack
 
-from typing import Optional
+from typing import Optional, List, Tuple
 from .general import decode
 from .rewards import define_reward
 from . import exceptions 
@@ -102,7 +102,7 @@ class Map:
     
     #TODO: optimize possibly using a KB to store position: DONE (in a certain sense)
     # This function is used by agent.look_for_element()
-    def get_element_position(self, element:str) -> (int,int):
+    def get_element_position(self, element:str) -> List[Tuple[int,int]]:
         positions = []
         for i in range(len(self.state['screen_descriptions'])):
             for j in range(len(self.state['screen_descriptions'][0])):
@@ -125,9 +125,9 @@ class Map:
         return int(current_health/max_health*100)
     def get_pony_position(self) -> (int,int):
         return list(self.get_element_position('pony'))[0]
-    def get_saddle_position(self) -> (int,int):
+    def get_saddle_position(self) -> List[Tuple[int,int]]:
         return self.get_element_position('saddle')
-    def get_carrot_position(self) -> (int,int):
+    def get_carrot_position(self) -> List[Tuple[int,int]]:
         return self.get_element_position('carrot')
     def get_rewards(self) -> [int]:
         return self.rewards
