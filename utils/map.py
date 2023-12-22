@@ -5,9 +5,9 @@ from minihack import LevelGenerator
 from nle import nethack
 
 from typing import Optional
-from .general import decode, are_close, are_aligned
+from .general import decode
 from .rewards import define_reward
-from . import exceptions #import *
+from . import exceptions 
 
 
 DIRECTIONS = ['N','S','E','W','NE','NW','SE','SW']
@@ -103,17 +103,20 @@ class Map:
     #TODO: optimize possibly using a KB to store position: DONE (in a certain sense)
     # This function is used by agent.look_for_element()
     def get_element_position(self, element:str) -> (int,int):
+        positions = []
         for i in range(len(self.state['screen_descriptions'])):
             for j in range(len(self.state['screen_descriptions'][0])):
                 description = decode(self.state['screen_descriptions'][i][j])
                 if(element in description):
-                    return (i,j)
+                    positions.append((i,j))
         #TODO: check if is stepping on before raising exception
         #self.print_every_position()
-        raise exceptions.ElemNotFoundException(f'no {element} is found in this state')
+        if(not positions): raise exceptions.ElemNotFoundException(f'no {element} is found in this state') 
+        return positions
+        
 
     def get_agent_position(self) -> (int,int):
-        return self.get_element_position('Agent')
+        return list(self.get_element_position('Agent'))[0]
     def get_agent_level(self) -> int:
         return self.state['blstats'][18] # https://arxiv.org/pdf/2006.13760.pdf lmao
     def get_agent_health(self) -> int:
@@ -121,9 +124,11 @@ class Map:
         max_health = self.state['blstats'][11]
         return int(current_health/max_health*100)
     def get_pony_position(self) -> (int,int):
-        return self.get_element_position('pony')
+        return list(self.get_element_position('pony'))[0]
     def get_saddle_position(self) -> (int,int):
         return self.get_element_position('saddle')
+    def get_carrot_position(self) -> (int,int):
+        return self.get_element_position('carrot')
     def get_rewards(self) -> [int]:
         return self.rewards
     
@@ -134,40 +139,6 @@ class Map:
                 description = decode(self.state['screen_descriptions'][i][j])
                 if(description != '' and description != 'floor of a room'):
                     print(f'{description} in <{i},{j}>')
-    
-    #TODO: discuss with the team on which algorithm to use
-    #   things to consider:
-    #       A* may be too much
-    #       it is easy now but may be harder with monster and secondary task
-    #       the environment will not always be a rectangle
-    #this will take agent in distance that is <= maxDistance and >= minDistance from the object
-    def go_to_element(self, element:str, show_steps:bool=False, delay:float = 0.5, maxDistance:int = 3, minDistance:int = 1) -> None:
-        #until we are not close to the pony
-        element_pos = self.get_element_position(element=element)
-        agent_pos = self.get_agent_position()
-        while(not are_aligned(element_pos, agent_pos) or not are_close(element_pos, agent_pos, maxOffset=maxDistance)):
-            if(not are_close(element_pos, agent_pos, maxOffset=maxDistance)):
-                move = ''
-                if(element_pos[0] < agent_pos[0] - minDistance):
-                    move += 'N'
-                elif(element_pos[0] > agent_pos[0] + minDistance):
-                    move += 'S'
-                if(element_pos[1] < agent_pos[1] - minDistance):
-                    move += 'W'
-                elif(element_pos[1] > agent_pos[1] + minDistance):
-                    move += 'E'
-                self.apply_action(move)
-            else:
-                self.align_with_pony()
-            try:
-                element_pos = self.get_element_position(element=element)
-            except:
-                if(minDistance != 0):
-                    raise Exception(f'No {element} is found in this state')
-            agent_pos = self.get_agent_position()
-            if(show_steps):
-                time.sleep(delay)
-                self.render()
         
     # supposed that the distance between pony and agent is <= 3
     def align_with_pony(self) -> str:
