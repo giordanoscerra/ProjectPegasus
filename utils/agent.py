@@ -7,6 +7,7 @@ from utils import exceptions
 # from utils.exceptions import *
 from utils.heuristics import *
 from .general import are_aligned, are_close
+from .algorithms import a_star
 
 class Agent():
     def __init__(self):
@@ -131,7 +132,12 @@ class Agent():
         return "TO BE CONTINUED"
     def ride_steed(self, steedPos):
         return "TO BE CONTINUED"
-        
+    
+    def get_best_path_to_element(self, game_map: Map, element, heuristic: callable) -> List[Tuple[int, int]]:
+        agent_position = self.kb.get_element_position('agent')
+        element_position = self.kb.get_element_position(element)
+        game_map_array = game_map.get_map_as_nparray()
+        return a_star(game_map_array, agent_position, element_position, heuristic)
 
     #TODO: discuss with the team on which algorithm to use
     #   things to consider:
