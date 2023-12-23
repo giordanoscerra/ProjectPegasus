@@ -141,9 +141,10 @@ class Agent():
     # The heuristic should take in the list of positions of an element, the tuple indicating 
     # the position of the agent and return a tuple indicating the position of the element to go to
     def go_to_element(self, game_map: Map, element, heuristic, show_steps=False, delay = 0.5, maxDistance = 3, minDistance = 1):
-        if(positions := game_map.get_element_position(element) > 1): element_pos = heuristic(positions)
-        else: element_pos = positions[0]
+        #if(len(positions := game_map.get_element_position(element)) > 1): element_pos = heuristic(positions,game_map.get_agent_position())
+        #else: element_pos = positions[0]
         agent_pos = game_map.get_agent_position()
+        element_pos = heuristic(game_map.get_element_position(element),agent_pos)
         #until we are not close to the pony
         while(not are_aligned(element_pos, agent_pos) or not are_close(element_pos, agent_pos, maxOffset=maxDistance)):
             if(not are_close(element_pos, agent_pos, maxOffset=maxDistance)):
@@ -160,7 +161,7 @@ class Agent():
             else:
                 game_map.align_with_pony()
             try:
-                element_pos = game_map.get_element_position(element=element)
+                element_pos = heuristic(game_map.get_element_position(element=element),game_map.get_agent_position())
             except:
                 if(minDistance != 0):
                     raise Exception(f'No {element} is found in this state')
