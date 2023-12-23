@@ -17,6 +17,7 @@ class KBwrapper():
         'enemy': ['kobold', 'giant mummy', 'goblin'],
         'comestible': ['apple', 'carrot', 'food ration'],
         'weapon': ['sword', 'lance', 'shield', 'dagger'],
+        'applicable' : ['saddle'],
     }
 
     def __init__(self):
@@ -99,6 +100,9 @@ class KBwrapper():
     def get_steed_tameness(self, steed):
         return self._kb.query(f"steed_tameness({steed}, X)")[0]['X']
     
+    def is_slippery(self):
+        return self._kb.query("slippery")[0]
+
     def update_health(self, health:int):
         self._kb.retractall('health(_)')
         self._kb.asserta(f'health({health})')
