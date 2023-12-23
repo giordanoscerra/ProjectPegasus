@@ -221,7 +221,7 @@ class Map:
     def get_message(self):
         return decode(self.state["message"])
     
-    # used to throw away all the carrots
+    # It was used to throw away all the carrots. Now is useless
     def throw_all(self, item:str, direction:str, show_inventory:bool = False):
         gen = (decode(s) for s in self.state["inv_strs"])
         number = 0
