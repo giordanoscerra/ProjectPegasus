@@ -55,19 +55,26 @@ class KBwrapper():
         # c'è un'esplosione di if (ovvero di cose da dire). Non è più chiaro ed 
         # elegante dire la cosa giusta al momento giusto?
 
-    # the idea is that the position of an element should be returned by 
-    # the KB
-    # TODO: deal with multiple items in the map (e.g. two carrots).See also 
-    # comment on the _element_position() function
-    def get_element_position(self, element:str):
-        try:
-            pos_query = list(self._kb.query(f'position({element},_,Row,Col)'))[0]
-            return (pos_query['Row'], pos_query['Col'])
-        except IndexError:
+    # The position of an element should be returned by the KB       
+    def get_element_position_query(self, element:str):
+        pos_query = [(q['Row'], q['Col']) for q in self._kb.query(f'position(_,{element},Row,Col)')]
+        if(pos_query == []):
             raise exceptions.ElemNotFoundException\
                 (f'query for the position of {element} unsuccessful. '
                 'Maybe they are not in the environment?')
+        else:
+            return pos_query
         
+    def get_category_position_query(self, category:str):
+        pos_query = [(q['Row'], q['Col']) for q in self._kb.query(f'position({category},_,Row,Col)')]
+        if(pos_query == []):
+            raise exceptions.ElemNotFoundException\
+                (f'query for the position of any element in the {category} '
+                'category unsuccessful. '
+                'Maybe they are not in the environment?')
+        else:
+            return pos_query
+
     def _get_key(self,value, dictionary):
         for key, values in dictionary.items():
             if value in values:
