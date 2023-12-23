@@ -101,7 +101,7 @@ class Map:
         self._env.render()
     
     #TODO: optimize possibly using a KB to store position: DONE (in a certain sense)
-    # This function is used by agent.look_for_element()
+    # This function is used by agent.look_for_closest()
     def get_element_position(self, element:str) -> List[Tuple[int,int]]:
         positions = []
         for i in range(len(self.state['screen_descriptions'])):

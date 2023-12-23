@@ -9,7 +9,7 @@ knight = Agent()
 
 knight.percept(level)
 
-knight.look_for_element(level, element='pony')
+knight.look_for_closest(level, element='pony')
 try:
     x,y = knight.kb.get_element_position('pony')
     print(f'The KB says that there is a pony in position ({x},{y})')

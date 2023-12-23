@@ -4,6 +4,7 @@ from typing import Callable, Tuple
 from utils.KBwrapper import *
 from utils.map import Map
 from utils.exceptions import *
+from utils.heuristics import *
 from .general import are_aligned, are_close
 
 class Agent():
@@ -19,16 +20,17 @@ class Agent():
             "rideSteed": self.ride_steed
         }
 
-    def look_for_element(self, game_map:Map, element:str='pony', return_coord:bool=False):
+    def look_for_closest(self, game_map:Map, element:str='pony',\
+                          heuristic:Callable=euclidean_distance ,return_coord:bool=False):
         '''Scans the whole map, via the get_element_position method of the
-        Map class, looking for the position of a specific element.
+        Map class, looking for the position of the closest element given as argument. 
         The kb is updated with this info, and the coordinates can be returned
         if one so chooses.        
         '''
 
         # look for specific element, then store position in the KB
         try:
-            x,y = game_map.get_element_position(element)[0]
+            x,y = heuristic(game_map.get_element_position(element),game_map.get_agent_position())
             #self.kb.retract_element_position(element,x,y)
             self.kb.retract_element_position(element)
             self.kb.assert_element_position(element,x,y)
