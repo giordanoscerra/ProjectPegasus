@@ -32,10 +32,10 @@ rideable(X) :- is_steed(X), \+ riding(agent), \+ hallucinating(agent), \+ wounde
 %     Your steed's saddle is cursed.
 slippery :- confused(agent); fumbling(agent); slippery_fingers(agent). % WHAT IF THE SADDLE IS CURSED?????? 
 
-%TODO: it is currently unused
 carrots(0).
 saddles(0).
-action(throw) :- carrots(X), X > 0, is_aligned(AR,AC,SR,SC). % "A" coordinates are the agent's while "S" coordinates are the steed's
+tameness(steed, 1). % tameness is 1 at the beginning of the game
+action_count(feed, 0).
 
 max_tameness(20).
 
@@ -46,16 +46,14 @@ action(pacifySteed) :- hostile(steed), carrots(X), X > 0.
 action(feedSteed) :- carrots(X), X > 0, \+ hostile(steed), tameness(steed, T), max_tameness(MT), T < MT.
 action(rideSteed) :- rideable(steed), \+ hostile(steed), carrots(X), X == 0, \+ position(comestible,carrot,_,_).
 
-
-% We will need to eventually pick the carrot
-action(pick) :- 
-    stepping_on(agent,ObjClass,_),
-    is_pickable(ObjClass). 
+%%% INTERRUPT CONDITIONS
+interrupt(getCarrot) :- carrots(X), X > 0; stepping_on(agent,carrot,_); \+ position(comestible,carrot,_,_); \+ hostile(steed).
+interrupt(getSaddle) :- saddles(X), X > 0; stepping_on(agent,saddle,_); \+ position(applicable,saddle,_,_).
+interrupt(pacifySteed) :- \+ hostile(steed); carrots(X), X == 0. % steed distance further than carrot? Need to differentiate between getting the first carrot and the subsequents
+interrupt(feedSteed) :- carrots(X), X == 0; (tameness(steed, T), max_tameness(MT), T == MT).
+interrupt(rideSteed) :- \+ rideable(steed); hostile(steed); ((carrots(X), X > 0); position(comestible,carrot,_,_), (tameness(steed, T), max_tameness(MT), T < MT)).
 
 % We need to count how many times we fed the steed to calculate its tameness.
-action_count(feed, 0).
-tameness(steed, 1).
-
 increment_action_count(A) :- retract(action_count(A, N)),  % remove the old value. At initialization the we assert action_count(A, 0) for A = feed
                              NewN is N+1, % increment the value
                              assert(action_count(A, NewN)). % assert the new value
@@ -80,21 +78,6 @@ is_aligned(R1,C1,R2,C2) :- R1 == R2; C1 == C2; ((R1 is R2+X;R1 is R2-X), (C1 is 
 is_close(R1,C1,R2,C2) :- R1 == R2, (C1 is C2+1; C1 is C2-1).
 is_close(R1,C1,R2,C2) :- C1 == C2, (R1 is R2+1; R1 is R2-1).
 is_close(R1,C1,R2,C2) :- (R1 is R2+1; R1 is R2-1), (C1 is C2+1; C1 is C2-1).
-
-% compute the direction given the starting point and the target position
-% check if the direction leads to a safe position
-% D = temporary direction - may be unsafe
-% Direction = the definitive direction 
-% in the future we're going to need some more complex algorithm to search a path since rooms will not always be rectangular.
-% suggestion: implement those algorithms in Python 
-next_step(R1,C1,R2,C2, D) :-
-    ( R1 == R2 -> ( C1 > C2 -> D = west; D = east );
-    ( C1 == C2 -> ( R1 > R2 -> D = north; D = south);
-    ( R1 > R2 ->
-        ( C1 > C2 -> D = northwest; D = northeast );
-        ( C1 > C2 -> D = southwest; D = southeast )
-    ))).
-    % safe_direction(R1, C1, D,Direction).
 
 % check if the selected direction is safe
 safe_direction(R, C, D,Direction) :- resulting_position(R, C, NewR, NewC, D),

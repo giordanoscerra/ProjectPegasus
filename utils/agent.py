@@ -21,6 +21,7 @@ class Agent():
             "feedSteed": self.feed_steed,
             "rideSteed": self.ride_steed
         }
+        self.current_subtask = None
 
     def look_for_closest(self, game_map:Map, element:str='pony',\
                           heuristic:Callable=euclidean_distance ,return_coord:bool=False):
@@ -97,12 +98,11 @@ class Agent():
         self.kb.update_health(self.attributes["health"])
 
     def act(self):
-        action = self.kb.query_for_action() # returns subtask to execute
-        args = self.getArgs(action) # returns arguments for the subtask
-        subtask = self.actions.get(action, lambda: None) # calls the function executing the subtask
-        if subtask is None: raise Exception(f'Action {action} is not defined')
+        self.current_subtask = self.kb.query_for_action() # returns subtask to execute
+        args = self.getArgs(self.current_subtask) # returns arguments for the subtask
+        subtask = self.actions.get(self.current_subtask, lambda: None) # calls the function executing the subtask
+        if subtask is None: raise Exception(f'Action {self.current_subtask} is not defined')
         subtask(*args) # execute the subtask
-
 
     def chance_of_mount_succeeding(self, steed):
         if steed not in self.kb.get_rideable_steeds() or self.kb.is_slippery():
@@ -113,6 +113,9 @@ class Agent():
         # The tameness of new pets depends on their species, not on the method of taming. They usually start with 5. +1 everytime they eat
         steed_tameness = self.kb.get_steed_tameness(steed) # did not yet test this
         return 100/(5 * (exp_lvl + steed_tameness))
+    
+    def check_interrupt(self, current_subtask: str):
+        return self.kb.query_for_interrupt(current_subtask) if current_subtask else False
 
     def kbQuery(self, query:str):
         '''For rapid-test purposes only.

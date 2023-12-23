@@ -50,6 +50,14 @@ class KBwrapper():
             action = None
         return action
     
+    def query_for_interrupt(self, current_subtask):
+        try:
+            interrupt = bool(list(self._kb.query(f"interrupt({current_subtask})")))
+        except Exception as e:
+            print(e)
+            interrupt = False
+        return interrupt
+    
     #def assert_performed_action(self):
         # Q: quindi devo dire alla KB l'azione che ho fatto?
         # problema: se ogni azione richiede un formato specifico, in questa funzione
