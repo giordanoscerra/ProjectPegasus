@@ -1,6 +1,12 @@
-:- dynamic position/4.
-:- dynamic carrots.
+:- dynamic encumbered/1, wounded_legs/1, hallucinating/1, riding/1, blind/1, telepathic/1, punished/1, trapped/1, wearing/2, rusty/1, corroded/1.
+:- dynamic confused/1, fumbling/1, slippery_fingers/1.
+:- dynamic hostile/1.
 :- dynamic stepping_on/3.
+:- dynamic position/4.
+:- dynamic action_count/2.
+:- dynamic tameness/2.
+:- dynamic carrots/1.
+:- dynamic saddles/1.
 
 % To translate into Prolog:
 % Chance of succeeding a mounting action is: 5 * (exp level + steed tameness)
@@ -15,23 +21,55 @@
 %     You or your steed are trapped.
 %     You are levitating and cannot come down at will.
 %     You are wearing rusty or corroded body armor.
-% 
+rideable(X) :- is_steed(X), \+ riding(agent), \+ hallucinating(agent), \+ wounded_legs(agent), \+ encumbered(agent), \+ (blind(agent), \+ telepathic(agent)), \+ punished(agent)
+    , \+ trapped(agent), \+ (wearing(agent, Y), (rusty(Y); corroded(Y))). % I do not intend to implement everything but we can do what we can in the time we have, as a flex
+
 % You will always fail and slip if any of the following apply:[3]
 % 
 %     You are confused.
 %     You are fumbling.
 %     You have slippery fingers.
 %     Your steed's saddle is cursed.
+slippery :- confused(agent); fumbling(agent); slippery_fingers(agent). % WHAT IF THE SADDLE IS CURSED?????? 
 
-0 :- carrots.
-
-action(throw) :- carrots > 0.
 %TODO: it is currently unused
+carrots(0).
+saddles(0).
+action(throw) :- carrots(X), X > 0, is_aligned(AR,AC,SR,SC). % "A" coordinates are the agent's while "S" coordinates are the steed's
+
+max_tameness(20).
+
+%%% GENERAL SUBTASKS feel free to add other conditions or comments to suggest them
+action(getCarrot) :- carrots(X), X == 0, \+ stepping_on(agent,carrot,_), position(comestible,carrot,_,_); hostile(steed).
+action(getSaddle) :- saddles(X), X == 0, \+ stepping_on(agent,saddle,_), position(applicable,saddle,_,_).
+action(pacifySteed) :- hostile(steed), carrots(X), X > 0.
+action(feedSteed) :- carrots(X), X > 0, \+ hostile(steed), tameness(steed, T), max_tameness(MT), T < MT.
+action(rideSteed) :- rideable(steed), \+ hostile(steed), carrots(X), X == 0, \+ position(comestible,carrot,_,_).
+
 
 % We will need to eventually pick the carrot
 action(pick) :- 
     stepping_on(agent,ObjClass,_),
     is_pickable(ObjClass). 
+
+% We need to count how many times we fed the steed to calculate its tameness.
+action_count(feed, 0).
+tameness(steed, 1).
+
+increment_action_count(A) :- retract(action_count(A, N)),  % remove the old value. At initialization the we assert action_count(A, 0) for A = feed
+                             NewN is N+1, % increment the value
+                             assert(action_count(A, NewN)). % assert the new value
+
+increment_tameness(X) :- retract(tameness(X, N)),  % remove the old value. At initialization we assert tameness(X, 1) for X = steed
+                         NewN is N+1, % increment the value
+                         assert(tameness(X, NewN)). % assert the new value
+
+% Decreased when using the ride action
+decrease_tameness(X) :- retract(tameness(X, N)),  % remove the old value.
+                         NewN is N-1, % increment the value
+                         assert(tameness(X, NewN)). % assert the new value
+
+feed(X) :- increment_action_count(feed), increment_tameness(X).
 
 % We need to check this if we are to throw carrots at a horse.
 is_aligned(R1,C1,R2,C2) :- R1 == R2; C1 == C2; ((R1 is R2+X;R1 is R2-X), (C1 is C2+X;C1 is C2-X)).
@@ -115,3 +153,8 @@ safe_position(R,C) :- \+ unsafe_position(R,C).
 
 % we need to pick a carrot if we are stepping on it. 
 is_pickable(carrots).
+
+% what is a steed?
+is_steed(pony).
+is_steed(horse).
+is_steed(warhorse).
