@@ -22,6 +22,7 @@ class Map:
         lvl = LevelGenerator(w=20,h=20)
         self.rewards = []
         reward_manager_defined = define_reward()
+        self.imageID = 0
         lvl.set_start_pos((5,2))
         if(pony):
             lvl.add_monster(name='pony', symbol="u", place=(19,19))
@@ -102,6 +103,9 @@ class Map:
             self._env.render()
         else:
             image = plt.imshow(self.state['pixel'][15:, 480:800])
+            #save image
+            plt.savefig(f'./images/img{self.imageID}.png')
+            self.imageID += 1
             display.display(plt.gcf())
             print(bytes(self.state['message']).decode('utf-8').rstrip('\x00'))
             display.clear_output(wait=True)
