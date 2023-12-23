@@ -74,41 +74,23 @@ class KBwrapper():
                 return key
         return None   
     
-    # TODO: deal with the second argument in the assertion.
-    # The problem is that we might want to distinguish
-    # certain elements among themselves by changing their "names"
-    # (2nd argument in the position(_,_,_,_) assertion), in order to store 
-    # their position independently (e.g carrot1 is in a certain position,
-    # carrot2 is somewhere else). But we also want to use their names for 
-    # inference!
-    # Maybe this is not a real problem, as we'll have different predicates of 
-    # the form position(), and what makes them different is the coordinates 
-    # (arguments 3 and 4). 
-    # I think that we should consider adding a further parameter to the 
-    # position statement, to keep track of the indexing of the different 
-    # elements.     
     def retract_element_position(self, element:str, *args):
         if(len(args) == 0):
             x, y = '_','_'
         else:
             x, y = args
-            
 
         category = self._get_key(element, self._categories)
         if category is None:
-            # IDEA: if the element has no category, maybe it is a 
-            # category on its own (or at least dealt as such by the KB)
-            self._kb.retractall(f'position({element},_,{x},{y})')
+            self._kb.retractall(f'position({element},{element},{x},{y})')
         else:
             self._kb.retractall(f'position({category},{element},{x},{y})')
 
     def assert_element_position(self,element:str, x:int, y:int):
         category = self._get_key(element, self._categories)
         if category is None:
-            self._kb.asserta(f'position({element},_,{x},{y})')
+            self._kb.asserta(f'position({element},{element},{x},{y})')
         else:
-            # problem: keep the distinction between (e.g.) the carrot 
-            # and the specific carrot. This has to be dealt with.
             self._kb.asserta(f'position({category},{element},{x},{y})')
 
     def get_rideable_steeds(self):
