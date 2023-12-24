@@ -14,4 +14,12 @@ from typing import List, Tuple
 
 
 def euclidean_distance(positions:List[Tuple], toCompare:Tuple[int,int]) -> Tuple[int,int]:
-    return min(positions, key=lambda x: np.linalg.norm([np.array(x)-np.array(toCompare)]))
+    '''Compute the closest point to toCompare among those in the positions list
+    INPUT: positions, a list of points. toCompare, the origin (a point aka a tuple)
+    OUTPUT: a tuple (closest_p, closest_p_dist) where closest_p is the point 
+    in positions closest to toCompare, and closest_p_dist is its distance
+    '''
+    
+    argmin = min(positions, key=lambda x: np.linalg.norm([np.array(x)-np.array(toCompare)]))
+    min_dist = np.linalg.norm(np.array(argmin) - np.array(toCompare))
+    return argmin, min_dist

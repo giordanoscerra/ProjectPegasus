@@ -27,7 +27,7 @@ def a_star(game_map: np.ndarray, start: Tuple[int, int], target: Tuple[int, int]
         close_list.append(current)
 
         if current == target:
-            print("Target found!")
+            #print("Target found!")
             path = build_path(parent, target)
             return path
 
@@ -50,5 +50,6 @@ def a_star(game_map: np.ndarray, start: Tuple[int, int], target: Tuple[int, int]
             open_list.put(neighbor_entry)
             support_list[neighbor] = neighbor_g
 
-    print("Target node not found!")
+    #TODO: raise an exception if the target is not found? 
+    #print("Target node not found!")
     return None

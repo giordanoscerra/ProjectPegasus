@@ -1,12 +1,12 @@
 import numpy as np
 import time
-from typing import Callable, Tuple
+from typing import List, Callable, Tuple
 from utils.KBwrapper import *
 from utils.map import Map
 from utils import exceptions
 # from utils.exceptions import *
 from utils.heuristics import *
-from .general import are_aligned, are_close
+from .general import actions_from_path, are_aligned, are_close
 from .algorithms import a_star
 
 class Agent():
@@ -22,32 +22,28 @@ class Agent():
             "rideSteed": self.ride_steed
         }
 
-    def look_for_closest(self, game_map:Map, element:str='pony',\
-                          heuristic:Callable=euclidean_distance ,return_coord:bool=False):
-        '''Scans the whole map, via the get_element_position method of the
-        Map class, looking for the position of the closest element given as argument. 
-        The kb is updated with this info, and the coordinates can be returned
-        if one so chooses.        
+
+    def closest_element_position(self, element:str, heuristic:Callable=euclidean_distance) -> Tuple[int,int]:
+        '''Queries the kb for the position of all elements in the map, and
+        returns the coordinates of the closer to the agent (according to a 
+        given heuristic (default one is the euclidean_distance)).
+        If no elements are found, raises a ElemNotFoundException
         '''
-
-        # look for specific element, then store position in the KB
-        try:
-            x,y = heuristic(game_map.get_element_position(element),game_map.get_agent_position())
-            #self.kb.retract_element_position(element,x,y)
-            self.kb.retract_element_position(element)
-            self.kb.assert_element_position(element,x,y)
-            if return_coord:
-                return x,y
-        except exceptions.ElemNotFoundException:
-            # Q: if the element is not perceived, does it mean that isn't there?
-            # (e.g. a local perception for an element that isn't in viewing range
-            # because for example the room is dark, or is in another room)
-            self.kb.retract_element_position(element)
-        except Exception as e:
-            print(f"An error occurred: {e}")
+        #TODO: version for category. Maybe it should be changed in the
+        # KBwrapper though
+        #
+        # Doesn't make sense that this function catches the NotFound exception
+        #try:
+        agent_pos = self.kb.get_element_position_query(element='agent')
+        elements_pos = self.kb.get_element_position_query(element)
+        return heuristic(elements_pos,agent_pos)[0]
+        #except exceptions.ElemNotFoundException as exc:
+        #    print(f'ElemNotFoundException: {exc}')
+        #except Exception as e:
+        #    print(f'An error occurred: {e}')
 
 
-    def percept(self, game_map:Map, interesting_item_list:list = ['carrot', 'saddle', 'pony', 'Agent']):
+    def percept(self, game_map:Map, interesting_item_list:list = ['carrot', 'saddle', 'pony', 'Agent']) -> None:
         '''removes the position of all the items in interesting_item_list
         from the kb. Then scans the whole map, looking for such elements and
         inserting in the kbthe position of the interesting items that 
@@ -96,6 +92,24 @@ class Agent():
         self.attributes["health"] = game_map.get_agent_health()
         self.kb.update_health(self.attributes["health"])
 
+        self.process_message(message=decode(game_map.state['message']))
+
+    def process_message(self, message:str):
+        if 'You see here' in message:
+            # Remove "You see here" and trailing dot
+            portion = message[message.find('You see here ')+13:message.find('.')]   
+            # Remove article
+            element = ' '.join(portion.split(' ')[1:])  
+            # Maybe it doesn't make much sense to tell the kb that the agent
+            # and an item that will (most probably) immediately be picked up
+            # are in the same position
+            x, y = self.kb.get_element_position_query(element='agent')[0]
+            self.kb.assert_element_position(element.replace(' ',''),x,y) 
+            # Actually assert that the agent is stepping on the element
+            # Q: hopefully the message is processed correctly!
+            self.kb.assert_stepping_on(element)             
+
+
     def act(self):
         action = self.kb.query_for_action() # returns subtask to execute
         args = self.getArgs(action) # returns arguments for the subtask
@@ -133,11 +147,48 @@ class Agent():
     def ride_steed(self, steedPos):
         return "TO BE CONTINUED"
     
-    def get_best_path_to_element(self, game_map: Map, element, heuristic: callable) -> List[Tuple[int, int]]:
-        agent_position = self.kb.get_element_position('agent')
-        element_position = self.kb.get_element_position(element)
+    # TODO: deal with maxDistance and minDistance
+    def _get_best_path_to_target(self, game_map: Map, target,\
+         heuristic:callable = lambda t,s: euclidean_distance([t],s)[1]) -> List[Tuple[int, int]]:
+        '''Returns the best path (as a list of tuples (i.e. coordinates)) from
+        the agent's position to the closer element given as argument.
+        Best path is computed using a* (with a given heuristic)
+        '''
+        agent_pos = self.kb.get_element_position_query('agent')[0]
+        closest_element_pos = self.closest_element_position(element=target)
         game_map_array = game_map.get_map_as_nparray()
-        return a_star(game_map_array, agent_position, element_position, heuristic)
+        return a_star(game_map_array, start=agent_pos,\
+                      target=closest_element_pos, h=heuristic)
+
+    def go_to_closer_element(self,level,element:str='carrot', show_steps=False, delay=0.5):   
+        agent_pos = self.kb.get_element_position_query('agent')[0]
+        path = self._get_best_path_to_target(level, target = element)
+        # translate the path into a sequence of actions to perform
+        actions = actions_from_path(agent_pos, path[1:])
+
+        # follow the path (i.e. actually move) as long as the 
+        # kb gives green light.
+        for move_dir in actions:
+            # TODO: a true query for greenlight
+            try:
+                # Hopefully this is the way to go: at each step the agent
+                # senses the environment, checks if it can proceed by 
+                # querying the kb for a greenlight (otherwise control 
+                # is returned to the action picker I guess (agent.act maybe))
+                # and moves
+                self.percept(level)
+                greenlight_status = self.kb.query_for_greenlight()
+                if greenlight_status:
+                    level.apply_action(actionName = move_dir)
+                    if(show_steps):
+                        time.sleep(delay)
+                        level.render()
+                else:
+                    break
+            except:
+                break
+
+
 
     #TODO: discuss with the team on which algorithm to use
     #   things to consider:
@@ -147,11 +198,13 @@ class Agent():
     # this will take agent in distance that is <= maxDistance and >= minDistance from the object
     # The heuristic should take in the list of positions of an element, the tuple indicating 
     # the position of the agent and return a tuple indicating the position of the element to go to
-    def go_to_element(self, game_map: Map, element, heuristic, show_steps=False, delay = 0.5, maxDistance = 3, minDistance = 1):
+    def go_to_element(self, game_map: Map, element,\
+                        heuristic:callable = euclidean_distance,\
+                        show_steps=False, delay = 0.5, maxDistance = 3, minDistance = 1):
         #if(len(positions := game_map.get_element_position(element)) > 1): element_pos = heuristic(positions,game_map.get_agent_position())
         #else: element_pos = positions[0]
-        agent_pos = game_map.get_agent_position()
-        element_pos = heuristic(game_map.get_element_position(element),agent_pos)
+        agent_pos = self.closest_element_position(element='agent',heuristic=heuristic)
+        element_pos = self.closest_element_position(element=element,heuristic=heuristic)
         #until we are not close to the pony
         while(not are_aligned(element_pos, agent_pos) or not are_close(element_pos, agent_pos, maxOffset=maxDistance)):
             if(not are_close(element_pos, agent_pos, maxOffset=maxDistance)):
@@ -168,7 +221,7 @@ class Agent():
             else:
                 game_map.align_with_pony()
             try:
-                element_pos = heuristic(game_map.get_element_position(element=element),game_map.get_agent_position())
+                element_pos = self.closest_element_position(element=element,heuristic=heuristic)
             except:
                 if(minDistance != 0):
                     raise Exception(f'No {element} is found in this state')
