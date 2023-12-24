@@ -4,7 +4,6 @@ from typing import Callable, Tuple
 from utils.KBwrapper import *
 from utils.map import Map
 from utils import exceptions
-# from utils.exceptions import *
 from utils.heuristics import *
 from .general import decode, are_aligned, are_close
 
@@ -50,8 +49,7 @@ class Agent():
             self.kb.retract_stepping_on(item)
 
         # Q: Consider an approach that uses np.where  
-        # (cfr. get_location, in map.py). Maybe more efficient?   
-        # Q2: check if stepping on, if possible      
+        # (cfr. get_location, in map.py). Maybe more efficient?    
         scr_desc = game_map.state['screen_descriptions']
         for i in range(len(scr_desc)):
             for j in range(len(scr_desc[0])):

@@ -1,5 +1,6 @@
 from utils.map import Map
 from utils.agent import Agent
+from utils import exceptions
 
 level = Map(pony=False)
 knight = Agent()
@@ -17,13 +18,18 @@ for i in range(12):
         print('No carrot')
         break
 
-while(knight.kb.get_element_position_query(element='carrot') != []):
-    knight.percept(level)
-    #go to carrot
-    knight.go_to_element(level,element='carrot',show_steps=True, delay=0.2, maxDistance=0, minDistance=0)
-    #pick up carrot
-    level.apply_action('PICKUP')
-    level.render()
+carrot_exists = True
+while carrot_exists:
+    try:
+        knight.percept(level)
+        knight.kb.get_element_position_query(element='carrot')
+        #go to carrot
+        knight.go_to_element(level,element='carrot',show_steps=True, delay=0.2, maxDistance=0, minDistance=0)
+        #pick up carrot
+        level.apply_action('PICKUP')
+        level.render()
+    except exceptions.ElemNotFoundException:
+        carrot_exists = False
 
 level.apply_action('S')
 level.render()
