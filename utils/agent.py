@@ -29,18 +29,9 @@ class Agent():
         given heuristic (default one is the euclidean_distance)).
         If no elements are found, raises a ElemNotFoundException
         '''
-        #TODO: version for category. Maybe it should be changed in the
-        # KBwrapper though
-        #
-        # Doesn't make sense that this function catches the NotFound exception
-        #try:
         agent_pos = self.kb.get_element_position_query(element='agent')
         elements_pos = self.kb.get_element_position_query(element)
         return heuristic(elements_pos,agent_pos)[0]
-        #except exceptions.ElemNotFoundException as exc:
-        #    print(f'ElemNotFoundException: {exc}')
-        #except Exception as e:
-        #    print(f'An error occurred: {e}')
 
 
     def percept(self, game_map:Map, interesting_item_list:list = ['carrot', 'saddle', 'pony', 'Agent']) -> None:

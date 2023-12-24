@@ -75,7 +75,8 @@ class KBwrapper():
                 'Maybe they are not in the environment?')
         
     def get_element_position_query(self, element:str):
-        pos_query = [(q['Row'], q['Col']) for q in self._kb.query(f'position(_,{element},Row,Col)')]
+        category = self._get_key(element,self._categories) if self._get_key(element,self._categories) else "_"
+        pos_query = [(q['Row'], q['Col']) for q in self._kb.query(f'position({category},{element},Row,Col)')]
         if(pos_query == []):
             raise exceptions.ElemNotFoundException\
                 (f'query for the position of {element} unsuccessful. '
