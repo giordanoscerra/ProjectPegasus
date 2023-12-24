@@ -1,9 +1,11 @@
 import numpy as np
 from queue import PriorityQueue
 from typing import Tuple, List
-from general import build_path, get_valid_moves
+from .general import build_path, get_valid_moves
+from .heuristics import euclidean_distance
 
-def a_star(game_map: np.ndarray, start: Tuple[int, int], target: Tuple[int, int], h: callable) -> List[Tuple[int, int]]:
+def a_star(game_map: np.ndarray, start: Tuple[int, int], target: Tuple[int, int],\
+            h:callable = lambda t,s: euclidean_distance([t],s)[1]) -> List[Tuple[int, int]]:
     # initialize open and close list
     open_list = PriorityQueue()
     close_list = []
