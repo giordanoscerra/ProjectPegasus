@@ -6,7 +6,7 @@ from utils.map import Map
 from utils import exceptions
 # from utils.exceptions import *
 from utils.heuristics import *
-from .general import are_aligned, are_close
+from .general import decode, are_aligned, are_close
 
 class Agent():
     def __init__(self):
@@ -21,30 +21,15 @@ class Agent():
             "rideSteed": self.ride_steed
         }
 
-    def look_for_closest(self, game_map:Map, element:str='pony',\
-                          heuristic:Callable=euclidean_distance ,return_coord:bool=False):
-        '''Scans the whole map, via the get_element_position method of the
-        Map class, looking for the position of the closest element given as argument. 
-        The kb is updated with this info, and the coordinates can be returned
-        if one so chooses.        
-        '''
-
-        # look for specific element, then store position in the KB
+    def closest_element_position(self, element:str, heuristic:Callable=euclidean_distance):
         try:
-            x,y = heuristic(game_map.get_element_position(element),game_map.get_agent_position())
-            #self.kb.retract_element_position(element,x,y)
-            self.kb.retract_element_position(element)
-            self.kb.assert_element_position(element,x,y)
-            if return_coord:
-                return x,y
-        except exceptions.ElemNotFoundException:
-            # Q: if the element is not perceived, does it mean that isn't there?
-            # (e.g. a local perception for an element that isn't in viewing range
-            # because for example the room is dark, or is in another room)
-            self.kb.retract_element_position(element)
+            agent_pos = self.kb.get_element_position_query(element='agent')
+            elements_pos = self.kb.get_element_position_query(element)
+            return heuristic(elements_pos,agent_pos)
+        except exceptions.ElemNotFoundException as exc:
+            print(f'ElemNotFoundException: {exc}')
         except Exception as e:
-            print(f"An error occurred: {e}")
-
+            print(f'An error occurred: {e}')
 
     def percept(self, game_map:Map, interesting_item_list:list = ['carrot', 'saddle', 'pony', 'Agent']):
         '''removes the position of all the items in interesting_item_list
@@ -52,17 +37,6 @@ class Agent():
         inserting in the kbthe position of the interesting items that 
         have been found.      
         '''
-        
-        # IDEA: rimediare all'inefficienza della versione precedente,
-        # (nel frattempo riadattata a uno scan per un elemento specifico nella mappa)
-        # facendo un unico scan della mappa, alla ricerca di elementi interessanti.
-        #
-        # PROS: più efficiente, customizzabile. Dovrebbe essere semplice manipolare il 
-        # "range" della percezione, per fare dei percept più "locali"
-        #
-        # CONS: (nella versione attuale) fa il retract di tutto, e questo potrebbe
-        # non essere ciò che si vuole (ad esempio, si vuole non aggiornare la 
-        # posizione di un qualche elemento specifico. Boh). 
 
         # escamotage per fare il retract della posizione di tutti gli elementi :D
         # self.kb.retract_element_position('_')   
@@ -71,11 +45,13 @@ class Agent():
             # we retract the positions of the elements of interest from the KB,
             # in order to re-add them (update)
             #
-            # TODO: remove specific items (is a problem also in the KBWrapper class)
+            # TODO: remove specific items? (is a problem also in the KBWrapper class)
             self.kb.retract_element_position(item)
+            self.kb.retract_stepping_on(item)
 
         # Q: Consider an approach that uses np.where  
-        # (cfr. get_location, in map.py). Maybe more efficient?         
+        # (cfr. get_location, in map.py). Maybe more efficient?   
+        # Q2: check if stepping on, if possible      
         scr_desc = game_map.state['screen_descriptions']
         for i in range(len(scr_desc)):
             for j in range(len(scr_desc[0])):
@@ -83,9 +59,6 @@ class Agent():
                 if(description != '' and description != 'floor of a room'):
                     for interesting_item in interesting_item_list:
                         if interesting_item in description:
-                            # Q: store the position of different items of the same
-                            # "type" by keeping distinction (see comments in KBwrapper).
-                            # Maybe is not a real issue, maybe it is...
                             self.kb.assert_element_position(interesting_item.lower(),i,j)
         
         # get the agent level
@@ -94,6 +67,23 @@ class Agent():
         # KB, since it might be useful for taking decisions
         self.attributes["health"] = game_map.get_agent_health()
         self.kb.update_health(self.attributes["health"])
+
+        self.process_message(message=decode(game_map.state['message']))
+
+    def process_message(self, message:str):
+        if 'You see here' in message:
+            # Remove "You see here" and trailing dot
+            portion = message[message.find('You see here ')+13:message.find('.')]   
+            # Remove article
+            element = ' '.join(portion.split(' ')[1:])  
+            # Maybe it doesn't make much sense to tell the kb that the agent
+            # and an item that will (most probably) immediately be picked up
+            # are in the same position
+            x, y = self.kb.get_element_position_query(element='agent')[0]
+            self.kb.assert_element_position(element.replace(' ',''),x,y) 
+            # Actually assert that the agent is stepping on the element
+            # Q: hopefully the message is processed correctly!
+            self.kb.assert_stepping_on(element)             
 
     def act(self):
         action = self.kb.query_for_action() # returns subtask to execute
@@ -141,11 +131,12 @@ class Agent():
     # this will take agent in distance that is <= maxDistance and >= minDistance from the object
     # The heuristic should take in the list of positions of an element, the tuple indicating 
     # the position of the agent and return a tuple indicating the position of the element to go to
-    def go_to_element(self, game_map: Map, element, heuristic, show_steps=False, delay = 0.5, maxDistance = 3, minDistance = 1):
+    def go_to_element(self, game_map: Map, element, heuristic:Callable=euclidean_distance,\
+                       show_steps=False, delay = 0.5, maxDistance = 3, minDistance = 1):
         #if(len(positions := game_map.get_element_position(element)) > 1): element_pos = heuristic(positions,game_map.get_agent_position())
         #else: element_pos = positions[0]
-        agent_pos = game_map.get_agent_position()
-        element_pos = heuristic(game_map.get_element_position(element),agent_pos)
+        agent_pos = self.closest_element_position(element='agent',heuristic=heuristic)
+        element_pos = self.closest_element_position(element=element,heuristic=heuristic)
         #until we are not close to the pony
         while(not are_aligned(element_pos, agent_pos) or not are_close(element_pos, agent_pos, maxOffset=maxDistance)):
             if(not are_close(element_pos, agent_pos, maxOffset=maxDistance)):
@@ -162,7 +153,7 @@ class Agent():
             else:
                 game_map.align_with_pony()
             try:
-                element_pos = heuristic(game_map.get_element_position(element=element),game_map.get_agent_position())
+                element_pos = self.closest_element_position(element=element,heuristic=heuristic)
             except:
                 if(minDistance != 0):
                     raise Exception(f'No {element} is found in this state')
