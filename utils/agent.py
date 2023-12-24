@@ -3,7 +3,8 @@ import time
 from typing import Callable, Tuple
 from utils.KBwrapper import *
 from utils.map import Map
-from utils.exceptions import *
+from utils import exceptions
+# from utils.exceptions import *
 from utils.heuristics import *
 from .general import decode, are_aligned, are_close
 
@@ -93,13 +94,13 @@ class Agent():
 
 
     def chance_of_mount_succeeding(self, steed):
-        if steed not in self.kb.get_rideable_steeds():
+        if steed not in self.kb.get_rideable_steeds() or self.kb.is_slippery():
             return 0
         exp_lvl = self.attributes["level"]
         # Steed tameness isn't observable by the agent but can be inferred assuming it started as the lowest possible and
         # increased by a certain amount (in our case 1) everytime the agent feeds the steed. It starts as 1 and can go up to 20.
         # The tameness of new pets depends on their species, not on the method of taming. They usually start with 5. +1 everytime they eat
-        steed_tameness = self._kb.get_steed_tameness(steed) # did not yet test this
+        steed_tameness = self.kb.get_steed_tameness(steed) # did not yet test this
         return 100/(5 * (exp_lvl + steed_tameness))
 
     def kbQuery(self, query:str):

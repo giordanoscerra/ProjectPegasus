@@ -21,7 +21,7 @@
 %     You or your steed are trapped.
 %     You are levitating and cannot come down at will.
 %     You are wearing rusty or corroded body armor.
-rideable(X) :- \+ riding(agent), \+ hallucinating(agent), \+ wounded_legs(agent), \+ encumbered(agent), \+ (blind(agent), \+ telepathic(agent)), \+ punished(agent)
+rideable(X) :- is_steed(X), \+ riding(agent), \+ hallucinating(agent), \+ wounded_legs(agent), \+ encumbered(agent), \+ (blind(agent), \+ telepathic(agent)), \+ punished(agent)
     , \+ trapped(agent), \+ (wearing(agent, Y), (rusty(Y); corroded(Y))). % I do not intend to implement everything but we can do what we can in the time we have, as a flex
 
 % You will always fail and slip if any of the following apply:[3]
@@ -40,11 +40,11 @@ action(throw) :- carrots(X), X > 0, is_aligned(AR,AC,SR,SC). % "A" coordinates a
 max_tameness(20).
 
 %%% GENERAL SUBTASKS feel free to add other conditions or comments to suggest them
-action(getCarrot) :- carrots(X), X == 0, \+ stepping_on(agent,carrot,_), position(carrot,_,_,_); hostile(steed).
-action(getSaddle) :- saddles(X), X == 0, \+ stepping_on(agent,saddle,_), position(saddle,_,_,_).
+action(getCarrot) :- carrots(X), X == 0, \+ stepping_on(agent,carrot,_), position(comestible,carrot,_,_); hostile(steed).
+action(getSaddle) :- saddles(X), X == 0, \+ stepping_on(agent,saddle,_), position(applicable,saddle,_,_).
 action(pacifySteed) :- hostile(steed), carrots(X), X > 0.
-action(feedSteed) :- carrots(X), X > 0, \+ hostile(steed), tameness(steed, T), max_tameness(MT), T =< MT.
-action(rideSteed) :- rideable(steed), \+ hostile(steed), carrots(X), X == 0, \+ position(carrot,_,_,_).
+action(feedSteed) :- carrots(X), X > 0, \+ hostile(steed), tameness(steed, T), max_tameness(MT), T < MT.
+action(rideSteed) :- rideable(steed), \+ hostile(steed), carrots(X), X == 0, \+ position(comestible,carrot,_,_).
 
 
 % We will need to eventually pick the carrot
@@ -153,3 +153,8 @@ safe_position(R,C) :- \+ unsafe_position(R,C).
 
 % we need to pick a carrot if we are stepping on it. 
 is_pickable(carrots).
+
+% what is a steed?
+is_steed(pony).
+is_steed(horse).
+is_steed(warhorse).
