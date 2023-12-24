@@ -40,6 +40,11 @@ class KBwrapper():
         '''
         return list(self._kb.query(sentence))
 
+    # This function is only used by agent._go to closer_element. 
+    # For now is very very stupid. Just to get things going
+    def query_for_greenlight(self):
+        return True
+
     # this is very experimental
     def query_for_action(self):
         try:
@@ -69,6 +74,25 @@ class KBwrapper():
                 (f'query for the position of {element} unsuccessful. '
                 'Maybe they are not in the environment?')
         
+    def get_element_position_query(self, element:str):
+        pos_query = [(q['Row'], q['Col']) for q in self._kb.query(f'position(_,{element},Row,Col)')]
+        if(pos_query == []):
+            raise exceptions.ElemNotFoundException\
+                (f'query for the position of {element} unsuccessful. '
+                'Maybe they are not in the environment?')
+        else:
+            return pos_query
+        
+    def get_category_position_query(self, category:str):
+        pos_query = [(q['Row'], q['Col']) for q in self._kb.query(f'position({category},_,Row,Col)')]
+        if(pos_query == []):
+            raise exceptions.ElemNotFoundException\
+                (f'query for the position of any element in the {category} '
+                'category unsuccessful. '
+                'Maybe they are not in the environment?')
+        else:
+            return pos_query
+        
     def _get_key(self,value, dictionary):
         for key, values in dictionary.items():
             if value in values:
@@ -93,6 +117,22 @@ class KBwrapper():
             self._kb.asserta(f'position({element},{element},{x},{y})')
         else:
             self._kb.asserta(f'position({category},{element},{x},{y})')
+
+    def retract_stepping_on(self, spaced_elem:str):
+        element = spaced_elem.replace(' ','')
+        category = self._get_key(spaced_elem, self._categories)
+        if category is None:
+            self._kb.retractall(f'stepping_on(agent,{element},{element})')
+        else:
+            self._kb.retractall(f'stepping_on(agent,{category},{element})')
+
+    def assert_stepping_on(self, spaced_elem:str):
+        element = spaced_elem.replace(' ','')
+        category = self._get_key(spaced_elem, self._categories)
+        if category is None:
+            self._kb.asserta(f'stepping_on(agent,{element},{element})')
+        else:
+            self._kb.asserta(f'stepping_on(agent,{category},{element})')
 
     def get_rideable_steeds(self):
         return self._kb.query("rideable(X)")
