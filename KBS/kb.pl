@@ -131,6 +131,7 @@ safe_position(R,C) :- \+ unsafe_position(R,C).
 is_pickable(carrots).
 
 % what is a steed?
+is_steed(steed).
 is_steed(pony).
 is_steed(horse).
 is_steed(warhorse).
