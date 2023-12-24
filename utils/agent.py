@@ -5,7 +5,7 @@ from utils.KBwrapper import *
 from utils.map import Map
 from utils.exceptions import *
 from utils.heuristics import *
-from .general import are_aligned, are_close
+from .general import decode, are_aligned, are_close
 
 class Agent():
     def __init__(self):
@@ -46,6 +46,7 @@ class Agent():
             #
             # TODO: remove specific items? (is a problem also in the KBWrapper class)
             self.kb.retract_element_position(item)
+            self.kb.retract_stepping_on(item)
 
         # Q: Consider an approach that uses np.where  
         # (cfr. get_location, in map.py). Maybe more efficient?   
@@ -65,6 +66,23 @@ class Agent():
         # KB, since it might be useful for taking decisions
         self.attributes["health"] = game_map.get_agent_health()
         self.kb.update_health(self.attributes["health"])
+
+        self.process_message(message=decode(game_map.state['message']))
+
+    def process_message(self, message:str):
+        if 'You see here' in message:
+            # Remove "You see here" and trailing dot
+            portion = message[message.find('You see here ')+13:message.find('.')]   
+            # Remove article
+            element = ' '.join(portion.split(' ')[1:])  
+            # Maybe it doesn't make much sense to tell the kb that the agent
+            # and an item that will (most probably) immediately be picked up
+            # are in the same position
+            x, y = self.kb.get_element_position_query(element='agent')[0]
+            self.kb.assert_element_position(element.replace(' ',''),x,y) 
+            # Actually assert that the agent is stepping on the element
+            # Q: hopefully the message is processed correctly!
+            self.kb.assert_stepping_on(element)             
 
     def act(self):
         action = self.kb.query_for_action() # returns subtask to execute

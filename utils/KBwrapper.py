@@ -100,6 +100,22 @@ class KBwrapper():
         else:
             self._kb.asserta(f'position({category},{element},{x},{y})')
 
+    def retract_stepping_on(self, spaced_elem:str):
+        element = spaced_elem.replace(' ','')
+        category = self._get_key(spaced_elem, self._categories)
+        if category is None:
+            self._kb.retractall(f'stepping_on(agent,{element},{element})')
+        else:
+            self._kb.retractall(f'stepping_on(agent,{category},{element})')
+
+    def assert_stepping_on(self, spaced_elem:str):
+        element = spaced_elem.replace(' ','')
+        category = self._get_key(spaced_elem, self._categories)
+        if category is None:
+            self._kb.asserta(f'stepping_on(agent,{element},{element})')
+        else:
+            self._kb.asserta(f'stepping_on(agent,{category},{element})')
+
     def get_rideable_steeds(self):
         return self._kb.query("rideable(X)")
     
