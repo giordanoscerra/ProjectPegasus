@@ -1,3 +1,4 @@
+from utils.heuristics import manhattan_distance, infinity_distance
 from utils.map import Map
 from utils.agent import Agent
 from utils import exceptions
@@ -23,7 +24,9 @@ while carrots_exist:
     try:
         #go to carrot
         knight.percept(level)
-        knight.go_to_closer_element(level,element='carrot',show_steps=True, delay=0.2)
+        knight.go_to_closer_element(level,element='carrot',show_steps=True, 
+                                    delay=0.2,
+                                    heuristic= lambda x,y: manhattan_distance([x],y)[1])
         #knight.go_to_element(level,element='carrot',show_steps=True, delay=0.2, maxDistance=0, minDistance=0)
         
         #pick up carrot

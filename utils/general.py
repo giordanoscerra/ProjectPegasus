@@ -12,6 +12,11 @@ def are_close(A:(int,int), B:(int,int), maxOffset) -> bool:
 def are_aligned(A:(int,int), B:(int,int)) -> bool:
     return A[0] == B[0] or A[1] == B[1] or abs(A[0] - B[0]) == abs(A[1] - B[1])
 
+def is_within(A:(int,int), center:(int,int), extRadius, intRadius):
+    isInside = are_close(A,B=center,maxOffset=extRadius)
+    isOutside = not are_close(A,B=center,maxOffset=intRadius-1)
+    return isInside and isOutside
+
 # from first handson session, used by a* to get the list of moves to do
 def build_path(parent: dict, target: Tuple[int, int]) -> List[Tuple[int, int]]:
     path = []

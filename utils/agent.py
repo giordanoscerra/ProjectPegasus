@@ -23,13 +23,13 @@ class Agent():
         }
 
 
-    def closest_element_position(self, element:str, heuristic:Callable=euclidean_distance) -> Tuple[int,int]:
+    def closest_element_position(self, element:str, heuristic:Callable=manhattan_distance) -> Tuple[int,int]:
         '''Queries the kb for the position of all elements in the map, and
         returns the coordinates of the closer to the agent (according to a 
-        given heuristic (default one is the euclidean_distance)).
+        given heuristic (default one is the manhattan_distance)).
         If no elements are found, raises a ElemNotFoundException
         '''
-        agent_pos = self.kb.get_element_position_query(element='agent')
+        agent_pos = self.kb.get_element_position_query(element='agent')[0]
         elements_pos = self.kb.get_element_position_query(element)
         return heuristic(elements_pos,agent_pos)[0]
 
@@ -139,8 +139,9 @@ class Agent():
         return "TO BE CONTINUED"
     
     # TODO: deal with maxDistance and minDistance
-    def _get_best_path_to_target(self, game_map: Map, target,\
-         heuristic:callable = lambda t,s: euclidean_distance([t],s)[1]) -> List[Tuple[int, int]]:
+    def _get_best_path_to_target(self, game_map: Map, target,
+                                heuristic:callable = lambda t,s: manhattan_distance([t],s)[1],
+                                maxDistance:int=0,minDistance:int=0) -> List[Tuple[int, int]]:
         '''Returns the best path (as a list of tuples (i.e. coordinates)) from
         the agent's position to the closer element given as argument.
         Best path is computed using a* (with a given heuristic)
@@ -148,12 +149,18 @@ class Agent():
         agent_pos = self.kb.get_element_position_query('agent')[0]
         closest_element_pos = self.closest_element_position(element=target)
         game_map_array = game_map.get_map_as_nparray()
-        return a_star(game_map_array, start=agent_pos,\
-                      target=closest_element_pos, h=heuristic)
+        return a_star(game_map_array, start=agent_pos,
+                        target=closest_element_pos, heuristic=heuristic,
+                        maxDistance=maxDistance, minDistance=minDistance)
 
-    def go_to_closer_element(self,level,element:str='carrot', show_steps=False, delay=0.5):   
+    def go_to_closer_element(self,level,element:str='carrot', show_steps=False,
+                             heuristic:callable = lambda t,s: manhattan_distance([t],s)[1],
+                              delay=0.5, maxDistance:int=0, minDistance:int=0):   
+        self.percept(level)
         agent_pos = self.kb.get_element_position_query('agent')[0]
-        path = self._get_best_path_to_target(level, target = element)
+        path = self._get_best_path_to_target(level, target = element,
+                                             heuristic=heuristic,
+                                             maxDistance=maxDistance, minDistance=minDistance)
         # translate the path into a sequence of actions to perform
         actions = actions_from_path(agent_pos, path[1:])
 
@@ -176,6 +183,7 @@ class Agent():
                         level.render()
                 else:
                     break
+            # Who knows, maybe the query_for_greenlight raises an exception...
             except:
                 break
 
@@ -189,8 +197,8 @@ class Agent():
     # this will take agent in distance that is <= maxDistance and >= minDistance from the object
     # The heuristic should take in the list of positions of an element, the tuple indicating 
     # the position of the agent and return a tuple indicating the position of the element to go to
-    def go_to_element(self, game_map: Map, element,\
-                        heuristic:callable = euclidean_distance,\
+    def go_to_element(self, game_map: Map, element,
+                        heuristic:callable = manhattan_distance,
                         show_steps=False, delay = 0.5, maxDistance = 3, minDistance = 1):
         #if(len(positions := game_map.get_element_position(element)) > 1): element_pos = heuristic(positions,game_map.get_agent_position())
         #else: element_pos = positions[0]

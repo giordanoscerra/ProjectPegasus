@@ -1,16 +1,25 @@
 import numpy as np
 from queue import PriorityQueue
 from typing import Tuple, List
-from .general import build_path, get_valid_moves
-from .heuristics import euclidean_distance
+from .general import are_close, build_path, get_valid_moves, is_within
+from .heuristics import manhattan_distance, euclidean_distance
 
-def a_star(game_map: np.ndarray, start: Tuple[int, int], target: Tuple[int, int],\
-            h:callable = lambda t,s: euclidean_distance([t],s)[1]) -> List[Tuple[int, int]]:
+def a_star(game_map: np.ndarray, start: Tuple[int, int], target: Tuple[int, int],
+            heuristic:callable = lambda t,s: manhattan_distance([t],s)[1],
+            maxDistance:int=0, minDistance:int=0) -> List[Tuple[int, int]]:
     # initialize open and close list
     open_list = PriorityQueue()
     close_list = []
     # additional dict which maintains the nodes in the open list for an easier access and check
     support_list = {}
+
+    
+    def h(p,target): 
+        #if are_close(p,target,minDistance):
+        #    return maxDistance 
+        #else:
+        #    return heuristic(p,target)
+        return heuristic(p,target)
 
     starting_state_g = 0
     starting_state_h = h(start,target)
@@ -26,14 +35,16 @@ def a_star(game_map: np.ndarray, start: Tuple[int, int], target: Tuple[int, int]
         # add the node to the close list
         close_list.append(current)
 
-        if current == target:
+        if is_within(current,target,extRadius=maxDistance,intRadius=minDistance):
+        #if current == target:
             #print("Target found!")
-            path = build_path(parent, target)
+            path = build_path(parent, current)
             return path
 
         for neighbor in get_valid_moves(game_map, current):
             # check if neighbor in close list, if so continue
-            if neighbor in close_list: continue
+            if neighbor in close_list: 
+                continue
 
             # compute neighbor g, h and f values
             neighbor_g = current_g + 1
@@ -44,7 +55,8 @@ def a_star(game_map: np.ndarray, start: Tuple[int, int], target: Tuple[int, int]
             # if neighbor in open_list
             if neighbor in support_list.keys():
                 # if neighbor_g is greater or equal to the one in the open list, continue
-                if neighbor_g >= support_list[neighbor]: continue
+                if neighbor_g >= support_list[neighbor]: 
+                    continue
 
             # add neighbor to open list and update support_list
             open_list.put(neighbor_entry)
