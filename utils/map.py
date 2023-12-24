@@ -1,12 +1,10 @@
 import time
-import gym
 import numpy as np
-from minihack import LevelGenerator
-from nle import nethack
+
+from utils.customLevels.generator import createLevel
 
 from typing import Optional
 from .general import decode, are_close, are_aligned
-from .rewards import define_reward
 
 
 DIRECTIONS = ['N','S','E','W','NE','NW','SE','SW']
@@ -15,42 +13,9 @@ DIRECTIONS = ['N','S','E','W','NE','NW','SE','SW']
 # if something does not work it's probably his fault
 # if something does work it's probably thanks to him
 class Map:
-    def __init__(self, pony:bool = True):
-        lvl = LevelGenerator(w=20,h=20)
+    def __init__(self, pony:bool = True, level:int = 0):
+        env = createLevel(level=level, pony=pony)
         self.rewards = []
-        reward_manager_defined = define_reward()
-        if(pony):
-            lvl.add_monster(name='pony', symbol="u", place=None)
-        lvl.add_object(name='carrot', symbol="%", place=(0,0))
-        lvl.add_object(name='carrot', symbol="%", place=(0,0))
-        #lvl.add_object(name='carrot', symbol="%", place=None)
-        lvl.add_object(name='saddle', symbol="(", place=None)
-        env = gym.make(
-            'MiniHack-Skill-Custom-v0',
-            actions = tuple(nethack.CompassDirection) + (
-                nethack.Command.THROW,
-                nethack.Command.RIDE,
-                nethack.Command.EAT,
-                nethack.Command.DROP,
-                nethack.Command.APPLY,
-                nethack.Command.PICKUP,
-                nethack.Command.WHATIS,
-                nethack.Command.INVENTORY,# included to allow use of saddle (i)
-                nethack.Command.RUSH,# included to allow use of apple (g)
-            ),
-            character = "kn-hum-neu-mal",
-            observation_keys = (
-                'glyphs',
-                'chars',
-                'colors', # Some characters have special colors that represent different things.
-                'screen_descriptions',  # descrizioni testuali di ogni cella della mappa 
-                'message',
-                'inv_strs',
-                'inv_letters',
-                'pixel'),
-            des_file = lvl.get_des(),
-            reward_manager = reward_manager_defined,
-        )
         self.state = env.reset()
         env.render()
         self._env = env
