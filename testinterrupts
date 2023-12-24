@@ -1,0 +1,23 @@
+from utils.agent import Agent
+# from utils.map import Map
+
+def test_get_carrot():
+    agent = Agent()
+    agent.kb._kb.asserta("position(comestible,carrot,1,1)")
+    print("any carrots in the map? " + str(bool(agent.kb.queryDirectly('position(comestible,carrot,1,1)'))))
+    print("carrots in inventory: " + str(list(agent.kb.queryDirectly('carrots(X)'))))
+    print("stepping on a carrot? " + str(bool(agent.kb.queryDirectly('stepping_on(agent,carrot,_)'))))
+    agent.kb._kb.asserta("hostile(steed)")
+    print("is the steed hostile? " + str(bool(agent.kb.queryDirectly('hostile(steed)'))))
+    # the first action, given the initial state of the kb plus 
+    # position(comestible,carrot,_,_) should be to get the first carrot
+    agent.current_subtask = agent.kb.query_for_action()
+    print("inferred subtask: " + agent.current_subtask)
+    print("Interrupt it? " + str(agent.check_interrupt()))
+    agent.kb._kb.retractall("position(comestible,carrot,_,_)")
+    print("all the carrots vanished!")
+    print("Interrupt it? " + str(agent.check_interrupt()))
+
+# print_dynamic_predicates()
+
+test_get_carrot()

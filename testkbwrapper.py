@@ -9,7 +9,10 @@ def test_query_for_no_action():
     action = kb.query_for_action()
     assert action is None
 
-# need to test if query_for_action() returns the correct action given the KB and the necessary asserts for the action
+def print_dynamic_predicates():
+    kb = KBwrapper()
+    all_predicates = list(kb.queryDirectly("predicate_property(P, dynamic)"))
+    print(all_predicates)
 
 test_init()
 test_query_for_no_action()

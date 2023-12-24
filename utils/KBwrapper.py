@@ -22,16 +22,7 @@ class KBwrapper():
 
     def __init__(self):
         self._kb = Prolog()
-        # for now, I consult the KB from the hands_on2
-        # 
-        # Moreover, I don't really like this, but I don't have a 
-        # good way to get the path of kb_handson2.pl relative to the
-        # path of the script in current execution
-        # current_dir = os.path.dirname(os.path.abspath(sys.argv[0]))
-        # kb_path = os.path.join(current_dir, 'KBS/kb_handson2.pl')
-        # self._kb.consult(kb_path)
-
-        self._kb.consult('KBS/kb_handson2.pl')
+        self._kb.consult('KBS/kb.pl')
 
     def queryDirectly(self, sentence:str):
         '''For rapid-test purposes only.
@@ -50,7 +41,7 @@ class KBwrapper():
             action = None
         return action
     
-    def query_for_interrupt(self, current_subtask):
+    def query_for_interrupt(self, current_subtask: str) -> bool:
         try:
             interrupt = bool(list(self._kb.query(f"interrupt({current_subtask})")))
         except Exception as e:

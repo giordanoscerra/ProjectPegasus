@@ -30,17 +30,10 @@ rideable(X) :- is_steed(X), \+ riding(agent), \+ hallucinating(agent), \+ wounde
 %     You are fumbling.
 %     You have slippery fingers.
 %     Your steed's saddle is cursed.
-slippery :- confused(agent); fumbling(agent); slippery_fingers(agent). % WHAT IF THE SADDLE IS CURSED?????? 
-
-carrots(0).
-saddles(0).
-tameness(steed, 1). % tameness is 1 at the beginning of the game
-action_count(feed, 0).
-
-max_tameness(20).
+slippery :- confused(agent); fumbling(agent); slippery_fingers(agent). % WHAT IF THE SADDLE IS CURSED?????? ui689
 
 %%% GENERAL SUBTASKS feel free to add other conditions or comments to suggest them
-action(getCarrot) :- carrots(X), X == 0, \+ stepping_on(agent,carrot,_), position(comestible,carrot,_,_); hostile(steed).
+action(getCarrot) :- carrots(X), X == 0, \+ stepping_on(agent,carrot,_), position(comestible,carrot,_,_), hostile(steed).
 action(getSaddle) :- saddles(X), X == 0, \+ stepping_on(agent,saddle,_), position(applicable,saddle,_,_).
 action(pacifySteed) :- hostile(steed), carrots(X), X > 0.
 action(feedSteed) :- carrots(X), X > 0, \+ hostile(steed), tameness(steed, T), max_tameness(MT), T < MT.
@@ -141,3 +134,8 @@ is_pickable(carrots).
 is_steed(pony).
 is_steed(horse).
 is_steed(warhorse).
+carrots(0).
+saddles(0).
+tameness(steed, 1). % tameness is 1 at the beginning of the game
+action_count(feed, 0).
+max_tameness(20).

@@ -114,8 +114,8 @@ class Agent():
         steed_tameness = self.kb.get_steed_tameness(steed) # did not yet test this
         return 100/(5 * (exp_lvl + steed_tameness))
     
-    def check_interrupt(self, current_subtask: str):
-        return self.kb.query_for_interrupt(current_subtask) if current_subtask else False
+    def check_interrupt(self):
+        return self.kb.query_for_interrupt(self.current_subtask) if self.current_subtask else False
 
     def kbQuery(self, query:str):
         '''For rapid-test purposes only.
