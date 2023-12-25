@@ -114,7 +114,9 @@ class Agent():
         '''
         return self.kb.queryDirectly(query)
     
-    def get_carrot(self, carrotPos):
+    def get_carrot(self, level: Map, heuristic: callable = lambda t,s: euclidean_distance([t],s)[1]):
+        # carrot_position = heuristic(self.kb.get_element_position_query("carrot"), self.kb.get_element_position_query("agent"))
+        self.go_to_closer_element(level, element='carrot', heuristic=heuristic, show_steps=True, delay=0.5, maxDistance=3, minDistance=1)
         return "TO BE CONTINUED"
     
     def get_saddle(self, saddlePos):
