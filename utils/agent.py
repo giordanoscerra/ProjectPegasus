@@ -154,7 +154,7 @@ class Agent():
                         target=closest_element_pos, heuristic=heuristic,
                         maxDistance=maxDistance, minDistance=minDistance)
 
-    def go_to_closer_element(self,level,element:str='carrot', show_steps=False,
+    def go_to_closer_element(self,level:Map,element:str='carrot', show_steps=False,
                              heuristic:callable = lambda t,s: manhattan_distance([t],s)[1],
                               delay=0.5, maxDistance:int=0, minDistance:int=0):   
         self.percept(level)
