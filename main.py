@@ -2,6 +2,16 @@ from utils.map import Map
 
 level = Map()
 
+#print pony direction
+print(level.get_pony_direction())
+#print carrots direction
+print(level.get_target_direction('carrot'))
+#print saddle direction
+print(level.get_target_direction('saddle'))
+import time
+level.render()
+time.sleep(100)
+
 #go to saddle
 level.go_to_element(element='saddle',show_steps=True, maxDistance=0, minDistance=0)
 level.render()
@@ -11,11 +21,11 @@ level.apply_action('PICKUP')
 level.render()
 
 #go to pony and throw carrots
-for i in range(3):
+for i in range(9):
     level.go_to_element(element='pony',show_steps=True)
     throw_direction = level.get_pony_direction()
     level.apply_action('THROW', what='carrot', where=throw_direction)
-    level.render(delay=3)
+    level.render(delay=1)
 
 #saddle pony
 level.go_to_element(element='pony',show_steps=True, maxDistance=1)
