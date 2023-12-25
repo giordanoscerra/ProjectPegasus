@@ -22,7 +22,6 @@ class Agent():
             "rideSteed": self.ride_steed
         }
 
-
     def closest_element_position(self, element:str, distance:Callable=infinity_distance) -> Tuple[int,int]:
         '''Queries the kb for the position of all elements in the map, and
         returns the coordinates of the closer to the agent (according to a 
@@ -108,7 +107,6 @@ class Agent():
         if subtask is None: raise Exception(f'Action {action} is not defined')
         subtask(*args) # execute the subtask
 
-
     def chance_of_mount_succeeding(self, steed):
         if steed not in self.kb.get_rideable_steeds() or self.kb.is_slippery():
             return 0
@@ -118,6 +116,9 @@ class Agent():
         # The tameness of new pets depends on their species, not on the method of taming. They usually start with 5. +1 everytime they eat
         steed_tameness = self.kb.get_steed_tameness(steed) # did not yet test this
         return 100/(5 * (exp_lvl + steed_tameness))
+    
+    def check_interrupt(self, current_subtask: str):
+        return self.kb.query_for_interrupt(current_subtask) if current_subtask else False
 
     def kbQuery(self, query:str):
         '''For rapid-test purposes only.
