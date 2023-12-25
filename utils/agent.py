@@ -6,6 +6,7 @@ from utils.map import Map
 from utils import exceptions
 from utils.heuristics import *
 from .general import decode, are_aligned, are_close
+from .algorithms import a_star
 
 class Agent():
     def __init__(self):
@@ -19,6 +20,7 @@ class Agent():
             "feedSteed": self.feed_steed,
             "rideSteed": self.ride_steed
         }
+        self.current_subtask = None
 
     def closest_element_position(self, element:str, heuristic:Callable=euclidean_distance):
         try:
@@ -84,12 +86,11 @@ class Agent():
             self.kb.assert_stepping_on(element)             
 
     def act(self):
-        action = self.kb.query_for_action() # returns subtask to execute
-        args = self.getArgs(action) # returns arguments for the subtask
-        subtask = self.actions.get(action, lambda: None) # calls the function executing the subtask
-        if subtask is None: raise Exception(f'Action {action} is not defined')
+        self.current_subtask = self.kb.query_for_action() # returns subtask to execute
+        args = self.getArgs(self.current_subtask) # returns arguments for the subtask
+        subtask = self.actions.get(self.current_subtask, lambda: None) # calls the function executing the subtask
+        if subtask is None: raise Exception(f'Action {self.current_subtask} is not defined')
         subtask(*args) # execute the subtask
-
 
     def chance_of_mount_succeeding(self, steed):
         if steed not in self.kb.get_rideable_steeds() or self.kb.is_slippery():
@@ -100,6 +101,9 @@ class Agent():
         # The tameness of new pets depends on their species, not on the method of taming. They usually start with 5. +1 everytime they eat
         steed_tameness = self.kb.get_steed_tameness(steed) # did not yet test this
         return 100/(5 * (exp_lvl + steed_tameness))
+    
+    def check_interrupt(self):
+        return self.kb.query_for_interrupt(self.current_subtask) if self.current_subtask else False
 
     def kbQuery(self, query:str):
         '''For rapid-test purposes only.
@@ -119,7 +123,12 @@ class Agent():
         return "TO BE CONTINUED"
     def ride_steed(self, steedPos):
         return "TO BE CONTINUED"
-        
+    
+    def get_best_path_to_element(self, game_map: Map, element, heuristic: callable) -> List[Tuple[int, int]]:
+        agent_position = self.kb.get_element_position('agent')
+        element_position = self.kb.get_element_position(element)
+        game_map_array = game_map.get_map_as_nparray()
+        return a_star(game_map_array, agent_position, element_position, heuristic)
 
     #TODO: discuss with the team on which algorithm to use
     #   things to consider:

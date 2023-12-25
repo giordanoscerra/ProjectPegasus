@@ -116,21 +116,29 @@ class Map:
     # Instances of get_element_position()    
     def get_agent_position(self) -> (int,int):
         return list(self.get_element_position('Agent'))[0]
-    def get_pony_position(self) -> (int,int):
-        return list(self.get_element_position('pony'))[0]
-    def get_saddle_position(self) -> List[Tuple[int,int]]:
-        return self.get_element_position('saddle')
-    def get_carrot_position(self) -> List[Tuple[int,int]]:
-        return self.get_element_position('carrot')
-    def get_rewards(self) -> [int]:
-        return self.rewards
     
     def get_agent_level(self) -> int:
         return self.state['blstats'][18] # https://arxiv.org/pdf/2006.13760.pdf lmao
+    
     def get_agent_health(self) -> int:
         current_health = self.state['blstats'][10]
         max_health = self.state['blstats'][11]
         return int(current_health/max_health*100)
+
+    def get_pony_position(self) -> (int,int):
+        return list(self.get_element_position('pony'))[0]
+    
+    def get_saddle_position(self) -> List[Tuple[int,int]]:
+        return self.get_element_position('saddle')
+    
+    def get_carrot_position(self) -> List[Tuple[int,int]]:
+        return self.get_element_position('carrot')
+    
+    def get_rewards(self) -> [int]:
+        return self.rewards
+
+    def get_map_as_nparray(self) -> np.ndarray:
+        return self.state['chars']
     
     # just an utility to check position during test
     def print_every_position(self):
