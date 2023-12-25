@@ -23,15 +23,15 @@ class Agent():
         }
 
 
-    def closest_element_position(self, element:str, heuristic:Callable=manhattan_distance) -> Tuple[int,int]:
+    def closest_element_position(self, element:str, distance:Callable=infinity_distance) -> Tuple[int,int]:
         '''Queries the kb for the position of all elements in the map, and
         returns the coordinates of the closer to the agent (according to a 
-        given heuristic (default one is the manhattan_distance)).
+        given distance (default one is the euclidean_distance)).
         If no elements are found, raises a ElemNotFoundException
         '''
         agent_pos = self.kb.get_element_position_query(element='agent')[0]
         elements_pos = self.kb.get_element_position_query(element)
-        return heuristic(elements_pos,agent_pos)[0]
+        return distance(elements_pos,agent_pos)[0]
 
 
     def percept(self, game_map:Map, interesting_item_list:list = ['carrot', 'saddle', 'pony', 'Agent']) -> None:

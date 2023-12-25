@@ -13,13 +13,15 @@ def a_star(game_map: np.ndarray, start: Tuple[int, int], target: Tuple[int, int]
     # additional dict which maintains the nodes in the open list for an easier access and check
     support_list = {}
 
-    
+    # points that are within minDistance from target are as "expensive" as 
+    # those that are at maxDistance. This is to make sure that the agent 
+    # moves away from them, if it starts closer than minDistance 
     def h(p,target): 
-        #if are_close(p,target,minDistance):
-        #    return maxDistance 
-        #else:
-        #    return heuristic(p,target)
-        return heuristic(p,target)
+        if are_close(p,target,minDistance):
+            return maxDistance 
+        else:
+            return heuristic(p,target)
+        #return heuristic(p,target)
 
     starting_state_g = 0
     starting_state_h = h(start,target)
