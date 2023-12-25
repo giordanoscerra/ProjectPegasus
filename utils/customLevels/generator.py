@@ -82,4 +82,21 @@ def createLevel(level:int = 0, pony:bool = True):
         des_file = lvl,
         reward_manager = reward_manager_defined,
     )
-    return env
+    #20 * 20 -> [15:, 480:800]
+    #19 * 11 -> [y:, x1:x2]
+    #28 * 18 -> [y:, 420:840]
+    # 20 -> 480:800 -> 320
+    # 19 -> 480:770 -> 290
+    # 28 -> 420:840 -> 420
+    # circa 16 pixel per cella
+    # it would be better to compute the correct dimension
+    # but if we don't intend to create more level is enough
+    minX = 464
+    maxX = 816
+    if level==1:
+        minX = 480
+        maxX = 770
+    elif level==2:
+        minX = 420
+        maxX = 840
+    return env, (minX,maxX)

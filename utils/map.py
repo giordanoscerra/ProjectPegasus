@@ -17,9 +17,10 @@ DIRECTIONS = ['N','S','E','W','NE','NW','SE','SW']
 # if something does work it's probably thanks to him
 class Map:
     def __init__(self, pony:bool = True, level:int = 0):
-        env = createLevel(level=level, pony=pony)
+        env, (self.minXCG, self.maxXCG) = createLevel(level=level, pony=pony)
         self.rewards = []
         self.state = env.reset()
+        #leftmost_wall = self.state['pixel']
         #env.render()
         self._env = env
 
@@ -65,10 +66,10 @@ class Map:
         if(not graphic):
             self._env.render()
         else:
-            image = plt.imshow(self.state['pixel'][15:, 480:800])
+            image = plt.imshow(self.state['pixel'][15:, self.minXCG:self.maxXCG])
             #save image
-            plt.savefig(f'./images/img{self.imageID}.png')
-            self.imageID += 1
+            #plt.savefig(f'./images/img{self.imageID}.png')
+            #self.imageID += 1
             display.display(plt.gcf())
             print(bytes(self.state['message']).decode('utf-8').rstrip('\x00'))
             display.clear_output(wait=True)
