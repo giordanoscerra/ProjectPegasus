@@ -22,7 +22,16 @@ class KBwrapper():
 
     def __init__(self):
         self._kb = Prolog()
-        self._kb.consult('KBS/kb.pl')
+        # for now, I consult the KB from the hands_on2
+        # 
+        # Moreover, I don't really like this, but I don't have a 
+        # good way to get the path of kb_handson2.pl relative to the
+        # path of the script in current execution
+        # current_dir = os.path.dirname(os.path.abspath(sys.argv[0]))
+        # kb_path = os.path.join(current_dir, 'KBS/kb_handson2.pl')
+        # self._kb.consult(kb_path)
+
+        self._kb.consult('KBS/kb_handson2.pl')
 
     def queryDirectly(self, sentence:str):
         '''For rapid-test purposes only.
@@ -30,6 +39,11 @@ class KBwrapper():
         The query method is applied directly to sentence.
         '''
         return list(self._kb.query(sentence))
+
+    # This function is only used by agent._go to closer_element. 
+    # For now is very very stupid. Just to get things going
+    def query_for_greenlight(self):
+        return True
 
     # this is very experimental
     def query_for_action(self):
@@ -41,23 +55,28 @@ class KBwrapper():
             action = None
         return action
     
-    def query_for_interrupt(self, current_subtask: str) -> bool:
-        try:
-            interrupt = bool(list(self._kb.query(f"interrupt({current_subtask})")))
-        except Exception as e:
-            print(e)
-            interrupt = False
-        return interrupt
-    
     #def assert_performed_action(self):
         # Q: quindi devo dire alla KB l'azione che ho fatto?
         # problema: se ogni azione richiede un formato specifico, in questa funzione
         # c'è un'esplosione di if (ovvero di cose da dire). Non è più chiaro ed 
         # elegante dire la cosa giusta al momento giusto?
 
-    # The position of an element should be returned by the KB       
+    # the idea is that the position of an element should be returned by 
+    # the KB
+    # TODO: deal with multiple items in the map (e.g. two carrots).See also 
+    # comment on the _element_position() function
+    def get_element_position(self, element:str):
+        try:
+            pos_query = list(self._kb.query(f'position({element},_,Row,Col)'))[0]
+            return (pos_query['Row'], pos_query['Col'])
+        except IndexError:
+            raise exceptions.ElemNotFoundException\
+                (f'query for the position of {element} unsuccessful. '
+                'Maybe they are not in the environment?')
+        
     def get_element_position_query(self, element:str):
-        pos_query = [(q['Row'], q['Col']) for q in self._kb.query(f'position(_,{element},Row,Col)')]
+        category = self._get_key(element,self._categories) if self._get_key(element,self._categories) else "_"
+        pos_query = [(q['Row'], q['Col']) for q in self._kb.query(f'position({category},{element},Row,Col)')]
         if(pos_query == []):
             raise exceptions.ElemNotFoundException\
                 (f'query for the position of {element} unsuccessful. '
@@ -74,7 +93,7 @@ class KBwrapper():
                 'Maybe they are not in the environment?')
         else:
             return pos_query
-
+        
     def _get_key(self,value, dictionary):
         for key, values in dictionary.items():
             if value in values:

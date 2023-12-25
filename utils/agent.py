@@ -1,11 +1,12 @@
 import numpy as np
 import time
-from typing import Callable, Tuple
+from typing import List, Callable, Tuple
 from utils.KBwrapper import *
 from utils.map import Map
 from utils import exceptions
+# from utils.exceptions import *
 from utils.heuristics import *
-from .general import decode, are_aligned, are_close
+from .general import actions_from_path, are_aligned, are_close
 from .algorithms import a_star
 
 class Agent():
@@ -20,24 +21,36 @@ class Agent():
             "feedSteed": self.feed_steed,
             "rideSteed": self.ride_steed
         }
-        self.current_subtask = None
 
-    def closest_element_position(self, element:str, heuristic:Callable=euclidean_distance):
-        try:
-            agent_pos = self.kb.get_element_position_query(element='agent')
-            elements_pos = self.kb.get_element_position_query(element)
-            return heuristic(elements_pos,agent_pos)
-        except exceptions.ElemNotFoundException as exc:
-            print(f'ElemNotFoundException: {exc}')
-        except Exception as e:
-            print(f'An error occurred: {e}')
 
-    def percept(self, game_map:Map, interesting_item_list:list = ['carrot', 'saddle', 'pony', 'Agent']):
+    def closest_element_position(self, element:str, distance:Callable=infinity_distance) -> Tuple[int,int]:
+        '''Queries the kb for the position of all elements in the map, and
+        returns the coordinates of the closer to the agent (according to a 
+        given distance (default one is the euclidean_distance)).
+        If no elements are found, raises a ElemNotFoundException
+        '''
+        agent_pos = self.kb.get_element_position_query(element='agent')[0]
+        elements_pos = self.kb.get_element_position_query(element)
+        return distance(elements_pos,agent_pos)[0]
+
+
+    def percept(self, game_map:Map, interesting_item_list:list = ['carrot', 'saddle', 'pony', 'Agent']) -> None:
         '''removes the position of all the items in interesting_item_list
         from the kb. Then scans the whole map, looking for such elements and
         inserting in the kbthe position of the interesting items that 
         have been found.      
         '''
+        
+        # IDEA: rimediare all'inefficienza della versione precedente,
+        # (nel frattempo riadattata a uno scan per un elemento specifico nella mappa)
+        # facendo un unico scan della mappa, alla ricerca di elementi interessanti.
+        #
+        # PROS: più efficiente, customizzabile. Dovrebbe essere semplice manipolare il 
+        # "range" della percezione, per fare dei percept più "locali"
+        #
+        # CONS: (nella versione attuale) fa il retract di tutto, e questo potrebbe
+        # non essere ciò che si vuole (ad esempio, si vuole non aggiornare la 
+        # posizione di un qualche elemento specifico. Boh). 
 
         # escamotage per fare il retract della posizione di tutti gli elementi :D
         # self.kb.retract_element_position('_')   
@@ -46,12 +59,11 @@ class Agent():
             # we retract the positions of the elements of interest from the KB,
             # in order to re-add them (update)
             #
-            # TODO: remove specific items? (is a problem also in the KBWrapper class)
+            # TODO: remove specific items (is a problem also in the KBWrapper class)
             self.kb.retract_element_position(item)
-            self.kb.retract_stepping_on(item)
 
         # Q: Consider an approach that uses np.where  
-        # (cfr. get_location, in map.py). Maybe more efficient?    
+        # (cfr. get_location, in map.py). Maybe more efficient?         
         scr_desc = game_map.state['screen_descriptions']
         for i in range(len(scr_desc)):
             for j in range(len(scr_desc[0])):
@@ -59,6 +71,9 @@ class Agent():
                 if(description != '' and description != 'floor of a room'):
                     for interesting_item in interesting_item_list:
                         if interesting_item in description:
+                            # Q: store the position of different items of the same
+                            # "type" by keeping distinction (see comments in KBwrapper).
+                            # Maybe is not a real issue, maybe it is...
                             self.kb.assert_element_position(interesting_item.lower(),i,j)
         
         # get the agent level
@@ -85,12 +100,14 @@ class Agent():
             # Q: hopefully the message is processed correctly!
             self.kb.assert_stepping_on(element)             
 
+
     def act(self):
-        self.current_subtask = self.kb.query_for_action() # returns subtask to execute
-        args = self.getArgs(self.current_subtask) # returns arguments for the subtask
-        subtask = self.actions.get(self.current_subtask, lambda: None) # calls the function executing the subtask
-        if subtask is None: raise Exception(f'Action {self.current_subtask} is not defined')
+        action = self.kb.query_for_action() # returns subtask to execute
+        args = self.getArgs(action) # returns arguments for the subtask
+        subtask = self.actions.get(action, lambda: None) # calls the function executing the subtask
+        if subtask is None: raise Exception(f'Action {action} is not defined')
         subtask(*args) # execute the subtask
+
 
     def chance_of_mount_succeeding(self, steed):
         if steed not in self.kb.get_rideable_steeds() or self.kb.is_slippery():
@@ -101,9 +118,6 @@ class Agent():
         # The tameness of new pets depends on their species, not on the method of taming. They usually start with 5. +1 everytime they eat
         steed_tameness = self.kb.get_steed_tameness(steed) # did not yet test this
         return 100/(5 * (exp_lvl + steed_tameness))
-    
-    def check_interrupt(self):
-        return self.kb.query_for_interrupt(self.current_subtask) if self.current_subtask else False
 
     def kbQuery(self, query:str):
         '''For rapid-test purposes only.
@@ -124,11 +138,56 @@ class Agent():
     def ride_steed(self, steedPos):
         return "TO BE CONTINUED"
     
-    def get_best_path_to_element(self, game_map: Map, element, heuristic: callable) -> List[Tuple[int, int]]:
-        agent_position = self.kb.get_element_position('agent')
-        element_position = self.kb.get_element_position(element)
+    # TODO: deal with maxDistance and minDistance
+    def _get_best_path_to_target(self, game_map: Map, target,
+                                heuristic:callable = lambda t,s: manhattan_distance([t],s)[1],
+                                maxDistance:int=0,minDistance:int=0) -> List[Tuple[int, int]]:
+        '''Returns the best path (as a list of tuples (i.e. coordinates)) from
+        the agent's position to the closer element given as argument.
+        Best path is computed using a* (with a given heuristic)
+        '''
+        agent_pos = self.kb.get_element_position_query('agent')[0]
+        closest_element_pos = self.closest_element_position(element=target)
         game_map_array = game_map.get_map_as_nparray()
-        return a_star(game_map_array, agent_position, element_position, heuristic)
+        return a_star(game_map_array, start=agent_pos,
+                        target=closest_element_pos, heuristic=heuristic,
+                        maxDistance=maxDistance, minDistance=minDistance)
+
+    def go_to_closer_element(self,level,element:str='carrot', show_steps=False,
+                             heuristic:callable = lambda t,s: manhattan_distance([t],s)[1],
+                              delay=0.5, maxDistance:int=0, minDistance:int=0):   
+        self.percept(level)
+        agent_pos = self.kb.get_element_position_query('agent')[0]
+        path = self._get_best_path_to_target(level, target = element,
+                                             heuristic=heuristic,
+                                             maxDistance=maxDistance, minDistance=minDistance)
+        # translate the path into a sequence of actions to perform
+        actions = actions_from_path(agent_pos, path[1:])
+
+        # follow the path (i.e. actually move) as long as the 
+        # kb gives green light.
+        for move_dir in actions:
+            # TODO: a true query for greenlight
+            try:
+                # Hopefully this is the way to go: at each step the agent
+                # senses the environment, checks if it can proceed by 
+                # querying the kb for a greenlight (otherwise control 
+                # is returned to the action picker I guess (agent.act maybe))
+                # and moves
+                self.percept(level)
+                greenlight_status = self.kb.query_for_greenlight()
+                if greenlight_status:
+                    level.apply_action(actionName = move_dir)
+                    if(show_steps):
+                        time.sleep(delay)
+                        level.render()
+                else:
+                    break
+            # Who knows, maybe the query_for_greenlight raises an exception...
+            except:
+                break
+
+
 
     #TODO: discuss with the team on which algorithm to use
     #   things to consider:
@@ -138,8 +197,9 @@ class Agent():
     # this will take agent in distance that is <= maxDistance and >= minDistance from the object
     # The heuristic should take in the list of positions of an element, the tuple indicating 
     # the position of the agent and return a tuple indicating the position of the element to go to
-    def go_to_element(self, game_map: Map, element, heuristic:Callable=euclidean_distance,\
-                       show_steps=False, delay = 0.5, maxDistance = 3, minDistance = 1):
+    def go_to_element(self, game_map: Map, element,
+                        heuristic:callable = manhattan_distance,
+                        show_steps=False, delay = 0.5, maxDistance = 3, minDistance = 1):
         #if(len(positions := game_map.get_element_position(element)) > 1): element_pos = heuristic(positions,game_map.get_agent_position())
         #else: element_pos = positions[0]
         agent_pos = self.closest_element_position(element='agent',heuristic=heuristic)

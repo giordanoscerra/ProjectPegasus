@@ -12,6 +12,11 @@ def are_close(A:(int,int), B:(int,int), maxOffset) -> bool:
 def are_aligned(A:(int,int), B:(int,int)) -> bool:
     return A[0] == B[0] or A[1] == B[1] or abs(A[0] - B[0]) == abs(A[1] - B[1])
 
+def is_within(A:(int,int), center:(int,int), extRadius, intRadius):
+    isInside = are_close(A,B=center,maxOffset=extRadius)
+    isOutside = not are_close(A,B=center,maxOffset=intRadius-1)
+    return isInside and isOutside
+
 # from first handson session, used by a* to get the list of moves to do
 def build_path(parent: dict, target: Tuple[int, int]) -> List[Tuple[int, int]]:
     path = []
@@ -56,3 +61,28 @@ def get_valid_moves(game_map: np.ndarray, current_position: Tuple[int, int]) -> 
 def is_wall(position_element: int) -> bool:
     obstacles = "|- "
     return chr(position_element) in obstacles
+
+# From first handson session, used to translate the path returned by a* 
+# (which is a list of tuples (coordinates)) into a sequence of actions to perform
+#
+# OSS: it suffices to get a list of actions. level.perform_action() will take
+# care of retrieving the correct id :)
+def actions_from_path(start: Tuple[int, int], path: List[Tuple[int, int]]) -> List[str]:
+    actions = []
+    x_s, y_s = start
+    for (x, y) in path:
+        move = ''
+        if x_s > x:
+            move += 'N'
+        elif x_s < x:
+            move += 'S'
+        if y_s > y:
+            move += 'W'
+        elif y_s < y:
+            move += 'E'
+
+        actions.append(move)
+        x_s = x
+        y_s = y
+    
+    return actions
