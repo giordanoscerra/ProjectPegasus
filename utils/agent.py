@@ -17,7 +17,9 @@ class Agent():
         self.attributes = {}
         self.actions = {
             "getCarrot": self.get_carrot,
+            "getSaddle": self.get_saddle,
             "pacifySteed": self.pacify_steed,
+            "hoardCarrots": self.hoard_carrots,
             "feedSteed": self.feed_steed,
             "rideSteed": self.ride_steed
         }
@@ -114,12 +116,19 @@ class Agent():
     
     def get_carrot(self, carrotPos):
         return "TO BE CONTINUED"
+    
     def get_saddle(self, saddlePos):
         return "TO BE CONTINUED"
+    
     def pacify_steed(self, steedPos):
         return "TO BE CONTINUED"
+    
+    def hoard_carrots(self):
+        return "TO BE CONTINUED"
+    
     def feed_steed(self, steedPos):
         return "TO BE CONTINUED"
+    
     def ride_steed(self, steedPos):
         return "TO BE CONTINUED"
     
