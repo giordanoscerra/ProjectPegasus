@@ -26,7 +26,7 @@ class Agent():
     def closest_element_position(self, element:str, distance:Callable=infinity_distance) -> Tuple[int,int]:
         '''Queries the kb for the position of all elements in the map, and
         returns the coordinates of the closer to the agent (according to a 
-        given distance (default one is the euclidean_distance)).
+        given distance (default one is the infinity_distance)).
         If no elements are found, raises a ElemNotFoundException
         '''
         agent_pos = self.kb.get_element_position_query(element='agent')[0]
@@ -40,17 +40,6 @@ class Agent():
         inserting in the kbthe position of the interesting items that 
         have been found.      
         '''
-        
-        # IDEA: rimediare all'inefficienza della versione precedente,
-        # (nel frattempo riadattata a uno scan per un elemento specifico nella mappa)
-        # facendo un unico scan della mappa, alla ricerca di elementi interessanti.
-        #
-        # PROS: più efficiente, customizzabile. Dovrebbe essere semplice manipolare il 
-        # "range" della percezione, per fare dei percept più "locali"
-        #
-        # CONS: (nella versione attuale) fa il retract di tutto, e questo potrebbe
-        # non essere ciò che si vuole (ad esempio, si vuole non aggiornare la 
-        # posizione di un qualche elemento specifico. Boh). 
 
         # escamotage per fare il retract della posizione di tutti gli elementi :D
         # self.kb.retract_element_position('_')   
@@ -61,9 +50,7 @@ class Agent():
             #
             # TODO: remove specific items (is a problem also in the KBWrapper class)
             self.kb.retract_element_position(item)
-
-        # Q: Consider an approach that uses np.where  
-        # (cfr. get_location, in map.py). Maybe more efficient?         
+      
         scr_desc = game_map.state['screen_descriptions']
         for i in range(len(scr_desc)):
             for j in range(len(scr_desc[0])):
@@ -71,9 +58,6 @@ class Agent():
                 if(description != '' and description != 'floor of a room'):
                     for interesting_item in interesting_item_list:
                         if interesting_item in description:
-                            # Q: store the position of different items of the same
-                            # "type" by keeping distinction (see comments in KBwrapper).
-                            # Maybe is not a real issue, maybe it is...
                             self.kb.assert_element_position(interesting_item.lower(),i,j)
         
         # get the agent level
