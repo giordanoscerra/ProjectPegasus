@@ -78,6 +78,7 @@ def createLevel(level:int = 0, pony:bool = True):
             'message',
             'inv_strs',
             'inv_letters',
+            'blstats',
             'pixel'),
         des_file = lvl,
         reward_manager = reward_manager_defined,
