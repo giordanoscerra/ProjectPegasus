@@ -100,8 +100,7 @@ class Map:
         time.sleep(delay)
         self._env.render()
     
-    #TODO: optimize possibly using a KB to store position: DONE (in a certain sense)
-    # This function is used by agent.look_for_closest()
+    # This function is used only by the testagent.py script
     def get_element_position(self, element:str) -> List[Tuple[int,int]]:
         positions = []
         for i in range(len(self.state['screen_descriptions'])):
@@ -114,7 +113,7 @@ class Map:
         if(not positions): raise exceptions.ElemNotFoundException(f'no {element} is found in this state') 
         return positions
         
-
+    # Instances of get_element_position()    
     def get_agent_position(self) -> (int,int):
         return list(self.get_element_position('Agent'))[0]
     
@@ -125,7 +124,7 @@ class Map:
         current_health = self.state['blstats'][10]
         max_health = self.state['blstats'][11]
         return int(current_health/max_health*100)
-    
+
     def get_pony_position(self) -> (int,int):
         return list(self.get_element_position('pony'))[0]
     
@@ -137,7 +136,7 @@ class Map:
     
     def get_rewards(self) -> [int]:
         return self.rewards
-    
+
     def get_map_as_nparray(self) -> np.ndarray:
         return self.state['chars']
     

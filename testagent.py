@@ -9,9 +9,9 @@ knight = Agent()
 
 knight.percept(level)
 
-knight.look_for_closest(level, element='pony')
+#knight.look_for_closest(level, element='pony')
 try:
-    x,y = knight.kb.get_element_position('pony')
+    x,y = knight.closest_element_position('pony')
     print(f'The KB says that there is a pony in position ({x},{y})')
 except exceptions.ElemNotFoundException as exc:
     print(f'ElemNotFoundException catturata con successo. '
@@ -27,7 +27,7 @@ saddle_query = knight.kbQuery('position(saddle,_,X,Y)')
 for positions in saddle_query:
     print(f'KB says there is a saddle in position ({positions["X"]},{positions["Y"]})')
 xsaddle, ysaddle = level.get_element_position('saddle')[0]
-print(f'Agent percepts saddle is in position ({xsaddle},{ysaddle})')
+print(f'According to the map, the saddle is in position ({xsaddle},{ysaddle})')
 
 agent_query = knight.kbQuery('position(agent,_,X,Y)')
 for positions in agent_query:
