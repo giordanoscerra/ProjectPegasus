@@ -1,0 +1,2 @@
+class ElemNotFoundException(Exception):
+    pass
