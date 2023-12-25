@@ -62,34 +62,32 @@ class KBwrapper():
 
     # the idea is that the position of an element should be returned by 
     # the KB
-    # TODO: deal with multiple items in the map (e.g. two carrots).See also 
-    # comment on the _element_position() function
-    def get_element_position(self, element:str):
-        try:
-            pos_query = list(self._kb.query(f'position({element},_,Row,Col)'))[0]
-            return (pos_query['Row'], pos_query['Col'])
-        except IndexError:
-            raise exceptions.ElemNotFoundException\
-                (f'query for the position of {element} unsuccessful. '
-                'Maybe they are not in the environment?')
+
+    # The next function is commented as, personally, I would encourage 
+    # the use of the more general get_element_position query - Andrea
+    # P.S. no example currently uses it.
+    #def get_element_position(self, element:str):
+    #    try:
+    #        pos_query = list(self._kb.query(f'position({element},_,Row,Col)'))[0]
+    #        return (pos_query['Row'], pos_query['Col'])
+    #    except IndexError:
+    #        raise exceptions.ElemNotFoundException\
+    #            (f'query for the position of {element} unsuccessful. '
+    #            'Maybe they are not in the environment?')
         
     def get_element_position_query(self, element:str):
-        category = self._get_key(element,self._categories) if self._get_key(element,self._categories) else "_"
-        pos_query = [(q['Row'], q['Col']) for q in self._kb.query(f'position({category},{element},Row,Col)')]
-        if(pos_query == []):
-            raise exceptions.ElemNotFoundException\
-                (f'query for the position of {element} unsuccessful. '
-                'Maybe they are not in the environment?')
+        if element in self._categories.keys():
+            query_sentence = f'position({element},_,Row,Col)'
+            err_sentence = f'any element in the {element} category '
         else:
-            return pos_query
-        
-    def get_category_position_query(self, category:str):
-        pos_query = [(q['Row'], q['Col']) for q in self._kb.query(f'position({category},_,Row,Col)')]
+            category = self._get_key(element,self._categories) if self._get_key(element,self._categories) else "_"
+            query_sentence = f'position({category},{element},Row,Col)'
+            err_sentence = f'{element} '
+        pos_query = [(q['Row'], q['Col']) for q in self._kb.query(query_sentence)]
         if(pos_query == []):
             raise exceptions.ElemNotFoundException\
-                (f'query for the position of any element in the {category} '
-                'category unsuccessful. '
-                'Maybe they are not in the environment?')
+                ('query for the position of '+err_sentence+'unsuccessful. '
+                 'Maybe they are not in the environment?')
         else:
             return pos_query
         
