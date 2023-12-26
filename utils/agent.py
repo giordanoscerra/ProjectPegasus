@@ -104,7 +104,7 @@ class Agent():
         interesting_collection = {item.lower():0 for item in interesting_items}
         for string in game_map.state["inv_strs"]:
             for item in interesting_items:
-                if item in decode(string):
+                if item in decode(string).lower():
                     count = decode(string).split(' ')[0]
                     if count.isdigit():
                         interesting_collection[item] += int(count)
