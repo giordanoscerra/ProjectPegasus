@@ -123,6 +123,7 @@ class Map:
                     print(f'{description} in <{i},{j}>')
         
     # supposed that the distance between [pony] target and agent is <= 3
+    #TODO: reimplement considering get_element_position() returns a list
     def align_with_target(self, target:str) -> str:
         target_pos = self.get_element_position(element=target)
         agent_pos = self.get_agent_position()

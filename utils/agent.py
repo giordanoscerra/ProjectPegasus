@@ -159,6 +159,36 @@ class Agent():
     def ride_steed(self, steedPos):
         return "TO BE CONTINUED"
     
+    def explore(self, level: Map, heuristic: callable = lambda t,s: manhattan_distance(t,s)):
+        toExplore = set()
+        for i in range(len(level.state['screen_descriptions'])):
+            for j in range(len(level.state['screen_descriptions'][0])):
+                description = decode(level.state['screen_descriptions'][i][j])
+                if(description != '' and description != 'wall'):
+                    # check each surrounding cell,
+                    # if it is empty, add it to the list of cells to explore
+                    # '' means that the cell is not explored yet
+                    if decode(level.state['screen_descriptions'][i][j-1]) == '':
+                        toExplore.add((i,j-1))
+                    if decode(level.state['screen_descriptions'][i][j+1]) == '':
+                        toExplore.add((i,j+1))
+                    if decode(level.state['screen_descriptions'][i-1][j]) == '':
+                        toExplore.add((i-1,j))
+                    if decode(level.state['screen_descriptions'][i+1][j]) == '':
+                        toExplore.add((i+1,j))
+        # now we have a set of cells to explore
+        # we need to find the closest one
+        if len(toExplore) == 0:
+            return ''
+        try:
+            agent_pos = self.kb.get_element_position_query('agent')[0]
+        except exceptions.ElemNotFoundException:
+            agent_pos = level.get_agent_position()
+        place = heuristic(list(toExplore), agent_pos)[0]
+        next_cell = a_star(level.get_map_as_nparray(),start=agent_pos, target=place, maxDistance=1, minDistance=1)[1]
+        #now we get the direction to go to reach the cell
+        return actions_from_path(agent_pos, [next_cell])[0]
+
     # TODO: deal with maxDistance and minDistance
     def _get_best_path_to_target(self, game_map: Map, target,
                                 heuristic:callable = lambda t,s: manhattan_distance([t],s)[1],

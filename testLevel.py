@@ -2,7 +2,7 @@ from utils.map import Map
 from utils.agent import Agent
 
 level = Map(pony=False)
-agent = Agent('KBS/kb.pl', level)
+agent = Agent()
 
 level.render()
 

@@ -17,12 +17,13 @@ def _level_0(pony:bool = True):
     lvl.wallify()
     return lvl.get_des()
 
-def _level_1():
+def _level_1(pony:bool = True):
     #get content from level1.des
     desDescriton = open('utils/customLevels/level1.des', 'r').read()
     lvl = LevelGenerator(map=desDescriton)
     #pony and carrots randomly placed in the second room
-    lvl.add_monster(name='pony', symbol="u", place=(random.randint(13, 16), random.randint(5, 9)))
+    if(pony):
+        lvl.add_monster(name='pony', symbol="u", place=(random.randint(13, 16), random.randint(5, 9)))
     for _ in range(9):
         lvl.add_object(name='carrot', symbol="%", place=(random.randint(8, 16), random.randint(1, 9)))
     #carrot randomly placed near the agent
@@ -31,11 +32,12 @@ def _level_1():
     lvl.set_start_pos((2,5))
     return lvl.get_des()
 
-def _level_2():
+def _level_2(pony:bool = True):
     #get content from level1.des
     desDescriton = open('utils/customLevels/level2.des', 'r').read()
     lvl = LevelGenerator(map=desDescriton)
-    lvl.add_monster(name='pony', symbol="u", place=(21,4))
+    if(pony):
+        lvl.add_monster(name='pony', symbol="u", place=(21,4))
     for _ in range(12):
         lvl.add_object(name='carrot', symbol="%", place=None)
     lvl.add_object(name='saddle', symbol="(", place=None)
@@ -60,9 +62,9 @@ def createLevel(level:int = 0, pony:bool = True):
     if(level == 0):
         lvl = _level_0(pony)
     elif(level == 1):
-        lvl = _level_1()
+        lvl = _level_1(pony)
     elif(level == 2):
-        lvl = _level_2()
+        lvl = _level_2(pony)
     else:
         lvl = _level_0(True)
     
