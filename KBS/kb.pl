@@ -78,10 +78,21 @@ interrupt(getCarrot) :-
     \+ position(comestible,carrot,_,_); 
     \+ hostile(steed).
 
-interrupt(getSaddle) :- saddles(X), X > 0; stepping_on(agent,saddle,_); \+ position(applicable,saddle,_,_).
-interrupt(pacifySteed) :- \+ hostile(steed); carrots(X), X == 0. % steed distance further than carrot? Need to differentiate between getting the first carrot and the subsequents
-interrupt(feedSteed) :- carrots(X), X == 0; (tameness(steed, T), max_tameness(MT), T == MT).
-interrupt(rideSteed) :- \+ rideable(steed); hostile(steed); ((carrots(X), X > 0); position(comestible,carrot,_,_), (tameness(steed, T), max_tameness(MT), T < MT)).
+interrupt(getSaddle) :- 
+    saddles(X), X > 0; 
+    stepping_on(agent,saddle,_); 
+    \+ position(applicable,saddle,_,_).
+interrupt(pacifySteed) :- 
+    \+ hostile(steed); 
+    carrots(X), 
+    X == 0. % steed distance further than carrot? Need to differentiate between getting the first carrot and the subsequents
+interrupt(feedSteed) :- 
+    carrots(X), X == 0; 
+    (tameness(steed, T), max_tameness(MT), T == MT).
+interrupt(rideSteed) :- 
+    \+ rideable(steed); 
+    hostile(steed); 
+    ((carrots(X), X > 0); position(comestible,carrot,_,_), (tameness(steed, T), max_tameness(MT), T < MT)).
 interrupt(hoardCarrots) :- (carrots(X), tameness(steed, T), max_tameness(MT), T+X >= MT); hostile(steed).
 
 % We need to count how many times we fed the steed to calculate its tameness.

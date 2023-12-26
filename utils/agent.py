@@ -6,7 +6,7 @@ from utils.map import Map
 from utils import exceptions
 # from utils.exceptions import *
 from utils.heuristics import *
-from .general import actions_from_path, are_aligned, are_close
+from .general import actions_from_path, are_aligned, are_close, decode
 from .algorithms import a_star
 
 class Agent():
@@ -45,7 +45,8 @@ class Agent():
 
         # escamotage per fare il retract della posizione di tutti gli elementi :D
         # self.kb.retract_element_position('_')   
-
+        
+        self.kb.retractall_stepping_on()
         for item in interesting_item_list:
             # we retract the positions of the elements of interest from the KB,
             # in order to re-add them (update)
@@ -89,9 +90,11 @@ class Agent():
             self.kb.assert_element_position(element.replace(' ',''),x,y) 
             # Actually assert that the agent is stepping on the element
             # Q: hopefully the message is processed correctly!
+            #   I mean, if the message is like 'You see here a blessed carrot.
+            #   we're screwed...
             self.kb.assert_stepping_on(element)             
 
-    def act(self):
+    def act(self, level:Map):
         self.current_subtask = self.kb.query_for_action() # returns subtask to execute
         args = self.getArgs(self.current_subtask) # returns arguments for the subtask
         subtask = self.actions.get(self.current_subtask, lambda: None) # calls the function that executes the subtask
@@ -123,12 +126,26 @@ class Agent():
         # carrot_position = heuristic(self.kb.get_element_position_query("carrot"), self.kb.get_element_position_query("agent"))
         self.go_to_closer_element(level, element='carrot', heuristic=heuristic, show_steps=True, delay=0.5)
         self.percept(level)
-        # TODO: pick up the carrot that will inevitably be here
-        # Q: maybe pick up is another task??
-        return "TO BE CONTINUED"
+        # Maybe a method for picking up, to do things in a fancy/flashy way?
+        # check if the object is still there? (of course it will)
+        if self.kb.query_stepping_on(spaced_elem='carrot'):
+            level.apply_action(actionName='PICKUP')
+            # percept here just for safety: mainly to update inventory
+            self.percept(level)
+            print('get_carrot task successful!')
+        else:
+            return 'There is no carrot here! (according to KB)'
+
     
-    def get_saddle(self, saddlePos):
-        return "TO BE CONTINUED"
+    def get_saddle(self, level:Map, heuristic:callable = lambda t,s: manhattan_distance([t],s)[1]):
+        self.go_to_closer_element(level, element='saddle', heuristic=heuristic, show_steps = True, delay=0.2)
+        self.percept(level)
+        if self.kb.query_stepping_on(spaced_elem='saddle'):
+            level.apply_action(actionName='PICKUP')
+            self.percept(level)
+            print('get_saddle successful!')
+        else:
+            return 'There is no saddle here! (according to KB)'
     
     def pacify_steed(self, steedPos):
         return "TO BE CONTINUED"
