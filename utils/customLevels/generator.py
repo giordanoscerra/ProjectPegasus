@@ -3,9 +3,9 @@ import gym
 from minihack import LevelGenerator
 from nle import nethack
 import os
-import sys
-sys.path.insert(1, os.path.join(sys.path[0], '..'))
-from general import define_reward
+#import sys
+#sys.path.insert(1, os.path.join(sys.path[0], '..'))
+from utils.rewards import define_reward
 
 def _level_0(pony:bool = True):
     lvl = LevelGenerator(w=20,h=20)

@@ -10,7 +10,6 @@ for i in range(120):
     if to_explore == '':
         break
     lvl.apply_action(actionName=to_explore)
-    lvl.render()
 print("lvl explore 1: Done")
 
 lvl = Map(pony=False, level=2)
