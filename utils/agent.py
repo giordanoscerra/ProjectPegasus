@@ -37,7 +37,7 @@ class Agent():
 
 
     def percept(self, game_map:Map, interesting_item_list:list = ['carrot', 'saddle', 'pony', 'Agent']) -> None:
-        '''removes the position of all the items in interesting_item_list
+        '''Removes the position of all the items in interesting_item_list
         from the kb. Then scans the whole map, looking for such elements and
         inserting in the kbthe position of the interesting items that 
         have been found.      
@@ -60,7 +60,7 @@ class Agent():
                 if(description != '' and description != 'floor of a room'):
                     for interesting_item in interesting_item_list:
                         if interesting_item in description:
-                            self.kb.assert_element_position(interesting_item.lower(),i,j)
+                            self.kb.assert_element_position(interesting_item.lower().replace(' ',''),i,j)
         
         # get the agent level
         self.attributes["level"] = game_map.get_agent_level()
@@ -72,6 +72,11 @@ class Agent():
         self.process_message(message=decode(game_map.state['message']))
 
     def process_message(self, message:str):
+        '''Called by agent.percept(level). Reads the message and
+        asserts in the agent.kb if the agent is stepping on an item.
+        '''
+        #TODO: process other important messages, if any
+
         if 'You see here' in message:
             # Remove "You see here" and trailing dot
             portion = message[message.find('You see here ')+13:message.find('.')]   
@@ -114,9 +119,12 @@ class Agent():
         '''
         return self.kb.queryDirectly(query)
     
-    def get_carrot(self, level: Map, heuristic: callable = lambda t,s: euclidean_distance([t],s)[1]):
+    def get_carrot(self, level: Map, heuristic: callable = lambda t,s: manhattan_distance([t],s)[1]):
         # carrot_position = heuristic(self.kb.get_element_position_query("carrot"), self.kb.get_element_position_query("agent"))
-        self.go_to_closer_element(level, element='carrot', heuristic=heuristic, show_steps=True, delay=0.5, maxDistance=3, minDistance=1)
+        self.go_to_closer_element(level, element='carrot', heuristic=heuristic, show_steps=True, delay=0.5)
+        self.percept(level)
+        # TODO: pick up the carrot that will inevitably be here
+        # Q: maybe pick up is another task??
         return "TO BE CONTINUED"
     
     def get_saddle(self, saddlePos):
@@ -171,8 +179,9 @@ class Agent():
                 # is returned to the action picker I guess (agent.act maybe))
                 # and moves
                 self.percept(level)
-                greenlight_status = self.kb.query_for_greenlight()
-                if greenlight_status:
+                #greenlight_status = self.kb.query_for_greenlight()
+                interrupt = self.check_interrupt()
+                if not interrupt:
                     level.apply_action(actionName = move_dir)
                     if(show_steps):
                         time.sleep(delay)
@@ -183,44 +192,3 @@ class Agent():
             except:
                 break
 
-
-
-    #TODO: discuss with the team on which algorithm to use
-    #   things to consider:
-    #       A* may be too much
-    #       it is easy now but may be harder with monster and secondary task
-    #       the environment will not always be a rectangle
-    # this will take agent in distance that is <= maxDistance and >= minDistance from the object
-    # The heuristic should take in the list of positions of an element, the tuple indicating 
-    # the position of the agent and return a tuple indicating the position of the element to go to
-    def go_to_element(self, game_map: Map, element,
-                        heuristic:callable = manhattan_distance,
-                        show_steps=False, delay = 0.5, maxDistance = 3, minDistance = 1):
-        #if(len(positions := game_map.get_element_position(element)) > 1): element_pos = heuristic(positions,game_map.get_agent_position())
-        #else: element_pos = positions[0]
-        agent_pos = self.closest_element_position(element='agent',heuristic=heuristic)
-        element_pos = self.closest_element_position(element=element,heuristic=heuristic)
-        #until we are not close to the pony
-        while(not are_aligned(element_pos, agent_pos) or not are_close(element_pos, agent_pos, maxOffset=maxDistance)):
-            if(not are_close(element_pos, agent_pos, maxOffset=maxDistance)):
-                move = ''
-                if(element_pos[0] < agent_pos[0] - minDistance):
-                    move += 'N'
-                elif(element_pos[0] > agent_pos[0] + minDistance):
-                    move += 'S'
-                if(element_pos[1] < agent_pos[1] - minDistance):
-                    move += 'W'
-                elif(element_pos[1] > agent_pos[1] + minDistance):
-                    move += 'E'
-                game_map.apply_action(move)
-            else:
-                game_map.align_with_pony()
-            try:
-                element_pos = self.closest_element_position(element=element,heuristic=heuristic)
-            except:
-                if(minDistance != 0):
-                    raise Exception(f'No {element} is found in this state')
-            agent_pos = game_map.get_agent_position()
-            if(show_steps):
-                time.sleep(delay)
-                game_map.render()

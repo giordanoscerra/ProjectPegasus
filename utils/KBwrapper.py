@@ -61,20 +61,7 @@ class KBwrapper():
         # elegante dire la cosa giusta al momento giusto?
 
     # the idea is that the position of an element should be returned by 
-    # the KB
-
-    # The next function is commented as, personally, I would encourage 
-    # the use of the more general get_element_position query - Andrea
-    # P.S. no example currently uses it.
-    #def get_element_position(self, element:str):
-    #    try:
-    #        pos_query = list(self._kb.query(f'position({element},_,Row,Col)'))[0]
-    #        return (pos_query['Row'], pos_query['Col'])
-    #    except IndexError:
-    #        raise exceptions.ElemNotFoundException\
-    #            (f'query for the position of {element} unsuccessful. '
-    #            'Maybe they are not in the environment?')
-        
+    # the KB        
     def get_element_position_query(self, element:str):
         if element in self._categories.keys():
             query_sentence = f'position({element},_,Row,Col)'
