@@ -63,14 +63,17 @@ class Agent():
                         if interesting_item in description:
                             self.kb.assert_element_position(interesting_item.lower().replace(' ',''),i,j)
         
+        self.process_attributes(game_map=game_map)
+        self.process_message(message=decode(game_map.state['message']))
+        self.process_inventory(game_map=game_map)
+
+    def process_attributes(self, game_map:Map):
         # get the agent level
         self.attributes["level"] = game_map.get_agent_level()
         # get the agent's health (percentage). It is stored also in the
         # KB, since it might be useful for taking decisions
         self.attributes["health"] = game_map.get_agent_health()
         self.kb.update_health(self.attributes["health"])
-
-        self.process_message(message=decode(game_map.state['message']))
 
     def process_message(self, message:str):
         '''Called by agent.percept(level). Reads the message and
@@ -93,6 +96,23 @@ class Agent():
             #   I mean, if the message is like 'You see here a blessed carrot.
             #   we're screwed...
             self.kb.assert_stepping_on(element)             
+
+    def process_inventory(self, game_map:Map, interesting_items:list = ['saddle', 'carrot', 'apple']):
+        '''called to save the intresting element of the inventory in the kb
+        an element is to be considered interesting if it is useful for riding
+        '''
+        interesting_collection = {item.lower():0 for item in interesting_items}
+        for string in game_map.state["inv_strs"]:
+            for item in interesting_items:
+                if item in decode(string).lower():
+                    count = decode(string).split(' ')[0]
+                    if count.isdigit():
+                        interesting_collection[item] += int(count)
+                    else:
+                        # handle cases like 'a carrot' or 'an apple'
+                        interesting_collection[item] += 1
+        for item in interesting_collection:
+            self.kb.update_quantity(item, interesting_collection[item])
 
     def act(self, level:Map):
         self.current_subtask = self.kb.query_for_action() # returns subtask to execute

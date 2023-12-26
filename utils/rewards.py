@@ -1,7 +1,7 @@
 from minihack import RewardManager
 from minihack.reward_manager import Event
 from nle import nethack
-from ..general import decode
+from .general import decode
 import re
 
 # These are the events needed by the reward manager to reward the agent for the actions we want them to do.

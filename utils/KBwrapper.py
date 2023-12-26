@@ -136,3 +136,13 @@ class KBwrapper():
     def update_health(self, health:int):
         self._kb.retractall('health(_)')
         self._kb.asserta(f'health({health})')
+
+    def update_quantity(self, item:str, quantity:int):
+        if item == 'carrot':
+            item += 's'
+        if item == 'saddle':
+            item += 's'
+        if item == 'apple':
+            item += 's'
+        self._kb.retractall(f'{item}(_)')
+        self._kb.asserta(f'{item}({quantity})')
