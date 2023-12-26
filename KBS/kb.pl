@@ -33,15 +33,51 @@ rideable(X) :- is_steed(X), \+ riding(agent), \+ hallucinating(agent), \+ wounde
 slippery :- confused(agent); fumbling(agent); slippery_fingers(agent). % WHAT IF THE SADDLE IS CURSED?????? ui689
 
 %%% GENERAL SUBTASKS feel free to add other conditions or comments to suggest them
-action(getCarrot) :- carrots(X), X == 0, \+ stepping_on(agent,carrot,_), position(comestible,carrot,_,_), hostile(steed).
-action(getSaddle) :- saddles(X), X == 0, \+ stepping_on(agent,saddle,_), position(applicable,saddle,_,_).
-action(pacifySteed) :- hostile(steed), carrots(X), X > 0.
-action(hoardCarrots) :- carrots(X), X == 0, \+ hostile(steed), tameness(steed, T), max_tameness(MT), T < MT.
-action(feedSteed) :- carrots(X), X > 0, \+ hostile(steed), tameness(steed, T), max_tameness(MT), T < MT.
-action(rideSteed) :- rideable(steed), \+ hostile(steed), carrots(X), X == 0, \+ position(comestible,carrot,_,_).
+action(getCarrot) :- 
+    carrots(X), X == 0, 
+    \+ stepping_on(agent,carrot,_), 
+    position(comestible,carrot,_,_), 
+    hostile(steed).
+
+action(getSaddle) :- 
+    saddles(X), X == 0, 
+    \+ stepping_on(agent,saddle,_), 
+    position(applicable,saddle,_,_).
+
+action(pacifySteed) :- 
+    hostile(steed), 
+    carrots(X), 
+    X > 0.
+
+action(hoardCarrots) :- 
+    carrots(X), X == 0, 
+    \+ hostile(steed), 
+    tameness(steed, T), 
+    max_tameness(MT), 
+    T < MT.
+
+action(feedSteed) :- 
+    carrots(X), 
+    X > 0, 
+    \+ hostile(steed), 
+    tameness(steed, T), 
+    max_tameness(MT), 
+    T < MT.
+
+action(rideSteed) :- 
+    rideable(steed), 
+    \+ hostile(steed), 
+    carrots(X), 
+    X == 0, 
+    \+ position(comestible,carrot,_,_).
 
 %%% INTERRUPT CONDITIONS
-interrupt(getCarrot) :- carrots(X), X > 0; stepping_on(agent,carrot,_); \+ position(comestible,carrot,_,_); \+ hostile(steed).
+interrupt(getCarrot) :- 
+    carrots(X), X > 0; 
+    stepping_on(agent,carrot,_); 
+    \+ position(comestible,carrot,_,_); 
+    \+ hostile(steed).
+
 interrupt(getSaddle) :- saddles(X), X > 0; stepping_on(agent,saddle,_); \+ position(applicable,saddle,_,_).
 interrupt(pacifySteed) :- \+ hostile(steed); carrots(X), X == 0. % steed distance further than carrot? Need to differentiate between getting the first carrot and the subsequents
 interrupt(feedSteed) :- carrots(X), X == 0; (tameness(steed, T), max_tameness(MT), T == MT).
@@ -63,6 +99,12 @@ decrease_tameness(X) :- retract(tameness(X, N)),  % remove the old value.
                          assert(tameness(X, NewN)). % assert the new value
 
 feed(X) :- increment_action_count(feed), increment_tameness(X).
+
+% We make use of hostile(steed) predicate. But when is a steed hostile?
+% Very naively, I'd say that
+hostile(steed) :- tameness(steed, T), T < 2.
+
+
 
 % We need to check this if we are to throw carrots at a horse.
 is_aligned(R1,C1,R2,C2) :- R1 == R2; C1 == C2; ((R1 is R2+X;R1 is R2-X), (C1 is C2+X;C1 is C2-X)).
