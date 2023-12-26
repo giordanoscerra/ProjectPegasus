@@ -1,12 +1,13 @@
 import time
-import gym
 import numpy as np
-from minihack import LevelGenerator
-from nle import nethack
+
+from utils.customLevels.generator import createLevel
+
+import matplotlib.pyplot as plt
+import IPython.display as display
 
 from typing import Optional, List, Tuple
 from .general import decode
-from .rewards import define_reward
 from . import exceptions 
 
 
@@ -16,48 +17,12 @@ DIRECTIONS = ['N','S','E','W','NE','NW','SE','SW']
 # if something does not work it's probably his fault
 # if something does work it's probably thanks to him
 class Map:
-    def __init__(self, pony:bool = True):
-        lvl = LevelGenerator(w=20,h=20)
+    def __init__(self, pony:bool = True, level:int = 0):
+        env, (self.minXCG, self.maxXCG) = createLevel(level=level, pony=pony)
         self.rewards = []
-        reward_manager_defined = define_reward()
-        if(pony):
-            lvl.add_monster(name='pony', symbol="u", place=None)
-        lvl.add_object(name='carrot', symbol="%", place=(0,0))
-        lvl.add_object(name='carrot', symbol="%", place=(0,0))
-        for _ in range(3):
-            lvl.add_object(name='carrot', symbol="%", place=None)
-        lvl.add_object(name='saddle', symbol="(", place=None)
-        # mura tutt'attorno. Più carino. E più challenging per il pathfinding
-        lvl.wallify()  
-        env = gym.make(
-            'MiniHack-Skill-Custom-v0',
-            actions = tuple(nethack.CompassDirection) + (
-                nethack.Command.THROW,
-                nethack.Command.RIDE,
-                nethack.Command.EAT,
-                nethack.Command.DROP,
-                nethack.Command.APPLY,
-                nethack.Command.PICKUP,
-                nethack.Command.WHATIS,
-                nethack.Command.INVENTORY,# included to allow use of saddle (i)
-                nethack.Command.RUSH,# included to allow use of apple (g)
-            ),
-            character = "kn-hum-neu-mal",
-            observation_keys = (
-                'glyphs',
-                'chars',
-                'colors', # Some characters have special colors that represent different things.
-                'screen_descriptions',  # descrizioni testuali di ogni cella della mappa 
-                'message',
-                'inv_strs',
-                'inv_letters',
-                'pixel',
-                'blstats'),
-            des_file = lvl.get_des(),
-            reward_manager = reward_manager_defined,
-        )
         self.state = env.reset()
-        env.render()
+        #leftmost_wall = self.state['pixel']
+        #env.render()
         self._env = env
 
     #get the action number from high level string
@@ -79,15 +44,15 @@ class Map:
         if(self._get_action_id(action=actionName) == -1):
             raise Exception(f'Not valid action <{actionName}>')
         if(where is not None and where not in DIRECTIONS):
-            raise Exception(f'Valid directions are {DIRECTIONS}')
+            raise Exception(f'Valid directions are {DIRECTIONS}, you gave: {where}')
         if(what is not None and self._get_item_char(what) is None):
             raise Exception(f'Object <{what}> is not in inventory')
         elif(what is not None):
-            print(f'Object <{what}> is in inventory')
+            #print(f'Object <{what}> is in inventory')
             #print inventory
-            self.print_inventory()
+            #self.print_inventory()
             what = self._get_item_char(what)
-            print(f'Object <{what}> is in inventory')
+            #print(f'Object <{what}> is in inventory')
 
         self.state,reward,_,_ = self._env.step(self._get_action_id(action=actionName)) # action            
         if(what is not None): self.state,reward,_,_ = self._env.step(self._env.actions.index(ord(what)))# object
@@ -96,9 +61,18 @@ class Map:
 
         self.rewards.append(reward)
 
-    def render(self, delay:float = 0.5):
+    def render(self, graphic:bool=False,delay:float = 0.5):
         time.sleep(delay)
-        self._env.render()
+        if(not graphic):
+            self._env.render()
+        else:
+            image = plt.imshow(self.state['pixel'][15:, self.minXCG:self.maxXCG])
+            #save image
+            #plt.savefig(f'./images/img{self.imageID}.png')
+            #self.imageID += 1
+            display.display(plt.gcf())
+            print(bytes(self.state['message']).decode('utf-8').rstrip('\x00'))
+            display.clear_output(wait=True)
     
     # This function is used only by the testagent.py script
     def get_element_position(self, element:str) -> List[Tuple[int,int]]:
@@ -148,11 +122,11 @@ class Map:
                 if(description != '' and description != 'floor of a room'):
                     print(f'{description} in <{i},{j}>')
         
-    # supposed that the distance between pony and agent is <= 3
-    def align_with_pony(self) -> str:
-        pony_pos = self.get_pony_position()
+    # supposed that the distance between [pony] target and agent is <= 3
+    def align_with_target(self, target:str) -> str:
+        target_pos = self.get_element_position(element=target)
         agent_pos = self.get_agent_position()
-        agent_pos = (agent_pos[0] - pony_pos[0], agent_pos[1] - pony_pos[1])
+        agent_pos = (agent_pos[0] - target_pos[0], agent_pos[1] - target_pos[1])
         if agent_pos[0] == agent_pos[1] or -agent_pos[0] == agent_pos[1]:
             return
         if agent_pos[0] == 0 or agent_pos[1] == 0:
@@ -168,11 +142,14 @@ class Map:
             move = 'E'
         if move != '':
             self.apply_action(move)
+
+    def align_with_pony(self):
+        return self.align_with_target(target='pony')
     
-    def get_pony_direction(self) -> str:
-        pony_pos = self.get_pony_position()
-        agent_pos = self.get_agent_position()
-        agent_pos = (agent_pos[0] - pony_pos[0], agent_pos[1] - pony_pos[1])
+    def get_target_direction(self, target:str) -> str:
+        entity_pos = self.get_element_position(target)
+        agent_pos = self.get_element_position('Agent')
+        agent_pos = (agent_pos[0] - entity_pos[0], agent_pos[1] - entity_pos[1])
         throw_direction = ''
         if agent_pos[0] < 0:
             throw_direction += 'S'
@@ -183,14 +160,30 @@ class Map:
         elif agent_pos[1] > 0:
             throw_direction += 'W'
         return throw_direction
+    
+    def get_pony_direction(self):
+        return self.get_target_direction('pony')
 
     def print_inventory(self):
         for letter, stringa in \
             zip(decode(self.state["inv_letters"]), self.state["inv_strs"]):
             print(letter, " - ", decode(stringa))
 
-# ottiene la posizione dell'entità che nella mappa appare con symbol
-# Ovviamente, se ce n'è più di una vanno cambiate delle cose...
-def get_location(game_map: np.ndarray, symbol: str):
-    x, y = np.where(game_map == ord(symbol))
-    return x[0], y[0]
+    def get_message(self):
+        return decode(self.state["message"])
+    
+    # It was used to throw away all the carrots. Now is useless
+    def throw_all(self, item:str, direction:str, show_inventory:bool = False):
+        gen = (decode(s) for s in self.state["inv_strs"])
+        number = 0
+        for stringa in gen:
+            if item in stringa:
+                number = int(stringa.split(" ")[0])
+                break
+        if(number == 0):
+            raise Exception(f'Item {item} not in inventory')
+        for _ in range(number):
+            self.apply_action(actionName='THROW', what=item, where=direction)
+            if show_inventory:
+                self.render()
+                self.print_inventory()
