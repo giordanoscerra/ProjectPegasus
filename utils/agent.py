@@ -142,19 +142,65 @@ class Agent():
         '''
         return self.kb.queryDirectly(query)
     
-    def get_carrot(self, level: Map, heuristic: callable = lambda t,s: manhattan_distance([t],s)[1]):
+    def get_carrot(self, level: Map, show_steps:bool=True, delay=0.5,heuristic: callable = lambda t,s: manhattan_distance([t],s)[1]):
+        '''Performs the getCarrot task: the agent goes towards the closer carrots,
+        picks it up and then goes towards the pony to throw the first carrot at it
+        to make it not aggressive.
+        '''
         # carrot_position = heuristic(self.kb.get_element_position_query("carrot"), self.kb.get_element_position_query("agent"))
-        self.go_to_closer_element(level, element='carrot', heuristic=heuristic, show_steps=True, delay=0.5)
+        self.go_to_closer_element(level, element='carrot', heuristic=heuristic, show_steps=show_steps, delay=delay)
         self.percept(level)
-        # Maybe a method for picking up, to do things in a fancy/flashy way?
-        # check if the object is still there? (of course it will)
+
+        # Pick up the carrot if still there. Doing this with the kb
+        # is an overkill imo
         if self.kb.query_stepping_on(spaced_elem='carrot'):
             level.apply_action(actionName='PICKUP')
             # percept here just for safety: mainly to update inventory
             self.percept(level)
-            print('get_carrot task successful!')
+            
+            # goes toward the pony
+            thrown = False
+            while not thrown:
+                self.percept(level)
+                agent_pos = self.kb.get_element_position_query('agent')[0]
+                pony_pos = self.kb.get_element_position_query('pony')[0]
+                delta = (agent_pos[0] - pony_pos[0], agent_pos[1] - pony_pos[1])
+                direction = ''
+                if delta[0] > 0:
+                    direction += 'N'
+                elif delta[0] < 0:
+                    direction += 'S'
+                if delta[1] > 0:
+                    direction += 'W'
+                elif delta[1] < 0:
+                    direction += 'E'
+
+                #experimentally, the throwing distance of a carrot is 7
+                close = are_close(agent_pos,pony_pos,maxOffset=7)
+                # IDEA: if the agent and pony are close and aligned, then 
+                # the direction is suitable for throwing the carrot,
+                # otherwise it is suitable for moving
+                #
+                # TODO: fix this because it is too rough, might work in many
+                #cases but is blantaly wrong!
+                if close and are_aligned(agent_pos,pony_pos):
+                    level.apply_action(actionName='THROW',what='carrot',where=direction)
+                    thrown = True
+                else:
+                    # get closer by going in direction
+                    level.apply_action(actionName=direction)
+
+                self.percept(level)
+                if(show_steps):
+                    time.sleep(delay)
+                    level.render()       
         else:
+            # return exception? Nothing?
             return 'There is no carrot here! (according to KB)'
+        
+    #def align_with_target(self, level:Map, target:Tuple[int,int]):
+        
+
 
     
     def get_saddle(self, level:Map, heuristic:callable = lambda t,s: manhattan_distance([t],s)[1]):

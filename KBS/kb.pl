@@ -71,6 +71,11 @@ action(rideSteed) :-
     X == 0, 
     \+ position(comestible,carrot,_,_).
 
+% this action here will probably be unused
+action(pick) :-
+    stepping_on(agent,ObjClass,_),
+    is_pickable(ObjClass).
+
 %%% INTERRUPT CONDITIONS
 interrupt(getCarrot) :- 
     carrots(X), X > 0; 
@@ -183,7 +188,9 @@ unsafe_position(_,_) :- fail.
 safe_position(R,C) :- \+ unsafe_position(R,C).
 
 % we need to pick a carrot if we are stepping on it. 
-is_pickable(carrots).
+is_pickable(comestible).
+is_pickable(applicable).
+is_pickable(weapon).
 
 % what is a steed?
 is_steed(steed).

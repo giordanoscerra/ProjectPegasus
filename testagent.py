@@ -4,7 +4,7 @@ from utils.map import Map
 from utils import exceptions
 import numpy as np
 
-level = Map(pony=True)
+level = Map(level = 0, pony=True)
 knight = Agent()
 
 knight.percept(level)
