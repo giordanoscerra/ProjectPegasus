@@ -1,4 +1,4 @@
-:- dynamic encumbered/1, wounded_legs/1, hallucinating/1, riding/1, blind/1, telepathic/1, punished/1, trapped/1, wearing/2, rusty/1, corroded/1.
+:- dynamic encumbered/1, wounded_legs/1, hallucinating/1, blind/1, telepathic/1, punished/1, trapped/1, wearing/2, rusty/1, corroded/1.
 :- dynamic confused/1, fumbling/1, slippery_fingers/1.
 :- dynamic hostile/1.
 :- dynamic stepping_on/3.
@@ -7,6 +7,7 @@
 :- dynamic tameness/2.
 :- dynamic carrots/1.
 :- dynamic saddles/1.
+:- dynamic riding/2. % riding(agent, steed), assert it when mounting, retract it when dismounting/slipping etc.
 
 % To translate into Prolog:
 % Chance of succeeding a mounting action is: 5 * (exp level + steed tameness)
@@ -21,7 +22,7 @@
 %     You or your steed are trapped.
 %     You are levitating and cannot come down at will.
 %     You are wearing rusty or corroded body armor.
-rideable(X) :- is_steed(X), \+ riding(agent), \+ hallucinating(agent), \+ wounded_legs(agent), \+ encumbered(agent), \+ (blind(agent), \+ telepathic(agent)), \+ punished(agent)
+rideable(X) :- is_steed(X), \+ riding(agent,_), \+ hallucinating(agent), \+ wounded_legs(agent), \+ encumbered(agent), \+ (blind(agent), \+ telepathic(agent)), \+ punished(agent)
     , \+ trapped(agent), \+ (wearing(agent, Y), (rusty(Y); corroded(Y))). % I do not intend to implement everything but we can do what we can in the time we have, as a flex
 
 % You will always fail and slip if any of the following apply:[3]

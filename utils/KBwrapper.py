@@ -119,7 +119,7 @@ class KBwrapper():
     # It's ok like this for now: when we'll want to implement multiple steeds or good and bad monsters we'll modify this.
     def assert_hostile(self, creature: str):
         category = self._get_key(creature, self._categories)
-        if category is 'steed': self._kb.asserta(f'hostile({category})')
+        if category == 'steed': self._kb.asserta(f'hostile({category})')
         else : self._kb.asserta(f'hostile({creature})')
 
     def query_stepping_on(self, spaced_elem:str):
@@ -134,6 +134,11 @@ class KBwrapper():
 
     def get_rideable_steeds(self):
         return self._kb.query("rideable(X)")
+    
+    def query_riding(self, steed:str):
+        category = self._get_key(steed, self._categories)
+        if category == "steed": return bool(list(self._kb.query(f'riding(agent,steed')))
+        else: return bool(list(self._kb.query(f'riding(agent,{steed})'))) # when the steed is not a *steed* but, for example, a monster.
     
     def get_steed_tameness(self, steed):
         return self._kb.query(f"steed_tameness({steed}, X)")[0]['X']

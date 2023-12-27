@@ -14,7 +14,7 @@ class Agent():
         # I'd say that the initialization of the agent
         # also first initializes the (possibly, a) KB
         self.kb = KBwrapper()        # as of now, KBWrapper uses the kb from handson2!
-        self.attributes = {}
+        self.attributes = {} # easy to access attributes about the agent: see it as a sort of cache
         self.actions = {
             "getCarrot": self.get_carrot,
             "getSaddle": self.get_saddle,
@@ -39,7 +39,7 @@ class Agent():
     def percept(self, game_map:Map, interesting_item_list:list = ['carrot', 'saddle', 'pony', 'Agent']) -> None:
         '''Removes the position of all the items in interesting_item_list
         from the kb. Then scans the whole map, looking for such elements and
-        inserting in the kbthe position of the interesting items that 
+        inserting in the kb the position of the interesting items that 
         have been found.      
         '''
 
@@ -74,6 +74,10 @@ class Agent():
         # get the agent's health (percentage). It is stored also in the
         # KB, since it might be useful for taking decisions
         self.attributes["health"] = game_map.get_agent_health()
+        self.attributes["strength"] = game_map.get_agent_strength()
+        self.attributes["constitution"] = game_map.get_agent_constitution()
+        self.attributes["riding"] = self.kb.query_riding("steed")
+        self.attributes["carrying_capacity"] = 1000 if self.attributes["riding"] else (25*(self.attributes["strength"]+self.attributes["constitution"])) + 50
         self.kb.update_health(self.attributes["health"])
 
     def process_message(self, message:str):

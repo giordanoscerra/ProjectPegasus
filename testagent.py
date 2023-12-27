@@ -38,6 +38,10 @@ print(f'KB says agent is in position {agent_query}')
 
 xagent, yagent = level.get_element_position('Agent')[0]
 print(f'Agent is in position ({xagent},{yagent})')
+
+print('Agent interesting attributes: ')
+for attribute in knight.attributes:
+    print(attribute + " : " + str(knight.attributes[attribute]))
 # it seems to be working. Of course, this way of querying is very
 # "crude", and looks a real mess right now. Things will be fixed, 
 # and cleaned. Fear not.
