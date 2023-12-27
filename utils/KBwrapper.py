@@ -18,6 +18,7 @@ class KBwrapper():
         'comestible': ['apple', 'carrot', 'food ration'],
         'weapon': ['sword', 'lance', 'shield', 'dagger'],
         'applicable' : ['saddle'],
+        'steed' : ['pony', 'horse', 'warhorse'],
     }
 
     def __init__(self):
@@ -113,6 +114,12 @@ class KBwrapper():
             self._kb.asserta(f'stepping_on(agent,{element},{element})')
         else:
             self._kb.asserta(f'stepping_on(agent,{category},{element})')
+
+    # assert that a certain creature (or its category) is hostile in the kb.
+    def assert_hostile(self, creature: str):
+        category = self._get_key(creature, self._categories)
+        if category is 'steed': self._kb.asserta(f'hostile({category})')
+        else : self._kb.asserta(f'hostile({creature})')
 
     def query_stepping_on(self, spaced_elem:str):
         element = spaced_elem.replace(' ','')

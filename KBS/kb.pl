@@ -113,9 +113,8 @@ feed(X) :- increment_action_count(feed), increment_tameness(X).
 
 % We make use of hostile(steed) predicate. But when is a steed hostile?
 % Very naively, I'd say that
-hostile(steed) :- tameness(steed, T), T < 2.
-
-
+% we infer it from the screen description. If the steed is peaceful, it says "tame pony/horse/etc"
+% hostile(steed) :- tameness(steed, T), T < 2. In the 1% chance the steed spawns peaceful, it will nevertheless start with tameness = 1
 
 % We need to check this if we are to throw carrots at a horse.
 is_aligned(R1,C1,R2,C2) :- R1 == R2; C1 == C2; ((R1 is R2+X;R1 is R2-X), (C1 is C2+X;C1 is C2-X)).
