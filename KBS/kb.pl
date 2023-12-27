@@ -1,4 +1,4 @@
-:- dynamic encumbered/1, wounded_legs/1, hallucinating/1, blind/1, telepathic/1, punished/1, trapped/1, wearing/2, rusty/1, corroded/1.
+:- dynamic wounded_legs/1, hallucinating/1, blind/1, telepathic/1, punished/1, trapped/1, wearing/2, rusty/1, corroded/1.
 :- dynamic confused/1, fumbling/1, slippery_fingers/1.
 :- dynamic hostile/1.
 :- dynamic stepping_on/3.
@@ -8,6 +8,7 @@
 :- dynamic carrots/1.
 :- dynamic saddles/1.
 :- dynamic riding/2. % riding(agent, steed), assert it when mounting, retract it when dismounting/slipping etc.
+:- dynamic burdened/1, stressed/1, strained/1, overtaxed/1, overloaded/1.
 
 % To translate into Prolog:
 % Chance of succeeding a mounting action is: 5 * (exp level + steed tameness)
@@ -31,7 +32,10 @@ rideable(X) :- is_steed(X), \+ riding(agent,_), \+ hallucinating(agent), \+ woun
 %     You are fumbling.
 %     You have slippery fingers.
 %     Your steed's saddle is cursed.
-slippery :- confused(agent); fumbling(agent); slippery_fingers(agent). % WHAT IF THE SADDLE IS CURSED?????? ui689
+slippery :- confused(agent); fumbling(agent); slippery_fingers(agent). % WHAT IF THE SADDLE IS CURSED??????
+
+unencumbered(agent) :- \+ burdened(agent), \+ stressed(agent), \+ strained(agent), \+ overtaxed(agent), \+ overloaded(agent).
+encumbered(agent) :- stressed(agent); strained(agent); overtaxed(agent); overloaded(agent).
 
 %%% GENERAL SUBTASKS feel free to add other conditions or comments to suggest them
 action(getCarrot) :- 

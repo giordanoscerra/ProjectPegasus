@@ -14,7 +14,9 @@ class Agent():
         # I'd say that the initialization of the agent
         # also first initializes the (possibly, a) KB
         self.kb = KBwrapper()        # as of now, KBWrapper uses the kb from handson2!
-        self.attributes = {} # easy to access attributes about the agent: see it as a sort of cache
+        self.attributes = {
+            'encumbrance' : "unencumbered"
+        } # easy to access attributes about the agent: see it as a sort of cache
         self.actions = {
             "getCarrot": self.get_carrot,
             "getSaddle": self.get_saddle,
@@ -100,7 +102,13 @@ class Agent():
             # Q: hopefully the message is processed correctly!
             #   I mean, if the message is like 'You see here a blessed carrot.
             #   we're screwed...
-            self.kb.assert_stepping_on(element)             
+            self.kb.assert_stepping_on(element)      
+
+        for key, value in self.kb.encumbrance_messages.items():
+            if message in value: 
+                self.kb.update_encumbrance(key)
+                self.attributes["encumbrance"] = key
+
 
     def process_inventory(self, game_map:Map, interesting_items:list = ['saddle', 'carrot', 'apple']):
         '''called to save the intresting element of the inventory in the kb

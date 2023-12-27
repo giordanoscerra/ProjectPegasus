@@ -42,6 +42,8 @@ print(f'Agent is in position ({xagent},{yagent})')
 print('Agent interesting attributes: ')
 for attribute in knight.attributes:
     print(attribute + " : " + str(knight.attributes[attribute]))
+
+print('Agent encumbrances: ' + str(knight.attributes['encumbrance']))
 # it seems to be working. Of course, this way of querying is very
 # "crude", and looks a real mess right now. Things will be fixed, 
 # and cleaned. Fear not.

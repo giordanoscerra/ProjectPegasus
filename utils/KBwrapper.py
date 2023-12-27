@@ -20,7 +20,15 @@ class KBwrapper():
         'applicable' : ['saddle'],
         'steed' : ['pony', 'horse', 'warhorse'],
     }
-
+    encumbrance_messages = {
+        "unencumbered" : [None,"Your movements are now unencumbered."],
+        "burdened" : ["Your movements are slowed slightly because of your load.", "Your movements are only slowed slightly because of your load"],
+        "stressed" : ["You rebalance your load. Movement is difficult.", "You rebalance your load. Movement is still difficult."],
+        "strained" : ["You stagger under your load. Movement is very hard.", "You stagger under your load. Movement is still very hard."],
+        "overtaxed" : ["You can barely move a handspan with this load!", None],
+        "overloaded" : ["You collapse under your load.", None]
+    }
+    
     def __init__(self):
         self._kb = Prolog()
         self._kb.consult('KBS/kb.pl')
@@ -145,6 +153,12 @@ class KBwrapper():
     
     def is_slippery(self):
         return self._kb.query("slippery")[0]
+    
+    def update_encumbrance(self, encumbrance:str):
+        # \+ burdened(agent), \+ stressed(agent), \+ strained(agent), \+ overtaxed(agent), \+ overloaded(agent).
+        for keys in self.encumbrance_messages.keys():
+            self._kb.retractall(f'{keys}(agent)')
+        self._kb.asserta(f'{encumbrance}(agent)')
 
     def update_health(self, health:int):
         self._kb.retractall('health(_)')
