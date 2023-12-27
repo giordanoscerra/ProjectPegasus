@@ -179,7 +179,19 @@ class Agent():
     def ride_steed(self, steedPos):
         return "TO BE CONTINUED"
     
-    def explore(self, level: Map, heuristic: callable = lambda t,s: manhattan_distance(t,s)):
+    def explore_subtask(self, level:Map, heuristic:callable = lambda t,s: manhattan_distance(t,s), render:bool = False, graphic:bool = True, delay:float = 0.5):
+        next_action = self.explore_step(level, heuristic)
+        if next_action == '':
+            raise Exception('No cells to explore')
+        while next_action != '' and not self.kb.query_for_interrupt('explore'):
+            next_action = self.explore_step(level, heuristic)
+            level.apply_action(actionName=next_action)
+            if render:
+                level.render(delay=delay, graphic=graphic)
+            self.percept(level)
+
+
+    def explore_step(self, level: Map, heuristic: callable = lambda t,s: manhattan_distance(t,s)):
         toExplore = set()
         for i in range(len(level.state['screen_descriptions'])):
             for j in range(len(level.state['screen_descriptions'][0])):
