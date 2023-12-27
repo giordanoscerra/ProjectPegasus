@@ -119,5 +119,5 @@ def createLevel(level:int = 0, pony:bool = True):
         maxX = 840
     elif level==3:
         minX = 350
-        maxX = 850
+        maxX = 890
     return env, (minX,maxX)
