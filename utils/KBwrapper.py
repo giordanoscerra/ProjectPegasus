@@ -146,6 +146,7 @@ class KBwrapper():
         self._kb.asserta(f'health({health})')
 
     def update_quantity(self, item:str, quantity:int):
+        # if item in ['carrot', 'apple', 'saddle']: item += 's' could this work?
         if item == 'carrot':
             item += 's'
         if item == 'saddle':
