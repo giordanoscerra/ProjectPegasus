@@ -206,6 +206,10 @@ class Agent():
             agent_pos = level.get_agent_position()
         place = heuristic(list(toExplore), agent_pos)[0]
         next_cell = a_star(level.get_map_as_nparray(),start=agent_pos, target=place, maxDistance=1, minDistance=1)[1]
+        print(f'place: {place}')
+        print(f'agent_pos: {agent_pos}')
+        print(f'next_cell: {next_cell}')
+        print(f'content of place: {decode(level.state["screen_descriptions"][place[0]][place[1]])}')
         #now we get the direction to go to reach the cell
         return actions_from_path(agent_pos, [next_cell])[0]
 

@@ -44,6 +44,17 @@ def _level_2(pony:bool = True):
     lvl.set_start_pos((2,9))
     return lvl.get_des()
 
+def _level_3(pony:bool = True):
+    desDescriton = open('utils/customLevels/level3.des', 'r').read()
+    lvl = LevelGenerator(map=desDescriton)
+    if(pony):
+        lvl.add_monster(name='pony', symbol="u", place=None)
+    for _ in range(12):
+        lvl.add_object(name='carrot', symbol="%", place=None)
+    lvl.add_object(name='saddle', symbol="(", place=None)
+    lvl.set_start_pos((2,2))
+    return lvl.get_des()
+
 def _actions():
     actions = tuple(nethack.CompassDirection) + (
         nethack.Command.THROW,
@@ -65,6 +76,8 @@ def createLevel(level:int = 0, pony:bool = True):
         lvl = _level_1(pony)
     elif(level == 2):
         lvl = _level_2(pony)
+    elif(level == 3):
+        lvl = _level_3(pony)
     else:
         lvl = _level_0(True)
     
@@ -104,4 +117,7 @@ def createLevel(level:int = 0, pony:bool = True):
     elif level==2:
         minX = 420
         maxX = 840
+    elif level==3:
+        minX = 350
+        maxX = 850
     return env, (minX,maxX)
