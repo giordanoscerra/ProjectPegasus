@@ -98,6 +98,12 @@ class Map:
         current_health = self.state['blstats'][10]
         max_health = self.state['blstats'][11]
         return int(current_health/max_health*100)
+    
+    def get_agent_strength(self) -> int:
+        return self.state['blstats'][3] # https://arxiv.org/pdf/2006.13760.pdf
+
+    def get_agent_constitution(self) -> int:
+        return self.state['blstats'][5]
 
     def get_pony_position(self) -> (int,int):
         return list(self.get_element_position('pony'))[0]

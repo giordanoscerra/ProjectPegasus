@@ -52,6 +52,16 @@ def _level_test_saddle_ride(pony:bool = True):
     lvl.add_object(name='saddle', symbol="(", place=(2,9))
     lvl.wallify()
     return lvl.get_des()
+def _level_3(pony:bool = True):
+    desDescriton = open('utils/customLevels/level3.des', 'r').read()
+    lvl = LevelGenerator(map=desDescriton)
+    if(pony):
+        lvl.add_monster(name='pony', symbol="u", place=None)
+    for _ in range(12):
+        lvl.add_object(name='carrot', symbol="%", place=None)
+    lvl.add_object(name='saddle', symbol="(", place=None)
+    lvl.set_start_pos((2,2))
+    return lvl.get_des()
 
 def _actions():
     actions = tuple(nethack.CompassDirection) + (
@@ -74,6 +84,8 @@ def createLevel(level:int = 0, pony:bool = True):
         lvl = _level_1(pony)
     elif(level == 2):
         lvl = _level_2(pony)
+    elif(level == 3):
+        lvl = _level_3(pony)
     elif(level == 4):
         lvl = _level_test_saddle_ride(pony)
     else:
@@ -115,4 +127,7 @@ def createLevel(level:int = 0, pony:bool = True):
     elif level==2:
         minX = 420
         maxX = 840
+    elif level==3:
+        minX = 350
+        maxX = 890
     return env, (minX,maxX)

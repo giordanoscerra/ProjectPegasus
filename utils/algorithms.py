@@ -52,7 +52,6 @@ def a_star(game_map: np.ndarray, start: Tuple[int, int], target: Tuple[int, int]
             neighbor_g = current_g + 1
             neighbor_h = h(neighbor,target)
             neighbor_f = neighbor_g + neighbor_h
-            parent[neighbor] = current
             neighbor_entry = (neighbor_f, (neighbor, neighbor_g))
             # if neighbor in open_list
             if neighbor in support_list.keys():
@@ -61,6 +60,7 @@ def a_star(game_map: np.ndarray, start: Tuple[int, int], target: Tuple[int, int]
                     continue
 
             # add neighbor to open list and update support_list
+            parent[neighbor] = current
             open_list.put(neighbor_entry)
             support_list[neighbor] = neighbor_g
 

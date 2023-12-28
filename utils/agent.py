@@ -14,7 +14,9 @@ class Agent():
         # I'd say that the initialization of the agent
         # also first initializes the (possibly, a) KB
         self.kb = KBwrapper()        # as of now, KBWrapper uses the kb from handson2!
-        self.attributes = {}
+        self.attributes = {
+            'encumbrance' : "unencumbered"
+        } # easy to access attributes about the agent: see it as a sort of cache
         self.actions = {
             "getCarrot": self.get_carrot,
             "getSaddle": self.get_saddle,
@@ -36,7 +38,7 @@ class Agent():
         return distance(elements_pos,agent_pos)[0]
 
 
-    def percept(self, game_map:Map, interesting_item_list:list = ['carrot', 'saddle', 'pony', 'Agent']) -> None:
+    def percept(self, game_map:Map, interesting_item_list:list = ['carrot', 'saddle', 'pony', 'Agent', 'wall']) -> None:
         '''Removes the position of all the items in interesting_item_list
         from the kb. Then scans the whole map, looking for such elements and
         inserting in the kb the position of the interesting items that 
@@ -76,6 +78,10 @@ class Agent():
         # get the agent's health (percentage). It is stored also in the
         # KB, since it might be useful for taking decisions
         self.attributes["health"] = game_map.get_agent_health()
+        self.attributes["strength"] = game_map.get_agent_strength()
+        self.attributes["constitution"] = game_map.get_agent_constitution()
+        self.attributes["riding"] = self.kb.query_riding("steed")
+        self.attributes["carrying_capacity"] = 1000 if self.attributes["riding"] else (25*(self.attributes["strength"]+self.attributes["constitution"])) + 50
         self.kb.update_health(self.attributes["health"])
 
     def process_message(self, message:str):
@@ -98,7 +104,13 @@ class Agent():
             # Q: hopefully the message is processed correctly!
             #   I mean, if the message is like 'You see here a blessed carrot.
             #   we're screwed...
-            self.kb.assert_stepping_on(element)             
+            self.kb.assert_stepping_on(element)      
+
+        for key, value in self.kb.encumbrance_messages.items():
+            if message in value: 
+                self.kb.update_encumbrance(key)
+                self.attributes["encumbrance"] = key
+
 
     def process_inventory(self, game_map:Map, interesting_items:list = ['saddle', 'carrot', 'apple']):
         '''called to save the intresting element of the inventory in the kb
@@ -263,8 +275,19 @@ class Agent():
         closeness_condition = are_close(agent_pos,pony_pos,maxOffset=maxOffset) and are_aligned(agent_pos,pony_pos)
         return agent_pos, pony_pos, closeness_condition
 
+    def explore_subtask(self, level:Map, heuristic:callable = lambda t,s: manhattan_distance(t,s), render:bool = False, graphic:bool = True, delay:float = 0.5):
+        next_action = self.explore_step(level, heuristic)
+        if next_action == '':
+            raise Exception('No cells to explore')
+        while next_action != '' and not self.kb.query_for_interrupt('explore'):
+            next_action = self.explore_step(level, heuristic)
+            level.apply_action(actionName=next_action)
+            if render:
+                level.render(delay=delay, graphic=graphic)
+            self.percept(level)
 
-    def explore(self, level: Map, heuristic: callable = lambda t,s: manhattan_distance(t,s)):
+
+    def explore_step(self, level: Map, heuristic: callable = lambda t,s: manhattan_distance(t,s)):
         toExplore = set()
         for i in range(len(level.state['screen_descriptions'])):
             for j in range(len(level.state['screen_descriptions'][0])):
