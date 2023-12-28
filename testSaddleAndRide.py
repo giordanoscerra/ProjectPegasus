@@ -4,7 +4,7 @@ from utils.agent import Agent
 from utils import exceptions
 
 
-level = Map(pony=True, level=3)
+level = Map(pony=True, level=4)
 agent = Agent()
 agent.percept(level)
 level.apply_action('PICKUP')

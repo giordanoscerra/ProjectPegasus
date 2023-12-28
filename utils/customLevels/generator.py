@@ -74,7 +74,7 @@ def createLevel(level:int = 0, pony:bool = True):
         lvl = _level_1(pony)
     elif(level == 2):
         lvl = _level_2(pony)
-    elif(level == 3):
+    elif(level == 4):
         lvl = _level_test_saddle_ride(pony)
     else:
         lvl = _level_0(True)
