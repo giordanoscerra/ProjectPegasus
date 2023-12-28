@@ -135,7 +135,7 @@ class KBwrapper():
         return self._kb.query("rideable(X)")
     
     def get_steed_tameness(self, steed):
-        return self._kb.query(f"steed_tameness({steed}, X)")[0]['X']
+        return list(self._kb.query(f"steed_tameness({steed}, X)"))[0]['X']
     
     def is_slippery(self):
         return self._kb.query("slippery")[0]
