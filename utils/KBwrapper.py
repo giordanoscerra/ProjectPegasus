@@ -154,13 +154,14 @@ class KBwrapper():
         else: self._kb.retractall(f'hostile({creature})')
     
     def get_steed_tameness(self, steed):
+        category = self._get_key(steed, self._categories)
+        if category == 'steed': return self._kb.query(f"steed_tameness({category}, X)")[0]['X']
         return self._kb.query(f"steed_tameness({steed}, X)")[0]['X']
     
     def is_slippery(self):
         return self._kb.query("slippery")[0]
     
     def update_encumbrance(self, encumbrance:str):
-        # \+ burdened(agent), \+ stressed(agent), \+ strained(agent), \+ overtaxed(agent), \+ overloaded(agent).
         for keys in self.encumbrance_messages.keys():
             self._kb.retractall(f'{keys}(agent)')
         self._kb.asserta(f'{encumbrance}(agent)')
@@ -170,12 +171,6 @@ class KBwrapper():
         self._kb.asserta(f'health({health})')
 
     def update_quantity(self, item:str, quantity:int):
-        # if item in ['carrot', 'apple', 'saddle']: item += 's' could this work?
-        if item == 'carrot':
-            item += 's'
-        if item == 'saddle':
-            item += 's'
-        if item == 'apple':
-            item += 's'
+        if item in ['carrot', 'apple', 'saddle']: item += 's'
         self._kb.retractall(f'{item}(_)')
         self._kb.asserta(f'{item}({quantity})')
