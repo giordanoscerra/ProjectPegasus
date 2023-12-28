@@ -60,7 +60,7 @@ class Agent():
         for i in range(len(scr_desc)):
             for j in range(len(scr_desc[0])):
                 description = decode(scr_desc[i][j])
-                if(description != '' and description != 'floor of a room'):
+                if(description not in ['','floor of a room','wall']):
                     for interesting_item in interesting_item_list:
                         if interesting_item in description:
                             if "pony" in description:
@@ -191,9 +191,90 @@ class Agent():
     def feed_steed(self, steedPos):
         return "TO BE CONTINUED"
     
-    def ride_steed(self, steedPos):
-        return "TO BE CONTINUED"
+    def ride_steed(self, level):
+        self.interact_with_pony(level=level, action="APPLY",what="saddle", maxOffset=1)
+        self.interact_with_pony(level=level, action="RIDE", maxOffset=1)
+
+    def interact_with_pony_with_silly_steps(self, level: Map, action: str=None, what: str=None, maxOffset: int=1, show_steps:bool=True, delay=0.5,heuristic: callable = lambda t,s: manhattan_distance([t],s)[1]):
+
+        self.go_to_closer_element(level, element='pony', heuristic=heuristic, show_steps=show_steps, delay=delay, dynamic=True)
+        #self.percept(level)
+        # goes toward the pony
+        flag = False
+        while not flag:
+            self.percept(level)
+            agent_pos, pony_pos, closeness_condition = self._check_if_near_pony(maxOffset)
+            delta = (agent_pos[0] - pony_pos[0], agent_pos[1] - pony_pos[1])
+            direction = ''
+            if delta[0] > 0:
+                direction += 'N'
+            elif delta[0] < 0:
+                direction += 'S'
+            if delta[1] > 0:
+                direction += 'W'
+            elif delta[1] < 0:
+                direction += 'E'
+            # If the distance between the pony and the agent is 
+            # 1, then they're forcibly aligned. So there should
+            # be no risk that the agent hits the pony
+            if closeness_condition:
+                print("I WILL PERFORM THE", action, "ACTION!!!")
+                level.apply_action(actionName=action,what=what,where=direction)
+                flag = True
+            else:
+                # get closer by going in direction
+                print("I AM MOVING WITHOUT AN ALGORITHM!")
+                level.apply_action(actionName=direction)
+
+            #self.percept(level)
+            if(show_steps):
+                time.sleep(delay)
+                level.render()
+                print("is the steed hostile? " + str(bool(self.kbQuery('hostile(steed)'))))       
+        #else:
+            # return exception? Nothing?
+        #    return 'There is no carrot here! (according to KB)'
     
+    '''
+    this repeats if necessary the go_to_closer_element with the dynamic twist to avoid beating the horse
+    then applies the action,could be throw carrot, apply saddle, ride
+    '''
+    def interact_with_pony(self, level: Map, action: str=None, what: str=None, maxOffset: int=1, show_steps:bool=True, delay=0.5,heuristic: callable = lambda t,s: manhattan_distance([t],s)[1]):
+
+        #self.percept(level)
+        # goes toward the pony
+        flag = False
+        while not flag:
+            self.go_to_closer_element(level, element='pony', heuristic=heuristic, show_steps=show_steps, delay=delay, dynamic=True)
+            self.percept(level)
+            agent_pos, pony_pos, closeness_condition = self._check_if_near_pony(maxOffset)
+            #perform the action!
+            if closeness_condition:
+                delta = (agent_pos[0] - pony_pos[0], agent_pos[1] - pony_pos[1])
+                direction = ''
+                if delta[0] > 0:
+                    direction += 'N'
+                elif delta[0] < 0:
+                    direction += 'S'
+                if delta[1] > 0:
+                    direction += 'W'
+                elif delta[1] < 0:
+                    direction += 'E'
+                print("I WILL PERFORM THE", action, "ACTION!!!")
+                level.apply_action(actionName=action,what=what,where=direction)
+                flag = True
+                #self.percept(level)
+                if(show_steps):
+                    time.sleep(delay)
+                    level.render()
+                    print("is the steed hostile? " + str(bool(self.kbQuery('hostile(steed)'))))
+
+    def _check_if_near_pony(self, maxOffset):
+        agent_pos = self.kb.get_element_position_query('agent')[0]
+        pony_pos = self.kb.get_element_position_query('pony')[0]
+        closeness_condition = are_close(agent_pos,pony_pos,maxOffset=maxOffset) and are_aligned(agent_pos,pony_pos)
+        return agent_pos, pony_pos, closeness_condition
+
     def explore_subtask(self, level:Map, heuristic:callable = lambda t,s: manhattan_distance(t,s), render:bool = False, graphic:bool = True, delay:float = 0.5):
         next_action = self.explore_step(level, heuristic)
         if next_action == '':
@@ -253,7 +334,7 @@ class Agent():
 
     def go_to_closer_element(self,level:Map,element:str='carrot', show_steps=False,
                              heuristic:callable = lambda t,s: manhattan_distance([t],s)[1],
-                              delay=0.5, maxDistance:int=0, minDistance:int=0):   
+                              delay=0.5, maxDistance:int=0, minDistance:int=0, dynamic:bool=False):   
         self.percept(level)
         agent_pos = self.kb.get_element_position_query('agent')[0]
         path = self._get_best_path_to_target(level, target = element,
@@ -275,6 +356,10 @@ class Agent():
                 self.percept(level)
                 #greenlight_status = self.kb.query_for_greenlight()
                 interrupt = self.check_interrupt()
+                _,_,closeness_condition = self._check_if_near_pony(1)
+                if(dynamic and closeness_condition):
+                    #print("DON'T KILL IT!!!!!!!!! DON'T KILL THE PONY BY STEPPING ON IT!!!!!!")
+                    break
                 if not interrupt:
                     level.apply_action(actionName = move_dir)
                     if(show_steps):
