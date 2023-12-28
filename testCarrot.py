@@ -1,4 +1,3 @@
-from ProjectPegasus.test_carrot_subtask import eat_all_carrots
 from utils.heuristics import manhattan_distance, infinity_distance, euclidean_distance
 from utils.map import Map
 from utils.agent import Agent
@@ -6,6 +5,8 @@ from utils import exceptions
 
 
 def eat_all_carrots(knight:Agent,level:Map):
+    '''Makes the agent eat all the carrots in its inventory
+    '''
     knight.percept(level)
     for _ in range(knight.kbQuery('carrots(X)')[0]['X']):
         level.apply_action('EAT',what='carrot')
@@ -13,6 +14,9 @@ def eat_all_carrots(knight:Agent,level:Map):
         level.render()
 
 def testPickup(level:Map, knight:Agent):
+    '''Test if the simple task of going arount picking up carrots
+    goes according to plan
+    '''
     knight.percept(level)
     level.render()
 
@@ -41,6 +45,9 @@ def testPickup(level:Map, knight:Agent):
             carrots_exist = False
 
 def testSubtask(level:Map,knight:Agent):
+    '''Test that the go_to_carrot subtask is chosen when appropriate,
+    and is executed accordingly
+    '''
     knight.percept(level)
     level.render()
 
@@ -54,7 +61,7 @@ if test_choice.upper() == 'P':
     knight = Agent()
     testPickup(level,knight)
 elif test_choice.upper() == 'T':
-    level = Map(level = 74, pony=True, peaceful=False, enemy=True)
+    level = Map(level = 74, pony=True, peaceful=True, enemy=False)
     knight = Agent()
     testSubtask(level,knight)
 else:

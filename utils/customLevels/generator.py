@@ -8,7 +8,7 @@ import os
 from utils.rewards import define_reward
 
 def _level_0(pony:bool = True):
-    lvl = LevelGenerator(w=20,h=20)
+    lvl = LevelGenerator(w=20,h=15)
     for _ in range(10):
         lvl.add_object(name='carrot', symbol="%", place=None)
     if(pony):
@@ -19,8 +19,8 @@ def _level_0(pony:bool = True):
 
 def _level_1(pony:bool = True):
     #get content from level1.des
-    desDescriton = open('utils/customLevels/level1.des', 'r').read()
-    lvl = LevelGenerator(map=desDescriton)
+    desDescription = open('utils/customLevels/level1.des', 'r').read()
+    lvl = LevelGenerator(map=desDescription)
     #pony and carrots randomly placed in the second room
     if(pony):
         lvl.add_monster(name='pony', symbol="u", place=(random.randint(13, 16), random.randint(5, 9)))
@@ -34,8 +34,8 @@ def _level_1(pony:bool = True):
 
 def _level_2(pony:bool = True):
     #get content from level1.des
-    desDescriton = open('utils/customLevels/level2.des', 'r').read()
-    lvl = LevelGenerator(map=desDescriton)
+    desDescription = open('utils/customLevels/level2.des', 'r').read()
+    lvl = LevelGenerator(map=desDescription)
     if(pony):
         lvl.add_monster(name='pony', symbol="u", place=(21,4))
     for _ in range(12):
@@ -45,18 +45,20 @@ def _level_2(pony:bool = True):
     return lvl.get_des()
 
 def _level_74(pony:bool = True, peaceful:bool = True, enemy:bool = False):
-    lvl = LevelGenerator(w=20,h=15)
-    for _ in range(10):
+    desDescription = open('utils/customLevels/level74.des', 'r').read()
+    lvl = LevelGenerator(desDescription)
+    for _ in range(5):
         lvl.add_object(name='carrot', symbol="%", place=None)
     if(pony):
-        if peaceful:
-            lvl.add_monster(name='pony', symbol="u", place=None, args=('peaceful',))
+        if(peaceful):
+            lvl.add_monster(name='pony', symbol="u", place=(2,5), args=('peaceful',))
         else:
-            lvl.add_monster(name='pony', symbol="u", place=(2,3))
+            lvl.add_monster(name='pony', symbol="u", place=(2,5))
     if(enemy):
-        lvl.add_monster(name='kobold', place=(5,6))
+        lvl.add_monster(name='kobold', place=None)
     lvl.add_object(name='saddle', symbol="(", place=None)
-    lvl.wallify()
+    lvl.set_start_pos=((2,9))
+    #lvl.wallify()
     return lvl.get_des()    
 
 def _actions():
