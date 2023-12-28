@@ -147,7 +147,7 @@ class Agent():
         try:
             level.apply_action(actionName='THROW',what=element,where=throwDir)
             if 'carrot' in element:
-                self.kb.update_tameness(inc = 1)
+                self.kb.update_tameness(inc = 1,steed='pony')
             self.percept(level)
         except Exception as exc:
             print(f'throw_element catched Exception with message: {exc}')
