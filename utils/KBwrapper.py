@@ -28,6 +28,12 @@ class KBwrapper():
         "overtaxed" : ["You can barely move a handspan with this load!", None],
         "overloaded" : ["You collapse under your load.", None]
     }
+    riding_skill = {
+        "unskilled" : -20,
+        "basic" : 0,
+        "skilled" : 15,
+        "expert" : 30
+    }
     
     def __init__(self):
         self._kb = Prolog()
@@ -130,6 +136,11 @@ class KBwrapper():
         if category == 'steed': self._kb.asserta(f'hostile({category})')
         else : self._kb.asserta(f'hostile({creature})')
 
+    def assert_saddled_steed(self, steed:str):
+        category = self._get_key(steed, self._categories)
+        if category == 'steed': self._kb.asserta(f'saddled({category})')
+        else: self._kb.asserta(f'saddled({steed})')
+
     def query_stepping_on(self, spaced_elem:str):
         element = spaced_elem.replace(' ','')
         category = self._get_key(spaced_elem, self._categories)
@@ -157,6 +168,11 @@ class KBwrapper():
         category = self._get_key(creature, self._categories)
         if category == 'steed': self._kb.retractall(f'hostile({category})')
         else: self._kb.retractall(f'hostile({creature})')
+
+    def retract_saddled_steed(self, steed:str):
+        category = self._get_key(steed, self._categories)
+        if category == 'steed': self._kb.retractall(f'saddled({category})')
+        else: self._kb.retractall(f'saddled({steed})')
     
     def get_steed_tameness(self, steed):
         category = self._get_key(steed, self._categories)

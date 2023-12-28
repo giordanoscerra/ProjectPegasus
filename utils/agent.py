@@ -66,6 +66,7 @@ class Agent():
                             if "pony" in description:
                                 if any(property in description for property in ["tame", "peaceful"]): self.kb.retract_hostile("pony") # it's that easy
                                 else: self.kb.assert_hostile("pony")
+                                if "saddled" in description: self.kb.assert_saddled_steed("pony")
                             self.kb.assert_element_position(interesting_item.lower().replace(' ',''),i,j)
         
         self.process_attributes(game_map=game_map)
@@ -146,6 +147,15 @@ class Agent():
         steed_tameness = self.kb.get_steed_tameness(steed) # did not yet test this
         return 100/(5 * (exp_lvl + steed_tameness))
     
+    def chance_of_saddle_apply_succeeding(self, steed):
+        if steed not in self.kb.get_rideable_steeds() or self.kb.is_slippery():
+            return 0
+        chance = (self.attributes["dexterity"] + self.attributes["charisma"]) / 2 + (2*self.kb.get_steed_tameness(steed))
+        chance += self.attributes["level"] * 20 if self.kb.get_steed_tameness(steed) > 0 else (5 - 10) # it should be 5 - 10*monster_level but how the hell do we infer that 
+        # if (self.attributes["role"] == "knight"): 
+        chance += 20
+        # chance += self.kb.riding_skill.get(self.attributes["riding_skill"])
+
     def check_interrupt(self):
         return self.kb.query_for_interrupt(self.current_subtask) if self.current_subtask else False
 
