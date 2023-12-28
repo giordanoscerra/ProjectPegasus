@@ -9,6 +9,7 @@
 :- dynamic saddles/1.
 :- dynamic riding/2. % riding(agent, steed), assert it when mounting, retract it when dismounting/slipping etc.
 :- dynamic burdened/1, stressed/1, strained/1, overtaxed/1, overloaded/1.
+:- dynamic unencumbered/1.
 
 % To translate into Prolog:
 % Chance of succeeding a mounting action is: 5 * (exp level + steed tameness)
@@ -35,7 +36,7 @@ rideable(X) :- is_steed(X), \+ riding(agent,_), \+ hallucinating(agent), \+ woun
 slippery :- confused(agent); fumbling(agent); slippery_fingers(agent). % WHAT IF THE SADDLE IS CURSED??????
 
 unencumbered(agent) :- \+ burdened(agent), \+ stressed(agent), \+ strained(agent), \+ overtaxed(agent), \+ overloaded(agent).
-encumbered(agent) :- stressed(agent); strained(agent); overtaxed(agent); overloaded(agent).
+encumbered(agent) :- stressed(agent); strained(agent); overtaxed(agent); overloaded(agent). %no burdened?
 
 %%% GENERAL SUBTASKS feel free to add other conditions or comments to suggest them
 action(getCarrot) :- 

@@ -44,6 +44,14 @@ def _level_2(pony:bool = True):
     lvl.set_start_pos((2,9))
     return lvl.get_des()
 
+def _level_test_saddle_ride(pony:bool = True):
+    lvl = LevelGenerator(w=20,h=20)
+    lvl.set_start_pos((2,9))
+    if(pony):
+            lvl.add_monster(name='pony', symbol="u", place=(2,7), args=("peaceful", "awake"))
+    lvl.add_object(name='saddle', symbol="(", place=(2,9))
+    lvl.wallify()
+    return lvl.get_des()
 def _level_3(pony:bool = True):
     desDescriton = open('utils/customLevels/level3.des', 'r').read()
     lvl = LevelGenerator(map=desDescriton)
@@ -78,6 +86,8 @@ def createLevel(level:int = 0, pony:bool = True):
         lvl = _level_2(pony)
     elif(level == 3):
         lvl = _level_3(pony)
+    elif(level == 4):
+        lvl = _level_test_saddle_ride(pony)
     else:
         lvl = _level_0(True)
     
