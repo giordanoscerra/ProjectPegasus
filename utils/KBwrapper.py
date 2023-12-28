@@ -120,16 +120,13 @@ class KBwrapper():
         stepping_on_sentence = f'stepping_on(agent,{category},{element})' if category is None else f'stepping_on(agent,_,{element})'
         return bool(self._kb.query(stepping_on_sentence))
 
-    def update_tameness(self, inc:int):
+    def update_tameness(self, inc:int, steed:str):
         try:
-            old_t = list(self._kb.query('tameness(steed,X)'))[0]['X']
-            self._kb.retractall('tameness(steed,_)')
-            self._kb.asserta(f'tameness(steed,{old_t+inc})')            
+            old_t = list(self._kb.query(f'tameness({steed},X)'))[0]['X']
+            self._kb.retractall(f'tameness({steed},_)')
+            self._kb.asserta(f'tameness({steed},{old_t+inc})')            
         except IndexError:
             print('The predicate hasn\'t been found')
-
-        self._kb.retractall('tameness(steed,_)')
-        self._kb.asserta(f'tameness(steed,{old_t+inc})')
 
     def get_rideable_steeds(self):
         return self._kb.query("rideable(X)")
