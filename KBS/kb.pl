@@ -121,7 +121,7 @@ interrupt(rideSteed) :-
 
 interrupt(hoardCarrots) :- 
     (carrots(X), tameness(steed, T), max_tameness(MT), T+X >= MT); 
-    % enemies nearby should interrupt this
+    % TODO: enemies nearby should interrupt this
     hostile(steed).
 
 interrupt(explore) :- \+ action(explore).
@@ -131,15 +131,7 @@ increment_action_count(A) :- retract(action_count(A, N)),  % remove the old valu
                              NewN is N+1, % increment the value
                              assert(action_count(A, NewN)). % assert the new value
 
-increment_tameness(X) :- retract(tameness(X, N)),  % remove the old value. At initialization we assert tameness(X, 1) for X = steed
-                         NewN is N+1, % increment the value
-                         assert(tameness(X, NewN)). % assert the new value
-
-% Decreased when using the ride action
-decrease_tameness(X) :- retract(tameness(X, N)),  % remove the old value.
-                         NewN is N-1, % increment the value
-                         assert(tameness(X, NewN)). % assert the new value
-
+%Q: used when?
 feed(X) :- increment_action_count(feed), increment_tameness(X).
 
 % We make use of hostile(steed) predicate. But when is a steed hostile?

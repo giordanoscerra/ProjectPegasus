@@ -65,7 +65,8 @@ class Agent():
                     for interesting_item in interesting_item_list:
                         if interesting_item in description:
                             if "pony" in description:
-                                if any(property in description for property in ["tame", "peaceful"]): self.kb.retract_hostile("pony") # it's that easy
+                                if any(property in description for property in ["tame", "peaceful"]): 
+                                    self.kb.retract_hostile("pony") # it's that easy
                                 else: 
                                     self.kb.assert_hostile("pony")
                             self.kb.assert_element_position(interesting_item.lower().replace(' ',''),i,j)
@@ -194,9 +195,15 @@ class Agent():
         while not arrived:
             try:
                 self.go_to_closer_element(level, element='carrot', heuristic=heuristic, show_steps=show_steps, delay=delay)
-                arrived = True
-            except exceptions.ElemNotInDestinationException:
+            except exceptions.ElemNotInDestinationException as exc:
+                #TODO: for some reason, this doesn't get printed even though
+                #       the program gets to this point: it seems to be behaving
+                #       as expected for what concerns the pathfinding
+                print(f'go_to_carrot raised a ElemNotInDestinationException'
+                    f' with the following message: {exc}.\n'
+                    f'Recomputing best path to closer carrot.')
                 continue
+            arrived = True
 
         self.percept(level)
 
@@ -231,9 +238,9 @@ class Agent():
                     self.go_to_closer_element(level, element='carrot', heuristic=heuristic, show_steps=show_steps, delay=delay)
                 except exceptions.ElemNotInDestinationException as exc:
                     print('Eccezzzionale!')
-                    #print(f'go_to_closer_element raised a ElemNotInDestinationException'
-                    #      f' with the following message: {exc}.\n'
-                    #      f'Recomputing best path to closer carrot.')
+                    print(f'go_to_closer_element raised a ElemNotInDestinationException'
+                          f' with the following message: {exc}.\n'
+                          f'Recomputing best path to closer carrot.')
                     continue
                 arrived = True
                 print('arrivato')
@@ -254,16 +261,6 @@ class Agent():
             
 
 
-           
-    def get_saddle(self, level:Map, heuristic:callable = lambda t,s: manhattan_distance([t],s)[1]):
-        self.go_to_closer_element(level, element='saddle', heuristic=heuristic, show_steps = True, delay=0.2)
-        self.percept(level)
-        if self.kb.query_stepping_on(spaced_elem='saddle'):
-            level.apply_action(actionName='PICKUP')
-            self.percept(level)
-            print('get_saddle successful!')
-        else:
-            return 'There is no saddle here! (according to KB)'
     
     # For now, this is Andrea's version. DavideM is in charge of this
     def pacify_steed(self,level:Map, show_steps:bool=True, delay=0.5):
@@ -318,6 +315,16 @@ class Agent():
 
 
     # --------- Saddle and ride subtask (Giordano) START ---------
+    def get_saddle(self, level:Map, heuristic:callable = lambda t,s: manhattan_distance([t],s)[1]):
+        self.go_to_closer_element(level, element='saddle', heuristic=heuristic, show_steps = True, delay=0.2)
+        self.percept(level)
+        if self.kb.query_stepping_on(spaced_elem='saddle'):
+            level.apply_action(actionName='PICKUP')
+            self.percept(level)
+            print('get_saddle successful!')
+        else:
+            return 'There is no saddle here! (according to KB)'
+    
     def ride_steed(self, level):
         self.interact_with_pony(level=level, action="APPLY",what="saddle", maxOffset=1)
         self.interact_with_pony(level=level, action="RIDE", maxOffset=1)
