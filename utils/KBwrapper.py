@@ -142,7 +142,7 @@ class KBwrapper():
     
     def retract_hostile(self, creature:str):
         category = self._get_key(creature, self._categories)
-        if category is 'steed': self._kb.retractall(f'hostile({category})')
+        if category == 'steed': self._kb.retractall(f'hostile({category})')
         else: self._kb.retractall(f'hostile({creature})')
 
     def get_rideable_steeds(self):
@@ -155,7 +155,7 @@ class KBwrapper():
 
     def retract_hostile(self, creature:str):
         category = self._get_key(creature, self._categories)
-        if category is 'steed': self._kb.retractall(f'hostile({category})')
+        if category == 'steed': self._kb.retractall(f'hostile({category})')
         else: self._kb.retractall(f'hostile({creature})')
     
     def get_steed_tameness(self, steed):
