@@ -28,13 +28,12 @@ while carrots_exist:
         #go to carrot
         knight.percept(level)
         #agent_start_pos = level.get_agent_position()
-        #closer_carrot_pos = infinity_distance(knight.kb.get_element_position_query('carrot'),agent_start_pos)[0]
+        closer_carrot_pos = infinity_distance(knight.kb.get_element_position_query('carrot'),agent_start_pos)[0]
         knight.go_to_closer_element(level,element='carrot',show_steps=True, 
                                     delay=0.2,
                                     heuristic= lambda x,y: manhattan_distance([x],y)[1])
-        #knight.go_to_element(level,element='carrot',show_steps=True, delay=0.2, maxDistance=0, minDistance=0)
         
-        #print(f'Agent went to closer: {closer_carrot_pos == level.get_agent_position()}')
+        print(f'Agent went to closer: {closer_carrot_pos == level.get_agent_position()}')
 
         #pick up carrot
         level.apply_action('PICKUP')

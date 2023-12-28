@@ -17,8 +17,8 @@ DIRECTIONS = ['N','S','E','W','NE','NW','SE','SW']
 # if something does not work it's probably his fault
 # if something does work it's probably thanks to him
 class Map:
-    def __init__(self, pony:bool = True, level:int = 0):
-        env, (self.minXCG, self.maxXCG) = createLevel(level=level, pony=pony)
+    def __init__(self, pony:bool = True, level:int = 0, **kwargs):
+        env, (self.minXCG, self.maxXCG) = createLevel(level=level, pony=pony, **kwargs)
         self.rewards = []
         self.state = env.reset()
         #leftmost_wall = self.state['pixel']

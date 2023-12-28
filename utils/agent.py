@@ -181,8 +181,9 @@ class Agent():
                 # the direction is suitable for throwing the carrot,
                 # otherwise it is suitable for moving
                 #
-                # TODO: fix this because it is too rough, might work in many
-                #cases but is blantaly wrong!
+                # If the distance between the pony and the agent is 
+                # 1, then they're forcibly aligned. So there should
+                # be no risk that the agent hits the pony
                 if close and are_aligned(agent_pos,pony_pos):
                     level.apply_action(actionName='THROW',what='carrot',where=direction)
                     thrown = True
@@ -199,10 +200,7 @@ class Agent():
             return 'There is no carrot here! (according to KB)'
         
     #def align_with_target(self, level:Map, target:Tuple[int,int]):
-        
-
-
-    
+           
     def get_saddle(self, level:Map, heuristic:callable = lambda t,s: manhattan_distance([t],s)[1]):
         self.go_to_closer_element(level, element='saddle', heuristic=heuristic, show_steps = True, delay=0.2)
         self.percept(level)
