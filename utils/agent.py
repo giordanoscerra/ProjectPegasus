@@ -142,6 +142,16 @@ class Agent():
         '''
         return self.kb.queryDirectly(query)
     
+
+    def throw_element(self, level, throwDir:str, element:str='carrot'):
+        try:
+            level.apply_action(actionName='THROW',what=element,where=throwDir)
+            if 'carrot' in element:
+                self.kb.update_tameness(inc = 1)
+            self.percept(level)
+        except Exception as exc:
+            print(f'throw_element catched Exception with message: {exc}')
+    
     def get_carrot(self, level: Map, show_steps:bool=True, delay=0.5,heuristic: callable = lambda t,s: manhattan_distance([t],s)[1]):
         '''Performs the getCarrot task: the agent goes towards the closer carrots,
         picks it up and then goes towards the pony to throw the first carrot at it
@@ -185,7 +195,8 @@ class Agent():
                 # 1, then they're forcibly aligned. So there should
                 # be no risk that the agent hits the pony
                 if close and are_aligned(agent_pos,pony_pos):
-                    level.apply_action(actionName='THROW',what='carrot',where=direction)
+                    #level.apply_action(actionName='THROW',what='carrot',where=direction)
+                    self.throw_element(level, element='carrot', throwDir=direction)
                     thrown = True
                 else:
                     # get closer by going in direction
