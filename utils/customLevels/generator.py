@@ -48,7 +48,7 @@ def _level_test_saddle_ride(pony:bool = True):
     lvl = LevelGenerator(w=20,h=20)
     lvl.set_start_pos((2,9))
     if(pony):
-            lvl.add_monster(name='pony', symbol="u", place=(2,10), args=("peaceful", "awake"))
+            lvl.add_monster(name='pony', symbol="u", place=(2,5), args=("peaceful", "awake"))
     lvl.add_object(name='saddle', symbol="(", place=(2,9))
     lvl.wallify()
     return lvl.get_des()
