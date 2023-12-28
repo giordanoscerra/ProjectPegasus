@@ -181,7 +181,57 @@ class Agent():
     
     def ride_steed(self, steedPos):
         return "TO BE CONTINUED"
-    
+
+    def interact_with_pony(self, level: Map, action: str=None, what: str=None, maxOffset: int=1, show_steps:bool=True, delay=0.5,heuristic: callable = lambda t,s: manhattan_distance([t],s)[1]):
+
+        self.go_to_closer_element(level, element='pony', heuristic=heuristic, show_steps=show_steps, delay=delay, dynamic=True)
+        #self.percept(level)
+        print("FINE GOTOCLOSERELEMENT.........")
+        # goes toward the pony
+        flag = False
+        while not flag:
+            self.percept(level)
+            agent_pos, pony_pos, closeness_condition = self._check_if_near_pony(maxOffset)
+            delta = (agent_pos[0] - pony_pos[0], agent_pos[1] - pony_pos[1])
+            print(agent_pos,pony_pos,"DELTA IS", delta)
+            direction = ''
+            if delta[0] > 0:
+                direction += 'N'
+            elif delta[0] < 0:
+                direction += 'S'
+            if delta[1] > 0:
+                direction += 'W'
+            elif delta[1] < 0:
+                direction += 'E'
+            print("DIRECTION:", direction)
+            # If the distance between the pony and the agent is 
+            # 1, then they're forcibly aligned. So there should
+            # be no risk that the agent hits the pony
+            if closeness_condition:
+                print("WE ARE CLOSE, PONY!!!!!!!!")
+                level.apply_action(actionName=action,what=what,where=direction)
+                flag = True
+            else:
+                # get closer by going in direction
+                print("I AM MOVING!!!!!! OR ATTACKING.")
+                level.apply_action(actionName=direction)
+
+            #self.percept(level)
+            if(show_steps):
+                time.sleep(delay)
+                level.render()
+                print("is the steed hostile? " + str(bool(self.kbQuery('hostile(steed)'))))       
+        #else:
+            # return exception? Nothing?
+        #    return 'There is no carrot here! (according to KB)'
+
+    def _check_if_near_pony(self, maxOffset):
+        agent_pos = self.kb.get_element_position_query('agent')[0]
+        pony_pos = self.kb.get_element_position_query('pony')[0]
+        closeness_condition = are_close(agent_pos,pony_pos,maxOffset=maxOffset) and are_aligned(agent_pos,pony_pos)
+        return agent_pos, pony_pos, closeness_condition
+
+
     def explore(self, level: Map, heuristic: callable = lambda t,s: manhattan_distance(t,s)):
         toExplore = set()
         for i in range(len(level.state['screen_descriptions'])):
@@ -229,7 +279,7 @@ class Agent():
 
     def go_to_closer_element(self,level:Map,element:str='carrot', show_steps=False,
                              heuristic:callable = lambda t,s: manhattan_distance([t],s)[1],
-                              delay=0.5, maxDistance:int=0, minDistance:int=0):   
+                              delay=0.5, maxDistance:int=0, minDistance:int=0, dynamic:bool=False):   
         self.percept(level)
         agent_pos = self.kb.get_element_position_query('agent')[0]
         path = self._get_best_path_to_target(level, target = element,
@@ -251,6 +301,10 @@ class Agent():
                 self.percept(level)
                 #greenlight_status = self.kb.query_for_greenlight()
                 interrupt = self.check_interrupt()
+                _,_,closeness_condition = self._check_if_near_pony(1)
+                if(dynamic and closeness_condition):
+                    print("DON'T KILL IT!!!!!!!!!")
+                    break
                 if not interrupt:
                     level.apply_action(actionName = move_dir)
                     if(show_steps):
