@@ -11,6 +11,5 @@ level.apply_action('PICKUP')
 level.render()
 for _ in range(10):
     agent.interact_with_pony(level=level, action="THROW",what="carrot", maxOffset=7, delay=0)
-agent.interact_with_pony(level=level, action="APPLY",what="saddle", maxOffset=1)
-agent.interact_with_pony(level=level, action="RIDE", maxOffset=1)
+agent.ride_steed(level)
 

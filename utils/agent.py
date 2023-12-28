@@ -179,10 +179,11 @@ class Agent():
     def feed_steed(self, steedPos):
         return "TO BE CONTINUED"
     
-    def ride_steed(self, steedPos):
-        return "TO BE CONTINUED"
+    def ride_steed(self, level):
+        self.interact_with_pony(level=level, action="APPLY",what="saddle", maxOffset=1)
+        self.interact_with_pony(level=level, action="RIDE", maxOffset=1)
 
-    def interact_with_pony(self, level: Map, action: str=None, what: str=None, maxOffset: int=1, show_steps:bool=True, delay=0.5,heuristic: callable = lambda t,s: manhattan_distance([t],s)[1]):
+    def interact_with_pony_with_silly_steps(self, level: Map, action: str=None, what: str=None, maxOffset: int=1, show_steps:bool=True, delay=0.5,heuristic: callable = lambda t,s: manhattan_distance([t],s)[1]):
 
         self.go_to_closer_element(level, element='pony', heuristic=heuristic, show_steps=show_steps, delay=delay, dynamic=True)
         #self.percept(level)
@@ -221,6 +222,40 @@ class Agent():
         #else:
             # return exception? Nothing?
         #    return 'There is no carrot here! (according to KB)'
+    
+    '''
+    this repeats if necessary the go_to_closer_element with the dynamic twist to avoid beating the horse
+    then applies the action,could be throw carrot, apply saddle, ride
+    '''
+    def interact_with_pony(self, level: Map, action: str=None, what: str=None, maxOffset: int=1, show_steps:bool=True, delay=0.5,heuristic: callable = lambda t,s: manhattan_distance([t],s)[1]):
+
+        #self.percept(level)
+        # goes toward the pony
+        flag = False
+        while not flag:
+            self.go_to_closer_element(level, element='pony', heuristic=heuristic, show_steps=show_steps, delay=delay, dynamic=True)
+            self.percept(level)
+            agent_pos, pony_pos, closeness_condition = self._check_if_near_pony(maxOffset)
+            #perform the action!
+            if closeness_condition:
+                delta = (agent_pos[0] - pony_pos[0], agent_pos[1] - pony_pos[1])
+                direction = ''
+                if delta[0] > 0:
+                    direction += 'N'
+                elif delta[0] < 0:
+                    direction += 'S'
+                if delta[1] > 0:
+                    direction += 'W'
+                elif delta[1] < 0:
+                    direction += 'E'
+                print("I WILL PERFORM THE", action, "ACTION!!!")
+                level.apply_action(actionName=action,what=what,where=direction)
+                flag = True
+                #self.percept(level)
+                if(show_steps):
+                    time.sleep(delay)
+                    level.render()
+                    print("is the steed hostile? " + str(bool(self.kbQuery('hostile(steed)'))))
 
     def _check_if_near_pony(self, maxOffset):
         agent_pos = self.kb.get_element_position_query('agent')[0]
