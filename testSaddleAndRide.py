@@ -5,10 +5,12 @@ from utils import exceptions
 
 
 level = Map(pony=True, level=3)
-#sam is a classical knight name
 agent = Agent()
 agent.percept(level)
 level.apply_action('PICKUP')
 level.render()
+for _ in range(10):
+    agent.interact_with_pony(level=level, action="THROW",what="carrot", maxOffset=7, delay=0)
 agent.interact_with_pony(level=level, action="APPLY",what="saddle", maxOffset=1)
-level.print_inventory()
+agent.interact_with_pony(level=level, action="RIDE", maxOffset=1)
+
