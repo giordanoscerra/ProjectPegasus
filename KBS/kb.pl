@@ -76,6 +76,14 @@ action(rideSteed) :-
     X == 0, 
     \+ position(comestible,carrot,_,_).
 
+%we need to explore if the pony is tamed but we dont't know where it is
+%we need to ecplore if the pony is not tamed and we don't have carrots
+%TODO: we can decide to explore if we haven't enough carrots to tame the pony
+action(explore) :- 
+    (tameness(_, T), max_tameness(MT)),
+    ((T == MT, \+ position(_, Steed, _, _), is_steed(Steed)); 
+    (T < MT, carrots(X), X == 0, \+ position(_, carrot, _, _))).
+
 %%% INTERRUPT CONDITIONS
 interrupt(getCarrot) :- 
     carrots(X), X > 0; 
@@ -99,6 +107,8 @@ interrupt(rideSteed) :-
     hostile(steed); 
     ((carrots(X), X > 0); position(comestible,carrot,_,_), (tameness(steed, T), max_tameness(MT), T < MT)).
 interrupt(hoardCarrots) :- (carrots(X), tameness(steed, T), max_tameness(MT), T+X >= MT); hostile(steed).
+
+interrupt(explore) :- \+ action(explore).
 
 % We need to count how many times we fed the steed to calculate its tameness.
 increment_action_count(A) :- retract(action_count(A, N)),  % remove the old value. At initialization the we assert action_count(A, 0) for A = feed
@@ -145,6 +155,9 @@ unsafe_position(R, C) :- position(enemy,_, R, C).
 unsafe_position(R,C) :- 
     position(enemy,_, ER, EC), 
     is_close(ER, EC, R, C).
+unsafe_position(_,_) :- fail.
+% \+ means "the proposition is not entailed by KB". Sort of a not, but more general
+safe_position(R,C) :- \+ unsafe_position(R,C).
 
 %%%% known facts %%%%
 opposite(north, south).
@@ -181,10 +194,6 @@ close_direction(south, southwest).
 close_direction(southwest, west).
 close_direction(west, northwest).
 close_direction(northwest, north).
-
-unsafe_position(_,_) :- fail.
-% \+ means "the proposition is not entailed by KB". Sort of a not, but more general
-safe_position(R,C) :- \+ unsafe_position(R,C).
 
 % we need to pick a carrot if we are stepping on it. 
 is_pickable(carrots).
