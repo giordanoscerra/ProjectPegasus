@@ -53,8 +53,16 @@ def testSubtask(level:Map,knight:Agent):
 
     eat_all_carrots(knight,level)
 
+def testHoard(level:Map,knight:Agent):
+    knight.percept(level)
+    knight.pacify_steed(level)
+
+    knight.kb.query_for_action()    #will most likely return 'hoardCarrots'
+    knight.hoard_carrots(level)
+
+
 # Actual program starts here:
-test_choice = input('Which test do you want to execute? (P : testPickup, T: testSubtask) ')
+test_choice = input('Which test do you want to execute? (P : testPickup, T: testSubtask, H: hoardTest) ')
 
 if test_choice.upper() == 'P':
     level = Map(pony=False)
@@ -73,10 +81,15 @@ elif test_choice.upper() == 'T':
     knight.kb.query_for_action()    #will most likely return 'pacifySteed'
     print('Tameness level of the pony is ',
           knight.kb.get_steed_tameness('pony'), 'out of 20')
-    #knight.pacify_steed(level)
-    #print('After throwing one carrot, tameness level of the pony is ',
-    #      knight.kb.get_steed_tameness('pony'), 'out of 20')
-    #print('Next subtask is: ', knight.kb.query_for_action())
+    knight.pacify_steed(level)
+    print('After throwing one carrot, tameness level of the pony is ',
+          knight.kb.get_steed_tameness('pony'), 'out of 20')
+    print('Next subtask is: ', knight.kb.query_for_action())   
+elif test_choice.upper() == 'H':
+    level = Map(pony=True)
+    knight = Agent()
+
+    testHoard(level,knight)    
 else:
     print('Invalid choice. Please enter P for testPickup or T for testSubtask.')
 
