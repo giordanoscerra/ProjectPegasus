@@ -139,6 +139,11 @@ class KBwrapper():
         #    return bool(self._kb.query(f'stepping_on(agent,{category},{element})'))
         #else:
         #    return bool(self._kb.query(f'stepping_on(agent,_,{element})'))
+    
+    def retract_hostile(self, creature:str):
+        category = self._get_key(creature, self._categories)
+        if category is 'steed': self._kb.retractall(f'hostile({category})')
+        else: self._kb.retractall(f'hostile({creature})')
 
     def get_rideable_steeds(self):
         return self._kb.query("rideable(X)")
