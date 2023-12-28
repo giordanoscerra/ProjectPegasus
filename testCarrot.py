@@ -61,7 +61,7 @@ if test_choice.upper() == 'P':
     knight = Agent()
     testPickup(level,knight)
 elif test_choice.upper() == 'T':
-    level = Map(level = 74, pony=True, peaceful=True, enemy=False)
+    level = Map(level = 74, pony=True, peaceful=False, enemy=False)
     knight = Agent()
     testSubtask(level,knight)
 else:

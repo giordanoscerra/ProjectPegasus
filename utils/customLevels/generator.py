@@ -51,29 +51,29 @@ def _level_74(pony:bool = True, peaceful:bool = True, enemy:bool = False):
         lvl.add_object(name='carrot', symbol="%", place=None)
     if(pony):
         if(peaceful):
-            lvl.add_monster(name='pony', symbol="u", place=(2,5), args=('peaceful',))
+            lvl.add_monster(name='pony', symbol="u", place=(13,11), args=('peaceful',))
         else:
-            lvl.add_monster(name='pony', symbol="u", place=(2,5))
+            lvl.add_monster(name='pony', symbol="u", place=(13,11))
     if(enemy):
         lvl.add_monster(name='kobold', place=None)
     lvl.add_object(name='saddle', symbol="(", place=None)
-    lvl.set_start_pos=((2,9))
-    #lvl.wallify()
+    lvl.set_start_pos((random.randint(1,5),random.randint(1,12)))
+    lvl.wallify()
     return lvl.get_des()    
 
-def _actions():
-    actions = tuple(nethack.CompassDirection) + (
-        nethack.Command.THROW,
-        nethack.Command.RIDE,
-        nethack.Command.EAT,
-        nethack.Command.DROP,
-        nethack.Command.APPLY,
-        nethack.Command.PICKUP,
-        nethack.Command.WHATIS,
-        nethack.Command.INVENTORY,# included to allow use of saddle (i)
-        nethack.Command.RUSH,# included to allow use of apple (g)
-    )
-    return actions
+#def _actions():
+#    actions = tuple(nethack.CompassDirection) + (
+#        nethack.Command.THROW,
+#        nethack.Command.RIDE,
+#        nethack.Command.EAT,
+#        nethack.Command.DROP,
+#        nethack.Command.APPLY,
+#        nethack.Command.PICKUP,
+#        nethack.Command.WHATIS,
+#        nethack.Command.INVENTORY,# included to allow use of saddle (i)
+#        nethack.Command.RUSH,# included to allow use of apple (g)
+#    )
+#    return actions
 
 def createLevel(level:int = 0, pony:bool = True,**kwargs):
     if(level == 0):
@@ -91,7 +91,7 @@ def createLevel(level:int = 0, pony:bool = True,**kwargs):
     reward_manager_defined = define_reward()
     env = gym.make(
         'MiniHack-Skill-Custom-v0',
-        actions = _actions(),
+        #actions = _actions(),
         character = "kn-hum-neu-mal",
         observation_keys = (
             'glyphs',
