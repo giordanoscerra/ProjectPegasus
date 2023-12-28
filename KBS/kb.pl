@@ -39,22 +39,28 @@ action(getCarrot) :-
     position(comestible,carrot,_,_), 
     hostile(steed).
 
-action(getSaddle) :- 
-    saddles(X), X == 0, 
-    \+ stepping_on(agent,saddle,_), 
-    position(applicable,saddle,_,_).
-
-action(pacifySteed) :- 
-    hostile(steed), 
-    carrots(X), 
-    X > 0.
-
 action(hoardCarrots) :- 
     carrots(X), X == 0, 
     \+ hostile(steed), 
     tameness(steed, T), 
     max_tameness(MT), 
     T < MT.
+
+action(getSaddle) :- 
+    saddles(X), X == 0, 
+    \+ stepping_on(agent,saddle,_), 
+    position(applicable,saddle,_,_),
+    % [Andrea] I'd say that the agent gets the saddle after he's
+    % given at least one carrot to the pony
+    \+ hostile(steed).
+
+action(pacifySteed) :- 
+    hostile(steed), 
+    carrots(X), X > 0,
+    % [Andrea] I felt free to add this rule, feel free to change:
+    % The idea is: if the pony isn't in sight the agent can hoard
+    % carrots in the meantime
+    position(pony,_,_,_).
 
 action(feedSteed) :- 
     carrots(X), 

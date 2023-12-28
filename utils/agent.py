@@ -167,45 +167,7 @@ class Agent():
             level.apply_action(actionName='PICKUP')
             # percept here just for safety: mainly to update inventory
             self.percept(level)
-            
-            # goes toward the pony
-            thrown = False
-            while not thrown:
-                self.percept(level)
-                agent_pos = self.kb.get_element_position_query('agent')[0]
-                pony_pos = self.kb.get_element_position_query('pony')[0]
-                delta = (agent_pos[0] - pony_pos[0], agent_pos[1] - pony_pos[1])
-                direction = ''
-                if delta[0] > 0:
-                    direction += 'N'
-                elif delta[0] < 0:
-                    direction += 'S'
-                if delta[1] > 0:
-                    direction += 'W'
-                elif delta[1] < 0:
-                    direction += 'E'
-
-                #experimentally, the throwing distance of a carrot is 7
-                close = are_close(agent_pos,pony_pos,maxOffset=7)
-                # IDEA: if the agent and pony are close and aligned, then 
-                # the direction is suitable for throwing the carrot,
-                # otherwise it is suitable for moving
-                #
-                # If the distance between the pony and the agent is 
-                # 1, then they're forcibly aligned. So there should
-                # be no risk that the agent hits the pony
-                if close and are_aligned(agent_pos,pony_pos):
-                    #level.apply_action(actionName='THROW',what='carrot',where=direction)
-                    self.throw_element(level, element='carrot', throwDir=direction)
-                    thrown = True
-                else:
-                    # get closer by going in direction
-                    level.apply_action(actionName=direction)
-
-                self.percept(level)
-                if(show_steps):
-                    time.sleep(delay)
-                    level.render()       
+                   
         else:
             # return exception? Nothing?
             return 'There is no carrot here! (according to KB)'
@@ -222,7 +184,43 @@ class Agent():
         else:
             return 'There is no saddle here! (according to KB)'
     
-    def pacify_steed(self, steedPos):
+    def pacify_steed(self,level:Map, show_steps:bool=True, delay=0.5):
+        # goes toward the pony
+        thrown = False
+        while not thrown:
+            self.percept(level)
+            agent_pos = self.kb.get_element_position_query('agent')[0]
+            pony_pos = self.kb.get_element_position_query('pony')[0]
+            delta = (agent_pos[0] - pony_pos[0], agent_pos[1] - pony_pos[1])
+            direction = ''
+            if delta[0] > 0:
+                direction += 'N'
+            elif delta[0] < 0:
+                direction += 'S'
+            if delta[1] > 0:
+                direction += 'W'
+            elif delta[1] < 0:
+                direction += 'E'
+            #experimentally, the throwing distance of a carrot is 7
+            close = are_close(agent_pos,pony_pos,maxOffset=7)
+            # IDEA: if the agent and pony are close and aligned, then 
+            # the direction is suitable for throwing the carrot,
+            # otherwise it is suitable for moving
+            #
+            # If the distance between the pony and the agent is 
+            # 1, then they're forcibly aligned. So there should
+            # be no risk that the agent hits the pony
+            if close and are_aligned(agent_pos,pony_pos):
+                #level.apply_action(actionName='THROW',what='carrot',where=direction)
+                self.throw_element(level, element='carrot', throwDir=direction)
+                thrown = True
+            else:
+                # get closer by going in direction
+                level.apply_action(actionName=direction)
+            self.percept(level)
+            if(show_steps):
+                time.sleep(delay)
+                level.render()
         return "TO BE CONTINUED"
     
     def hoard_carrots(self):

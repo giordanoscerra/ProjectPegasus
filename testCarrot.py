@@ -64,6 +64,19 @@ elif test_choice.upper() == 'T':
     level = Map(level = 74, pony=True, peaceful=False, enemy=False)
     knight = Agent()
     testSubtask(level,knight)
+
+    print('Next subtask is: ', knight.kb.query_for_action())
+    knight.kb.query_for_action()    #will most likely return 'getCarrot'
+    knight.get_carrot(level)
+    level.print_inventory()
+    print('Next subtask is: ', knight.kb.query_for_action())
+    knight.kb.query_for_action()    #will most likely return 'pacifySteed'
+    print('Tameness level of the pony is ',
+          knight.kb.get_steed_tameness('pony'), 'out of 20')
+    #knight.pacify_steed(level)
+    #print('After throwing one carrot, tameness level of the pony is ',
+    #      knight.kb.get_steed_tameness('pony'), 'out of 20')
+    #print('Next subtask is: ', knight.kb.query_for_action())
 else:
     print('Invalid choice. Please enter P for testPickup or T for testSubtask.')
 
