@@ -161,8 +161,6 @@ class Agent():
         self.go_to_closer_element(level, element='carrot', heuristic=heuristic, show_steps=show_steps, delay=delay)
         self.percept(level)
 
-        # Pick up the carrot if still there. Doing this with the kb
-        # is an overkill imo
         if self.kb.query_stepping_on(spaced_elem='carrot'):
             level.apply_action(actionName='PICKUP')
             # percept here just for safety: mainly to update inventory
@@ -223,8 +221,33 @@ class Agent():
                 level.render()
         return "TO BE CONTINUED"
     
-    def hoard_carrots(self):
-        return "TO BE CONTINUED"
+    def hoard_carrots(self, level:Map, show_steps:bool=True, delay=0.5,heuristic: callable = lambda t,s: manhattan_distance([t],s)[1]):
+        carrots_exist = True
+        while carrots_exist:
+            carrots_exist = bool(self.kb.get_element_position_query('carrot'))
+            self.percept(level)
+            # Q: rn the agent is blindly going towards the element.
+            #   I think that for this task it is important that
+            #   the interrupts are seriously implemented
+            # Q2: this is basically get_carrots multiple times!
+            # Q3: remember that an ElemNotFoundException can still
+            #   be risen by closest_element_position. The question of
+            #   who catches this and to do what remains open...
+            self.go_to_closer_element(level,element='carrot',show_steps=show_steps,
+                                      delay=delay, heuristic=heuristic)
+            self.percept(level)
+
+            if self.kb.query_stepping_on(spaced_elem='carrot'):
+                level.apply_action(actionName='PICKUP')
+                # percept here just for safety: mainly to update inventory
+                self.percept(level)  
+            else:
+                # return exception? Nothing?
+                # this could happen if another entity (e.g. pony)
+                # gets to the carrot before the agent. It's unlikely
+                return 'There is no carrot here! (according to KB)'
+            
+
     
     def feed_steed(self, steedPos):
         return "TO BE CONTINUED"
@@ -262,7 +285,6 @@ class Agent():
         #now we get the direction to go to reach the cell
         return actions_from_path(agent_pos, [next_cell])[0]
 
-    # TODO: deal with maxDistance and minDistance
     def _get_best_path_to_target(self, game_map: Map, target,
                                 heuristic:callable = lambda t,s: manhattan_distance([t],s)[1],
                                 maxDistance:int=0,minDistance:int=0) -> List[Tuple[int, int]]:

@@ -40,7 +40,7 @@ action(getCarrot) :-
     hostile(steed).
 
 action(hoardCarrots) :- 
-    carrots(X), X == 0, 
+    %carrots(X), X == 0, 
     \+ hostile(steed), 
     tameness(steed, T), 
     max_tameness(MT), 
@@ -104,7 +104,11 @@ interrupt(rideSteed) :-
     \+ rideable(steed); 
     hostile(steed); 
     ((carrots(X), X > 0); position(comestible,carrot,_,_), (tameness(steed, T), max_tameness(MT), T < MT)).
-interrupt(hoardCarrots) :- (carrots(X), tameness(steed, T), max_tameness(MT), T+X >= MT); hostile(steed).
+
+interrupt(hoardCarrots) :- 
+    (carrots(X), tameness(steed, T), max_tameness(MT), T+X >= MT); 
+    % enemies nearby should interrupt this
+    hostile(steed).
 
 % We need to count how many times we fed the steed to calculate its tameness.
 increment_action_count(A) :- retract(action_count(A, N)),  % remove the old value. At initialization the we assert action_count(A, 0) for A = feed
