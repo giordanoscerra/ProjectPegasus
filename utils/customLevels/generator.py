@@ -51,13 +51,13 @@ def _level_74(pony:bool = True, peaceful:bool = True, enemy:bool = False):
         lvl.add_object(name='carrot', symbol="%", place=None)
     if(pony):
         if(peaceful):
-            lvl.add_monster(name='pony', symbol="u", place=(13,11), args=('peaceful',))
+            lvl.add_monster(name='pony', symbol="u", place=(14,11), args=('peaceful',))
         else:
-            lvl.add_monster(name='pony', symbol="u", place=(13,11))
+            lvl.add_monster(name='pony', symbol="u", place=(14,11))
     if(enemy):
         lvl.add_monster(name='kobold', place=None)
     lvl.add_object(name='saddle', symbol="(", place=None)
-    lvl.set_start_pos((random.randint(1,5),random.randint(1,12)))
+    lvl.set_start_pos((random.randint(1,14),random.randint(1,9)))
     lvl.wallify()
     return lvl.get_des()    
 
