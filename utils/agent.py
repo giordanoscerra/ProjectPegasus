@@ -14,7 +14,9 @@ class Agent():
         # I'd say that the initialization of the agent
         # also first initializes the (possibly, a) KB
         self.kb = KBwrapper()        # as of now, KBWrapper uses the kb from handson2!
-        self.attributes = {}
+        self.attributes = {
+            'encumbrance' : "unencumbered"
+        } # easy to access attributes about the agent: see it as a sort of cache
         self.actions = {
             "getCarrot": self.get_carrot,
             "getSaddle": self.get_saddle,
@@ -36,10 +38,10 @@ class Agent():
         return distance(elements_pos,agent_pos)[0]
 
 
-    def percept(self, game_map:Map, interesting_item_list:list = ['carrot', 'saddle', 'pony', 'Agent']) -> None:
+    def percept(self, game_map:Map, interesting_item_list:list = ['carrot', 'saddle', 'pony', 'Agent', 'wall']) -> None:
         '''Removes the position of all the items in interesting_item_list
         from the kb. Then scans the whole map, looking for such elements and
-        inserting in the kbthe position of the interesting items that 
+        inserting in the kb the position of the interesting items that 
         have been found.      
         '''
 
@@ -58,9 +60,12 @@ class Agent():
         for i in range(len(scr_desc)):
             for j in range(len(scr_desc[0])):
                 description = decode(scr_desc[i][j])
-                if(description != '' and description != 'floor of a room'):
+                if(description not in ['','floor of a room','wall']):
                     for interesting_item in interesting_item_list:
                         if interesting_item in description:
+                            if "pony" in description:
+                                if any(property in description for property in ["tame", "peaceful"]): self.kb.retract_hostile("pony") # it's that easy
+                                else: self.kb.assert_hostile("pony")
                             self.kb.assert_element_position(interesting_item.lower().replace(' ',''),i,j)
         
         self.process_attributes(game_map=game_map)
@@ -73,6 +78,10 @@ class Agent():
         # get the agent's health (percentage). It is stored also in the
         # KB, since it might be useful for taking decisions
         self.attributes["health"] = game_map.get_agent_health()
+        self.attributes["strength"] = game_map.get_agent_strength()
+        self.attributes["constitution"] = game_map.get_agent_constitution()
+        self.attributes["riding"] = self.kb.query_riding("steed")
+        self.attributes["carrying_capacity"] = 1000 if self.attributes["riding"] else (25*(self.attributes["strength"]+self.attributes["constitution"])) + 50
         self.kb.update_health(self.attributes["health"])
 
     def process_message(self, message:str):
@@ -95,7 +104,13 @@ class Agent():
             # Q: hopefully the message is processed correctly!
             #   I mean, if the message is like 'You see here a blessed carrot.
             #   we're screwed...
-            self.kb.assert_stepping_on(element)             
+            self.kb.assert_stepping_on(element)      
+
+        for key, value in self.kb.encumbrance_messages.items():
+            if message in value: 
+                self.kb.update_encumbrance(key)
+                self.attributes["encumbrance"] = key
+
 
     def process_inventory(self, game_map:Map, interesting_items:list = ['saddle', 'carrot', 'apple']):
         '''called to save the intresting element of the inventory in the kb
@@ -252,10 +267,103 @@ class Agent():
     def feed_steed(self, steedPos):
         return "TO BE CONTINUED"
     
-    def ride_steed(self, steedPos):
-        return "TO BE CONTINUED"
+    def ride_steed(self, level):
+        self.interact_with_pony(level=level, action="APPLY",what="saddle", maxOffset=1)
+        self.interact_with_pony(level=level, action="RIDE", maxOffset=1)
+
+    def interact_with_pony_with_silly_steps(self, level: Map, action: str=None, what: str=None, maxOffset: int=1, show_steps:bool=True, delay=0.5,heuristic: callable = lambda t,s: manhattan_distance([t],s)[1]):
+
+        self.go_to_closer_element(level, element='pony', heuristic=heuristic, show_steps=show_steps, delay=delay, dynamic=True)
+        #self.percept(level)
+        # goes toward the pony
+        flag = False
+        while not flag:
+            self.percept(level)
+            agent_pos, pony_pos, closeness_condition = self._check_if_near_pony(maxOffset)
+            delta = (agent_pos[0] - pony_pos[0], agent_pos[1] - pony_pos[1])
+            direction = ''
+            if delta[0] > 0:
+                direction += 'N'
+            elif delta[0] < 0:
+                direction += 'S'
+            if delta[1] > 0:
+                direction += 'W'
+            elif delta[1] < 0:
+                direction += 'E'
+            # If the distance between the pony and the agent is 
+            # 1, then they're forcibly aligned. So there should
+            # be no risk that the agent hits the pony
+            if closeness_condition:
+                print("I WILL PERFORM THE", action, "ACTION!!!")
+                level.apply_action(actionName=action,what=what,where=direction)
+                flag = True
+            else:
+                # get closer by going in direction
+                print("I AM MOVING WITHOUT AN ALGORITHM!")
+                level.apply_action(actionName=direction)
+
+            #self.percept(level)
+            if(show_steps):
+                time.sleep(delay)
+                level.render()
+                print("is the steed hostile? " + str(bool(self.kbQuery('hostile(steed)'))))       
+        #else:
+            # return exception? Nothing?
+        #    return 'There is no carrot here! (according to KB)'
     
-    def explore(self, level: Map, heuristic: callable = lambda t,s: manhattan_distance(t,s)):
+    '''
+    this repeats if necessary the go_to_closer_element with the dynamic twist to avoid beating the horse
+    then applies the action,could be throw carrot, apply saddle, ride
+    '''
+    def interact_with_pony(self, level: Map, action: str=None, what: str=None, maxOffset: int=1, show_steps:bool=True, delay=0.5,heuristic: callable = lambda t,s: manhattan_distance([t],s)[1]):
+
+        #self.percept(level)
+        # goes toward the pony
+        flag = False
+        while not flag:
+            self.go_to_closer_element(level, element='pony', heuristic=heuristic, show_steps=show_steps, delay=delay, dynamic=True)
+            self.percept(level)
+            agent_pos, pony_pos, closeness_condition = self._check_if_near_pony(maxOffset)
+            #perform the action!
+            if closeness_condition:
+                delta = (agent_pos[0] - pony_pos[0], agent_pos[1] - pony_pos[1])
+                direction = ''
+                if delta[0] > 0:
+                    direction += 'N'
+                elif delta[0] < 0:
+                    direction += 'S'
+                if delta[1] > 0:
+                    direction += 'W'
+                elif delta[1] < 0:
+                    direction += 'E'
+                print("I WILL PERFORM THE", action, "ACTION!!!")
+                level.apply_action(actionName=action,what=what,where=direction)
+                flag = True
+                #self.percept(level)
+                if(show_steps):
+                    time.sleep(delay)
+                    level.render()
+                    print("is the steed hostile? " + str(bool(self.kbQuery('hostile(steed)'))))
+
+    def _check_if_near_pony(self, maxOffset):
+        agent_pos = self.kb.get_element_position_query('agent')[0]
+        pony_pos = self.kb.get_element_position_query('pony')[0]
+        closeness_condition = are_close(agent_pos,pony_pos,maxOffset=maxOffset) and are_aligned(agent_pos,pony_pos)
+        return agent_pos, pony_pos, closeness_condition
+
+    def explore_subtask(self, level:Map, heuristic:callable = lambda t,s: manhattan_distance(t,s), render:bool = False, graphic:bool = True, delay:float = 0.5):
+        next_action = self.explore_step(level, heuristic)
+        if next_action == '':
+            raise Exception('No cells to explore')
+        while next_action != '' and not self.kb.query_for_interrupt('explore'):
+            next_action = self.explore_step(level, heuristic)
+            level.apply_action(actionName=next_action)
+            if render:
+                level.render(delay=delay, graphic=graphic)
+            self.percept(level)
+
+
+    def explore_step(self, level: Map, heuristic: callable = lambda t,s: manhattan_distance(t,s)):
         toExplore = set()
         for i in range(len(level.state['screen_descriptions'])):
             for j in range(len(level.state['screen_descriptions'][0])):
@@ -301,7 +409,7 @@ class Agent():
 
     def go_to_closer_element(self,level:Map,element:str='carrot', show_steps=False,
                              heuristic:callable = lambda t,s: manhattan_distance([t],s)[1],
-                              delay=0.5, maxDistance:int=0, minDistance:int=0):   
+                              delay=0.5, maxDistance:int=0, minDistance:int=0, dynamic:bool=False):   
         self.percept(level)
         agent_pos = self.kb.get_element_position_query('agent')[0]
         path = self._get_best_path_to_target(level, target = element,
@@ -323,6 +431,10 @@ class Agent():
                 self.percept(level)
                 #greenlight_status = self.kb.query_for_greenlight()
                 interrupt = self.check_interrupt()
+                _,_,closeness_condition = self._check_if_near_pony(1)
+                if(dynamic and closeness_condition):
+                    #print("DON'T KILL IT!!!!!!!!! DON'T KILL THE PONY BY STEPPING ON IT!!!!!!")
+                    break
                 if not interrupt:
                     level.apply_action(actionName = move_dir)
                     if(show_steps):

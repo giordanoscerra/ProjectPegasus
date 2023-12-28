@@ -18,8 +18,17 @@ class KBwrapper():
         'comestible': ['apple', 'carrot', 'food ration'],
         'weapon': ['sword', 'lance', 'shield', 'dagger'],
         'applicable' : ['saddle'],
+        'steed' : ['pony', 'horse', 'warhorse'],
     }
-
+    encumbrance_messages = {
+        "unencumbered" : [None,"Your movements are now unencumbered."],
+        "burdened" : ["Your movements are slowed slightly because of your load.", "Your movements are only slowed slightly because of your load"],
+        "stressed" : ["You rebalance your load. Movement is difficult.", "You rebalance your load. Movement is still difficult."],
+        "strained" : ["You stagger under your load. Movement is very hard.", "You stagger under your load. Movement is still very hard."],
+        "overtaxed" : ["You can barely move a handspan with this load!", None],
+        "overloaded" : ["You collapse under your load.", None]
+    }
+    
     def __init__(self):
         self._kb = Prolog()
         self._kb.consult('KBS/kb.pl')
@@ -114,6 +123,13 @@ class KBwrapper():
         else:
             self._kb.asserta(f'stepping_on(agent,{category},{element})')
 
+    # assert that a certain creature (or its category) is hostile in the kb.
+    # It's ok like this for now: when we'll want to implement multiple steeds or good and bad monsters we'll modify this.
+    def assert_hostile(self, creature: str):
+        category = self._get_key(creature, self._categories)
+        if category == 'steed': self._kb.asserta(f'hostile({category})')
+        else : self._kb.asserta(f'hostile({creature})')
+
     def query_stepping_on(self, spaced_elem:str):
         element = spaced_elem.replace(' ','')
         category = self._get_key(spaced_elem, self._categories)
@@ -127,26 +143,43 @@ class KBwrapper():
             self._kb.asserta(f'tameness({steed},{old_t+inc})')            
         except IndexError:
             print('The predicate hasn\'t been found')
+    
+    def retract_hostile(self, creature:str):
+        category = self._get_key(creature, self._categories)
+        if category is 'steed': self._kb.retractall(f'hostile({category})')
+        else: self._kb.retractall(f'hostile({creature})')
 
     def get_rideable_steeds(self):
         return self._kb.query("rideable(X)")
     
+    def query_riding(self, steed:str):
+        category = self._get_key(steed, self._categories)
+        if category == "steed": return bool(list(self._kb.query(f'riding(agent,steed')))
+        else: return bool(list(self._kb.query(f'riding(agent,{steed})'))) # when the steed is not a *steed* but, for example, a monster.
+
+    def retract_hostile(self, creature:str):
+        category = self._get_key(creature, self._categories)
+        if category is 'steed': self._kb.retractall(f'hostile({category})')
+        else: self._kb.retractall(f'hostile({creature})')
+    
     def get_steed_tameness(self, steed):
-        return list(self._kb.query(f"steed_tameness({steed}, X)"))[0]['X']
+        category = self._get_key(steed, self._categories)
+        if category == 'steed': return self._kb.query(f"steed_tameness({category}, X)")[0]['X']
+        return self._kb.query(f"steed_tameness({steed}, X)")[0]['X']
     
     def is_slippery(self):
         return self._kb.query("slippery")[0]
+    
+    def update_encumbrance(self, encumbrance:str):
+        for keys in self.encumbrance_messages.keys():
+            self._kb.retractall(f'{keys}(agent)')
+        self._kb.asserta(f'{encumbrance}(agent)')
 
     def update_health(self, health:int):
         self._kb.retractall('health(_)')
         self._kb.asserta(f'health({health})')
 
     def update_quantity(self, item:str, quantity:int):
-        if item == 'carrot':
-            item += 's'
-        if item == 'saddle':
-            item += 's'
-        if item == 'apple':
-            item += 's'
+        if item in ['carrot', 'apple', 'saddle']: item += 's'
         self._kb.retractall(f'{item}(_)')
         self._kb.asserta(f'{item}({quantity})')

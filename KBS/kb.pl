@@ -1,4 +1,4 @@
-:- dynamic encumbered/1, wounded_legs/1, hallucinating/1, riding/1, blind/1, telepathic/1, punished/1, trapped/1, wearing/2, rusty/1, corroded/1.
+:- dynamic wounded_legs/1, hallucinating/1, blind/1, telepathic/1, punished/1, trapped/1, wearing/2, rusty/1, corroded/1.
 :- dynamic confused/1, fumbling/1, slippery_fingers/1.
 :- dynamic hostile/1.
 :- dynamic stepping_on/3.
@@ -7,6 +7,9 @@
 :- dynamic tameness/2.
 :- dynamic carrots/1.
 :- dynamic saddles/1.
+:- dynamic riding/2. % riding(agent, steed), assert it when mounting, retract it when dismounting/slipping etc.
+:- dynamic burdened/1, stressed/1, strained/1, overtaxed/1, overloaded/1.
+:- dynamic unencumbered/1.
 
 % To translate into Prolog:
 % Chance of succeeding a mounting action is: 5 * (exp level + steed tameness)
@@ -21,7 +24,7 @@
 %     You or your steed are trapped.
 %     You are levitating and cannot come down at will.
 %     You are wearing rusty or corroded body armor.
-rideable(X) :- is_steed(X), \+ riding(agent), \+ hallucinating(agent), \+ wounded_legs(agent), \+ encumbered(agent), \+ (blind(agent), \+ telepathic(agent)), \+ punished(agent)
+rideable(X) :- is_steed(X), \+ riding(agent,_), \+ hallucinating(agent), \+ wounded_legs(agent), \+ encumbered(agent), \+ (blind(agent), \+ telepathic(agent)), \+ punished(agent)
     , \+ trapped(agent), \+ (wearing(agent, Y), (rusty(Y); corroded(Y))). % I do not intend to implement everything but we can do what we can in the time we have, as a flex
 
 % You will always fail and slip if any of the following apply:[3]
@@ -30,7 +33,10 @@ rideable(X) :- is_steed(X), \+ riding(agent), \+ hallucinating(agent), \+ wounde
 %     You are fumbling.
 %     You have slippery fingers.
 %     Your steed's saddle is cursed.
-slippery :- confused(agent); fumbling(agent); slippery_fingers(agent). % WHAT IF THE SADDLE IS CURSED?????? ui689
+slippery :- confused(agent); fumbling(agent); slippery_fingers(agent). % WHAT IF THE SADDLE IS CURSED??????
+
+unencumbered(agent) :- \+ burdened(agent), \+ stressed(agent), \+ strained(agent), \+ overtaxed(agent), \+ overloaded(agent).
+encumbered(agent) :- stressed(agent); strained(agent); overtaxed(agent); overloaded(agent). %no burdened?
 
 %%% GENERAL SUBTASKS feel free to add other conditions or comments to suggest them
 action(getCarrot) :- 
@@ -82,6 +88,14 @@ action(pick) :-
     stepping_on(agent,ObjClass,_),
     is_pickable(ObjClass).
 
+%we need to explore if the pony is tamed but we dont't know where it is
+%we need to ecplore if the pony is not tamed and we don't have carrots
+%TODO: we can decide to explore if we haven't enough carrots to tame the pony
+action(explore) :- 
+    (tameness(_, T), max_tameness(MT)),
+    ((T == MT, \+ position(_, Steed, _, _), is_steed(Steed)); 
+    (T < MT, carrots(X), X == 0, \+ position(_, carrot, _, _))).
+
 %%% INTERRUPT CONDITIONS
 interrupt(getCarrot) :- 
     carrots(X), X > 0; 
@@ -110,6 +124,8 @@ interrupt(hoardCarrots) :-
     % enemies nearby should interrupt this
     hostile(steed).
 
+interrupt(explore) :- \+ action(explore).
+
 % We need to count how many times we fed the steed to calculate its tameness.
 increment_action_count(A) :- retract(action_count(A, N)),  % remove the old value. At initialization the we assert action_count(A, 0) for A = feed
                              NewN is N+1, % increment the value
@@ -128,9 +144,8 @@ feed(X) :- increment_action_count(feed), increment_tameness(X).
 
 % We make use of hostile(steed) predicate. But when is a steed hostile?
 % Very naively, I'd say that
-hostile(steed) :- tameness(steed, T), T < 2.
-
-
+% we infer it from the screen description. If the steed is peaceful, it says "tame pony/horse/etc"
+% hostile(steed) :- tameness(steed, T), T < 2. In the 1% chance the steed spawns peaceful, it will nevertheless start with tameness = 1
 
 % We need to check this if we are to throw carrots at a horse.
 is_aligned(R1,C1,R2,C2) :- R1 == R2; C1 == C2; ((R1 is R2+X;R1 is R2-X), (C1 is C2+X;C1 is C2-X)).
@@ -156,6 +171,9 @@ unsafe_position(R, C) :- position(enemy,_, R, C).
 unsafe_position(R,C) :- 
     position(enemy,_, ER, EC), 
     is_close(ER, EC, R, C).
+unsafe_position(_,_) :- fail.
+% \+ means "the proposition is not entailed by KB". Sort of a not, but more general
+safe_position(R,C) :- \+ unsafe_position(R,C).
 
 %%%% known facts %%%%
 opposite(north, south).
@@ -192,10 +210,6 @@ close_direction(south, southwest).
 close_direction(southwest, west).
 close_direction(west, northwest).
 close_direction(northwest, north).
-
-unsafe_position(_,_) :- fail.
-% \+ means "the proposition is not entailed by KB". Sort of a not, but more general
-safe_position(R,C) :- \+ unsafe_position(R,C).
 
 % we need to pick a carrot if we are stepping on it. 
 is_pickable(comestible).
