@@ -63,7 +63,9 @@ class Agent():
                 if(description != '' and description != 'floor of a room'):
                     for interesting_item in interesting_item_list:
                         if interesting_item in description:
-                            if "pony" in description and "tame" not in description: self.kb.assert_hostile("pony") # it's that easy
+                            if "pony" in description:
+                                if any(property in description for property in ["tame", "peaceful"]): self.kb.retract_hostile("pony") # it's that easy
+                                else: self.kb.assert_hostile("pony")
                             self.kb.assert_element_position(interesting_item.lower().replace(' ',''),i,j)
         
         self.process_attributes(game_map=game_map)

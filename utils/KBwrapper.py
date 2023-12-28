@@ -147,6 +147,11 @@ class KBwrapper():
         category = self._get_key(steed, self._categories)
         if category == "steed": return bool(list(self._kb.query(f'riding(agent,steed')))
         else: return bool(list(self._kb.query(f'riding(agent,{steed})'))) # when the steed is not a *steed* but, for example, a monster.
+
+    def retract_hostile(self, creature:str):
+        category = self._get_key(creature, self._categories)
+        if category is 'steed': self._kb.retractall(f'hostile({category})')
+        else: self._kb.retractall(f'hostile({creature})')
     
     def get_steed_tameness(self, steed):
         return self._kb.query(f"steed_tameness({steed}, X)")[0]['X']
