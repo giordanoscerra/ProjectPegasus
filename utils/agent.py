@@ -301,7 +301,7 @@ class Agent():
         self.interact_with_element(level=level, element='pony', action="THROW",what="carrot", maxOffset=self._calculate_throw_range(level.get_agent_strength()))
     
     def feed_steed(self, level):
-        carrots_to_feed = 9
+        carrots_to_feed = self.kb.queryDirectly('carrots(X)')[0]['X']
         while not self.check_interrupt() and carrots_to_feed > 0:
             self.interact_with_element(level=level, element='pony', action="THROW",what="carrot", maxOffset=self._calculate_throw_range(level.get_agent_strength()))
             carrots_to_feed -= 1
@@ -333,12 +333,9 @@ class Agent():
 
         # May throw exceptions
         level.apply_action(actionName=action,what=what,where=direction)
-        print("I PERFORMED THE", action, "ACTION!!!")
-        #self.percept(level)
-        if(show_steps):
-            time.sleep(delay)
-            level.render()
-            print("is the steed hostile? " + str(bool(self.kbQuery('hostile(steed)'))))
+        self.percept(level)
+        level.render()
+        #print("is the steed hostile? " + str(bool(self.kbQuery('hostile(steed)'))))
 
 
     # --------- Explore subtask (DavideB) START ---------
