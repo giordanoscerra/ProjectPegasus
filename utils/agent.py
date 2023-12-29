@@ -286,6 +286,7 @@ class Agent():
         thrown = False
         while not thrown:
             self.percept(level)
+            # THERE'S A FUNCTION FOR THIS PLEASE USE IT !!!! by giordano
             agent_pos = self.kb.get_element_position_query('agent')[0]
             pony_pos = self.kb.get_element_position_query('pony')[0]
             delta = (agent_pos[0] - pony_pos[0], agent_pos[1] - pony_pos[1])
@@ -380,6 +381,7 @@ class Agent():
                 flag = True
             else:
                 # get closer by going in direction
+                # the reason this is called silly steps is because of these silly steps outside of a*
                 print("I AM MOVING WITHOUT AN ALGORITHM!")
                 level.apply_action(actionName=direction)
 
@@ -388,9 +390,6 @@ class Agent():
                 time.sleep(delay)
                 level.render()
                 print("is the steed hostile? " + str(bool(self.kbQuery('hostile(steed)'))))       
-        #else:
-            # return exception? Nothing?
-        #    return 'There is no carrot here! (according to KB)'
     
     '''
     this repeats if necessary the go_to_closer_element with the dynamic twist to avoid beating the horse
