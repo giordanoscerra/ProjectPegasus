@@ -4,8 +4,9 @@ from utils.agent import Agent
 
 lvl = Map(pony=False, level=3)
 lvl.render()
-agent = Agent()
+#the name of the knight is ninja
+ninja = Agent()
 
-agent.percept(lvl)
-agent.explore_subtask(lvl, render=True, delay=0.0)
-agent.explore_subtask(lvl, render=True, delay=0.0)
+ninja.percept(lvl)
+ninja.explore_subtask(lvl, render=True, delay=0.0)
+ninja.explore_subtask(lvl, render=True, delay=0.0)
