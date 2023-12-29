@@ -47,24 +47,33 @@ action(getCarrot) :-
     hostile(Steed),
     is_steed(Steed).
 
-action(getSaddle) :- 
-    saddles(X), X == 0, 
-    \+ stepping_on(agent,saddle,_), 
-    position(applicable,saddle,_,_).
-
-action(pacifySteed) :- 
-    hostile(Steed),
-    is_steed(Steed), 
-    carrots(X), 
-    X > 0.
 
 action(hoardCarrots) :- 
-    carrots(X), X == 0,
+    % I decommented this line to make the merge possibile.
+    % I think that it should not be there, I can explain why [Andrea]
+    carrots(X), X == 0, 
     is_steed(Steed),  
     \+ hostile(Steed), 
     tameness(Steed, T),
     max_tameness(MT), 
     T < MT.
+
+action(getSaddle) :- 
+    saddles(X), X == 0, 
+    \+ stepping_on(agent,saddle,_), 
+    position(applicable,saddle,_,_),
+    % [Andrea] I'd say that the agent gets the saddle after he's
+    % given at least one carrot to the pony
+    \+ hostile(steed).
+
+action(pacifySteed) :- 
+    hostile(Steed),
+    is_steed(Steed), 
+    carrots(X), X > 0,
+    % [Andrea] I felt free to add this rule, feel free to change:
+    % The idea is: if the pony isn't in sight the agent can hoard
+    % carrots in the meantime
+    position(steed,_,_,_).
 
 action(feedSteed) :- 
     carrots(X), 
@@ -81,6 +90,11 @@ action(rideSteed) :-
     carrots(X),
     X == 0, 
     \+ position(comestible,carrot,_,_).
+
+% this action here will probably be unused
+action(pick) :-
+    stepping_on(agent,ObjClass,_),
+    is_pickable(ObjClass).
 
 %we need to explore if the pony is tamed but we dont't know where it is
 %we need to ecplore if the pony is not tamed and we don't have carrots
@@ -192,7 +206,9 @@ close_direction(west, northwest).
 close_direction(northwest, north).
 
 % we need to pick a carrot if we are stepping on it. 
-is_pickable(carrots).
+is_pickable(comestible).
+is_pickable(applicable).
+is_pickable(weapon).
 
 % what is a steed?
 is_steed(steed).
