@@ -551,7 +551,10 @@ class Agent():
                              f' and took the {element}.')
 
                 interrupt = self.check_interrupt()
-                _,_,closeness_condition = self._check_if_near_pony(1)
+                try:
+                    _,_,closeness_condition = self._check_if_near_pony(1)
+                except exceptions.ElemNotFoundException:
+                    closeness_condition = False
                 if(dynamic and closeness_condition):
                     #print("DON'T KILL IT!!!!!!!!! DON'T KILL THE PONY BY STEPPING ON IT!!!!!!")
                     break
