@@ -58,7 +58,7 @@ def go_to_pony(carrotFarm:Map):
 successfulRides = 0
 notSaddled = 0
 failure = 0
-totTries = 1000
+totTries = 100
 for i in range(totTries):
     printProgressBar(i, totTries, prefix = 'Progress:', suffix = 'Complete', length = 50)
     carrotFarm = Map(pony=True, level=5)

@@ -440,11 +440,13 @@ class Agent():
                 # sort of a homemade interrupt: if someone else 
                 # (e.g. the pony) gets to the element (e.g.) carrot 
                 # earlier and steals it, 
-                destination = path[-1:][0]
-                if destination not in self.kb.get_element_position_query(element):
+                
+                destination = path[-1]
+                if not dynamic and destination not in self.kb.get_element_position_query(element):
                     raise exceptions.ElemNotInDestinationException\
                             (f'Somebody got to {destination} before the agent'
                              f' and took the {element}.')
+                
 
                 interrupt = self.check_interrupt()
                 if not interrupt:
