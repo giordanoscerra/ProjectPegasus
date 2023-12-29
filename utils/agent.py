@@ -313,7 +313,7 @@ class Agent():
     # To interact with the pony walking step by step, and each time recalculating the best step from zero
     def interact_with_element(self, level: Map, element: str=None, action: str=None, what: str=None, maxOffset: int=1, show_steps:bool=True, delay=0.5,heuristic: callable = lambda t,s: manhattan_distance([t],s)[1]):
 
-        # Called 
+        # TODO: May throw exceptions that have to be handled
         self.go_to_closer_element(level, element=element, heuristic=heuristic, show_steps=show_steps, delay=delay, maxDistance=maxOffset, dynamic=(element == 'pony'))
         self.percept(level)
         #agent_pos, pony_pos, closeness_condition = self._check_if_near_pony(maxOffset)
@@ -331,7 +331,8 @@ class Agent():
         elif delta[1] < 0:
             direction += 'E'
 
-        # May throw exceptions
+        # TODO: Now if go_to_closer_element fails it still perform the action
+        # TODO: May throw exceptions that have to be handled
         level.apply_action(actionName=action,what=what,where=direction)
         self.percept(level)
         level.render()
