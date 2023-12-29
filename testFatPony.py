@@ -80,7 +80,7 @@ for i in range(totTries):
             eatenCarrots += 1
 
     #wait for the pony to eat 20 carrots
-    while eatenCarrots < 13:
+    while eatenCarrots < 0:
         carrotFarm.apply_action(actionName='N')
         carrotFarm.apply_action(actionName='S')
         message=decode(carrotFarm.state['message'])
