@@ -282,64 +282,6 @@ class Agent():
                 print(f'hoard_carrots catched and exception with message {exc}')
                 break
 
-    # --------- Carrot-related subtasks END ---------
-            
-
-
-    
-    # For now, this is Andrea's version. DavideM is in charge of this
-    def pacify_steed(self,level:Map, show_steps:bool=True, delay=0.5):
-        # goes toward the pony
-        thrown = False
-        while not thrown:
-            self.percept(level)
-            # THERE'S A FUNCTION FOR THIS PLEASE USE IT !!!! by giordano
-            agent_pos = self.kb.get_element_position_query('agent')[0]
-            pony_pos = self.kb.get_element_position_query('pony')[0]
-            delta = (agent_pos[0] - pony_pos[0], agent_pos[1] - pony_pos[1])
-            direction = ''
-            if delta[0] > 0:
-                direction += 'N'
-            elif delta[0] < 0:
-                direction += 'S'
-            if delta[1] > 0:
-                direction += 'W'
-            elif delta[1] < 0:
-                direction += 'E'
-            #experimentally, the throwing distance of a carrot is 7
-            close = are_close(agent_pos,pony_pos,maxOffset=7)
-            # IDEA: if the agent and pony are close and aligned, then 
-            # the direction is suitable for throwing the carrot,
-            # otherwise it is suitable for moving
-            #
-            # If the distance between the pony and the agent is 
-            # 1, then they're forcibly aligned. So there should
-            # be no risk that the agent hits the pony
-            if close and are_aligned(agent_pos,pony_pos):
-                #level.apply_action(actionName='THROW',what='carrot',where=direction)
-                self.throw_element(level, element='carrot', throwDir=direction)
-                thrown = True
-            else:
-                # get closer by going in direction
-                level.apply_action(actionName=direction)
-            self.percept(level)
-            if(show_steps):
-                time.sleep(delay)
-                level.render()
-        return "TO BE CONTINUED"
-    
-
-
-
-
-    # --------- Feed steed subtask (DavideM) ---------  
-    def feed_steed(self, steedPos):
-        return "TO BE CONTINUED"
-    
-    # --------- Feed steed subtask (DavideM) ---------
-
-
-
     # --------- Saddle and ride subtask (Giordano) START ---------
     def get_saddle(self, level:Map, heuristic:callable = lambda t,s: manhattan_distance([t],s)[1]):
         self.go_to_closer_element(level, element='saddle', heuristic=heuristic, show_steps = True, delay=0.2)
@@ -358,9 +300,6 @@ class Agent():
         # Calculated from the table here: https://nethackwiki.com/wiki/Throw#Food
         
         self.interact_with_element(level=level, element='pony', action="THROW",what="carrot", maxOffset=self._calculate_throw_range(level.get_agent_strength()))
-    
-    def hoard_carrots(self):
-        return "TO BE CONTINUED"
     
     def feed_steed(self, level):
         carrots_to_feed = 9
