@@ -77,6 +77,13 @@ def _level_pony_paradise(pony:bool = True):
     lvl.wallify()
     return lvl.get_des()
 
+def _level_desolation():
+    lvl = LevelGenerator(w=10,h=10)
+    lvl.set_start_pos((0,0))
+    lvl.add_object(name='saddle', symbol="(", place=(9,7))
+    lvl.wallify()
+    return lvl.get_des()
+
 def _level_74(pony:bool = True, peaceful:bool = True, enemy:bool = False):
     desDescription = open('utils/customLevels/level74.des', 'r').read()
     lvl = LevelGenerator(desDescription)
@@ -133,6 +140,8 @@ def createLevel(level:int = 0, pony:bool = True,**kwargs):
         lvl = _level_test_saddle_ride(pony)
     elif(level == 5):
         lvl = _level_pony_paradise(pony)
+    elif(level == 6):
+        lvl = _level_desolation()
     else:
         lvl = _level_0(True)
     
