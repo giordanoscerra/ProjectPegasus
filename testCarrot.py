@@ -51,7 +51,28 @@ def testSubtask(level:Map,knight:Agent):
     knight.percept(level)
     level.render()
 
-    eat_all_carrots(knight,level)
+    next_subtask = knight.kb.query_for_action()
+    print('Next subtask is: ', next_subtask)
+    if(next_subtask == 'getCarrot'):
+        knight.get_carrot(level)
+        knight.percept(level)
+        level.print_inventory()
+        print('get_carrot task completed')
+    elif(next_subtask == 'pacifySteed'):
+        print('Tameness level of the pony is ',
+            knight.kb.get_steed_tameness('pony'), 'out of 20')
+        print('Direct query for hostility yields: ',knight.kbQuery('hostile(X)'))
+        knight.pacify_steed(level)
+        print('After throwing one carrot, tameness level of the pony is ',
+            knight.kb.get_steed_tameness('pony'), 'out of 20')
+        print('And direct query for hostility now yields: ',knight.kbQuery('hostile(X)'))
+    elif(next_subtask=='hoardCarrots'):
+        try:
+            pony_present = knight.kb.get_element_position_query('steed')
+        except exceptions.ElemNotFoundException:
+            pony_present = False
+        print('The pony is present: ', bool(pony_present))
+        knight.hoard_carrots(level)
 
 def testHoard(level:Map,knight:Agent):
     knight.percept(level)
@@ -70,21 +91,12 @@ if test_choice.upper() == 'P':
     testPickup(level,knight)
 elif test_choice.upper() == 'T':
     level = Map(level = 74, pony=True, peaceful=False, enemy=False)
-    knight = Agent()
-    testSubtask(level,knight)
+    knight = Agent() 
 
-    print('Next subtask is: ', knight.kb.query_for_action())
-    knight.kb.query_for_action()    #will most likely return 'getCarrot'
-    knight.get_carrot(level)
-    level.print_inventory()
-    print('Next subtask is: ', knight.kb.query_for_action())
-    knight.kb.query_for_action()    #will most likely return 'pacifySteed'
-    print('Tameness level of the pony is ',
-          knight.kb.get_steed_tameness('pony'), 'out of 20')
-    knight.pacify_steed(level)
-    print('After throwing one carrot, tameness level of the pony is ',
-          knight.kb.get_steed_tameness('pony'), 'out of 20')
-    print('Next subtask is: ', knight.kb.query_for_action())   
+    eat_all_carrots(knight,level)
+
+    testSubtask(level,knight)
+  
 elif test_choice.upper() == 'H':
     level = Map(pony=True)
     knight = Agent()

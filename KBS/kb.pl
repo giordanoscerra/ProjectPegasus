@@ -66,7 +66,7 @@ action(pacifySteed) :-
     % [Andrea] I felt free to add this rule, feel free to change:
     % The idea is: if the pony isn't in sight the agent can hoard
     % carrots in the meantime
-    position(pony,_,_,_).
+    position(steed,_,_,_).
 
 action(feedSteed) :- 
     carrots(X), 
