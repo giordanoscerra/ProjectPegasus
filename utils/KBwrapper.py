@@ -158,10 +158,13 @@ class KBwrapper():
 
 
     def update_tameness(self, inc:int, steed:str='pony'):
+        category = self._get_key(steed, self._categories)
         try:
             old_t = self.get_steed_tameness(steed)
-            self._kb.retractall(f'tameness({steed},_)')
-            self._kb.asserta(f'tameness({steed},{old_t+inc})')            
+            # mamma mia che ciofeca sta roba...
+            word = category if category == 'steed' else steed
+            self._kb.retractall(f'tameness({word},_)')
+            self._kb.asserta(f'tameness({word},{old_t+inc})')            
         except IndexError:
             print('The predicate hasn\'t been found')
 
