@@ -26,41 +26,42 @@ def build_path(parent: dict, target: Tuple[int, int]) -> List[Tuple[int, int]]:
     return path
 
 # from first handson session, used by a* to get the list of valid moves
-def get_valid_moves(game_map: np.ndarray, current_position: Tuple[int, int]) -> List[Tuple[int, int]]:
+def get_valid_moves(game_map: np.ndarray, current_position: Tuple[int, int],
+                    around_pony:bool) -> List[Tuple[int, int]]:
     x_limit, y_limit = game_map.shape
     valid = []
     x, y = current_position    
     # North
-    if y - 1 > 0 and not is_wall(game_map[x, y-1]):
+    if y - 1 > 0 and not is_obstacle(game_map[x, y-1], around_pony):
         valid.append((x, y-1)) 
     # East
-    if x + 1 < x_limit and not is_wall(game_map[x+1, y]):
+    if x + 1 < x_limit and not is_obstacle(game_map[x+1, y], around_pony):
         valid.append((x+1, y)) 
     # South
-    if y + 1 < y_limit and not is_wall(game_map[x, y+1]):
+    if y + 1 < y_limit and not is_obstacle(game_map[x, y+1], around_pony):
         valid.append((x, y+1)) 
     # West
-    if x - 1 > 0 and not is_wall(game_map[x-1, y]):
+    if x - 1 > 0 and not is_obstacle(game_map[x-1, y], around_pony):
         valid.append((x-1, y))
     # North-East
-    if y - 1 > 0 and x + 1 < x_limit and not is_wall(game_map[x+1, y-1]):
+    if y - 1 > 0 and x + 1 < x_limit and not is_obstacle(game_map[x+1, y-1], around_pony):
         valid.append((x+1, y-1))
     # South-East
-    if y + 1 < y_limit and x + 1 < x_limit and not is_wall(game_map[x+1, y+1]):
+    if y + 1 < y_limit and x + 1 < x_limit and not is_obstacle(game_map[x+1, y+1], around_pony):
         valid.append((x+1, y+1))
     # South-West
-    if y + 1 < y_limit and x - 1 > 0 and not is_wall(game_map[x-1, y+1]):
+    if y + 1 < y_limit and x - 1 > 0 and not is_obstacle(game_map[x-1, y+1], around_pony):
         valid.append((x-1, y+1))
     # North-West
-    if y - 1 > 0 and x - 1 > 0 and not is_wall(game_map[x-1, y-1]):
+    if y - 1 > 0 and x - 1 > 0 and not is_obstacle(game_map[x-1, y-1], around_pony):
         valid.append((x-1, y-1))
 
     return valid
 
 # from first handson session, used by get_valid_moves to check if a position is an obstacle
-def is_wall(position_element: int) -> bool:
+def is_obstacle(position_element: int, around_pony:bool) -> bool:
     obstacles = "|- "
-    return chr(position_element) in obstacles
+    return chr(position_element) in around_pony*'u' + obstacles
 
 # From first handson session, used to translate the path returned by a* 
 # (which is a list of tuples (coordinates)) into a sequence of actions to perform

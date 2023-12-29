@@ -17,8 +17,8 @@ DIRECTIONS = ['N','S','E','W','NE','NW','SE','SW']
 # if something does not work it's probably his fault
 # if something does work it's probably thanks to him
 class Map:
-    def __init__(self, pony:bool = True, level:int = 0):
-        env, (self.minXCG, self.maxXCG) = createLevel(level=level, pony=pony)
+    def __init__(self, pony:bool = True, level:int = 0, **kwargs):
+        env, (self.minXCG, self.maxXCG) = createLevel(level=level, pony=pony, **kwargs)
         self.rewards = []
         self.state = env.reset()
         #leftmost_wall = self.state['pixel']
@@ -101,9 +101,15 @@ class Map:
     
     def get_agent_strength(self) -> int:
         return self.state['blstats'][3] # https://arxiv.org/pdf/2006.13760.pdf
+    
+    def get_agent_dexterity(self) -> int:
+        return self.state['blstats'][4]
 
     def get_agent_constitution(self) -> int:
         return self.state['blstats'][5]
+    
+    def get_agent_charisma(self) -> int:
+        return self.state['blstats'][8]
 
     def get_pony_position(self) -> (int,int):
         return list(self.get_element_position('pony'))[0]

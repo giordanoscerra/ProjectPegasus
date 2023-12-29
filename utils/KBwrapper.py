@@ -28,6 +28,12 @@ class KBwrapper():
         "overtaxed" : ["You can barely move a handspan with this load!", None],
         "overloaded" : ["You collapse under your load.", None]
     }
+    riding_skill = {
+        "unskilled" : -20,
+        "basic" : 0,
+        "skilled" : 15,
+        "expert" : 30
+    }
     
     def __init__(self):
         self._kb = Prolog()
@@ -122,49 +128,86 @@ class KBwrapper():
             self._kb.asserta(f'stepping_on(agent,{element},{element})')
         else:
             self._kb.asserta(f'stepping_on(agent,{category},{element})')
-
-    # assert that a certain creature (or its category) is hostile in the kb.
-    # It's ok like this for now: when we'll want to implement multiple steeds or good and bad monsters we'll modify this.
-    def assert_hostile(self, creature: str):
-        category = self._get_key(creature, self._categories)
-        if category == 'steed': self._kb.asserta(f'hostile({category})')
-        else : self._kb.asserta(f'hostile({creature})')
-
+            
     def query_stepping_on(self, spaced_elem:str):
         element = spaced_elem.replace(' ','')
         category = self._get_key(spaced_elem, self._categories)
         stepping_on_sentence = f'stepping_on(agent,{category},{element})' if category is None else f'stepping_on(agent,_,{element})'
         return bool(self._kb.query(stepping_on_sentence))
-        #if category is None:
-        #    return bool(self._kb.query(f'stepping_on(agent,{category},{element})'))
-        #else:
-        #    return bool(self._kb.query(f'stepping_on(agent,_,{element})'))
-    
+
+    # assert that a certain creature (or its category) is hostile in the kb.
+    # It's ok like this for now: when we'll want to implement multiple steeds or good and bad monsters we'll modify this.
+    def assert_hostile(self, creature: str):
+        category = self._get_key(creature, self._categories)
+        if category == 'steed': 
+            if not bool(list(self._kb.query(f'hostile({category})'))):
+                self._kb.asserta(f'hostile({category})')
+        else: 
+            if not bool(list(self._kb.query(f'hostile({creature})'))):
+                self._kb.asserta(f'hostile({creature})')
+
     def retract_hostile(self, creature:str):
         category = self._get_key(creature, self._categories)
-        if category == 'steed': self._kb.retractall(f'hostile({category})')
-        else: self._kb.retractall(f'hostile({creature})')
+        if category == 'steed': 
+            self._kb.retractall(f'hostile({category})')
+        else: 
+            self._kb.retractall(f'hostile({creature})')
+
+    # Q: get_steed_tameness could be used for the same purpose,
+    #   but maybe the KB messes up. Who knows.
+    def query_hostile(self,creature:str='pony'):
+        category = self._get_key(creature, self._categories)
+        if category == 'steed':
+            return bool(list(self._kb.query(f'hostile({category})')))
+        else:
+            return bool(list(self._kb.query(f'hostile({creature})')))
+
+
+    def update_tameness(self, inc:int, steed:str='pony'):
+        category = self._get_key(steed, self._categories)
+        try:
+            old_t = self.get_steed_tameness(steed)
+            # mamma mia che ciofeca sta roba...
+            word = category if category == 'steed' else steed
+            self._kb.retractall(f'tameness({word},_)')
+            self._kb.asserta(f'tameness({word},{old_t+inc})')            
+        except IndexError:
+            print('The predicate hasn\'t been found')
 
     def get_rideable_steeds(self):
         return self._kb.query("rideable(X)")
     
     def query_riding(self, steed:str):
         category = self._get_key(steed, self._categories)
-        if category == "steed": return bool(list(self._kb.query(f'riding(agent,steed')))
-        else: return bool(list(self._kb.query(f'riding(agent,{steed})'))) # when the steed is not a *steed* but, for example, a monster.
+        if category == "steed": 
+          return bool(list(self._kb.query(f'riding(agent,steed')))
+        else: 
+          return bool(list(self._kb.query(f'riding(agent,{steed})'))) # when the steed is not a *steed* but, for example, a monster.
 
-    def retract_hostile(self, creature:str):
-        category = self._get_key(creature, self._categories)
-        if category == 'steed': self._kb.retractall(f'hostile({category})')
-        else: self._kb.retractall(f'hostile({creature})')
-    
-    def get_steed_tameness(self, steed):
+    def assert_saddled_steed(self, steed:str):
         category = self._get_key(steed, self._categories)
-        if category == 'steed': return self._kb.query(f"steed_tameness({category}, X)")[0]['X']
-        return self._kb.query(f"steed_tameness({steed}, X)")[0]['X']
+        if category == 'steed': self._kb.asserta(f'saddled({category})')
+        else: self._kb.asserta(f'saddled({steed})')
+          
+    def retract_saddled_steed(self, steed:str):
+        category = self._get_key(steed, self._categories)
+        if category == 'steed': self._kb.retractall(f'saddled({category})')
+        else: self._kb.retractall(f'saddled({steed})')
+    
+    def get_steed_tameness(self, steed:str='pony'):
+        category = self._get_key(steed, self._categories)
+        if category == 'steed': 
+            return list(self._kb.query(f"tameness({category}, X)"))[0]['X']
+        return list(self._kb.query(f"tameness({steed}, X)"))[0]['X']
     
     def is_slippery(self):
         return self._kb.query("slippery")[0]
+    
+    def is_agent_confused(self):
+        return self._kb.query("confused(agent)")[0]
+    
+    def is_agent_fumbling(self):
+        return self._kb.query("fumbling(agent)")[0]
     
     def update_encumbrance(self, encumbrance:str):
         for keys in self.encumbrance_messages.keys():

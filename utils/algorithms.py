@@ -6,7 +6,8 @@ from .heuristics import manhattan_distance, euclidean_distance
 
 def a_star(game_map: np.ndarray, start: Tuple[int, int], target: Tuple[int, int],
             heuristic:callable = lambda t,s: manhattan_distance([t],s)[1],
-            maxDistance:int=0, minDistance:int=0) -> List[Tuple[int, int]]:
+            maxDistance:int=0, minDistance:int=0,
+            pony_hostile:bool=False) -> List[Tuple[int, int]]:
     # initialize open and close list
     open_list = PriorityQueue()
     close_list = []
@@ -43,7 +44,7 @@ def a_star(game_map: np.ndarray, start: Tuple[int, int], target: Tuple[int, int]
             path = build_path(parent, current)
             return path
 
-        for neighbor in get_valid_moves(game_map, current):
+        for neighbor in get_valid_moves(game_map, current, pony_hostile):
             # check if neighbor in close list, if so continue
             if neighbor in close_list: 
                 continue
