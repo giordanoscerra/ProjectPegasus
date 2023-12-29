@@ -69,6 +69,8 @@ class Agent():
                                     self.kb.retract_hostile("pony") # it's that easy
                                 else: 
                                     self.kb.assert_hostile("pony")
+                                if "saddled" in description: 
+                                  self.kb.assert_saddled_steed("pony")
                             self.kb.assert_element_position(interesting_item.lower().replace(' ',''),i,j)
         
         self.process_attributes(game_map=game_map)
@@ -83,6 +85,8 @@ class Agent():
         # KB, since it might be useful for taking decisions
         self.attributes["health"] = game_map.get_agent_health()
         self.attributes["strength"] = game_map.get_agent_strength()
+        self.attributes["charisma"] = game_map.get_agent_charisma()
+        self.attributes["dexterity"] = game_map.get_agent_dexterity()
         self.attributes["constitution"] = game_map.get_agent_constitution()
         self.attributes["riding"] = self.kb.query_riding("steed")
         self.attributes["carrying_capacity"] = 1000 if self.attributes["riding"] else (25*(self.attributes["strength"]+self.attributes["constitution"])) + 50
@@ -155,6 +159,20 @@ class Agent():
         steed_tameness = self.kb.get_steed_tameness(steed) # did not yet test this
         return 100/(5 * (exp_lvl + steed_tameness))
     
+    # returns an approximate of the "chance" variable calculated in steed.c of the nethack code https://github.com/NetHack/NetHack/blob/NetHack-3.6.0_Release/src/steed.c
+    # if a random number picked between 0 and 100 is lower than the chance variable, the agent will mount the steed.
+    def chance_of_saddle_apply_succeeding(self, steed):
+        if steed not in self.kb.get_rideable_steeds() or self.kb.is_slippery():
+            return 0
+        chance = self.attributes["dexterity"] + self.attributes["charisma"] / 2 + 2 * self.kb.get_steed_tameness(steed)
+        chance += self.attributes["level"] * 20 if self.kb.get_steed_tameness(steed) > 0 else (5 - 10) # it should be 5 - 10*monster_level but how the hell do we infer that.
+        # if (self.attributes["role"] == "knight"): 
+        chance += 20
+        # chance += self.kb.riding_skill.get(self.attributes["riding_skill"])
+        chance += 30 # the knight is expert in riding.
+        # if self.kb.is_saddle_cursed(): -= 50
+        if self.kb.is_agent_confused() or self.kb.is_agent_fumbling(): chance -= 50
+
     def check_interrupt(self):
         return self.kb.query_for_interrupt(self.current_subtask) if self.current_subtask else False
 

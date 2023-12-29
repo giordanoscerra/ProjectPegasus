@@ -28,6 +28,12 @@ class KBwrapper():
         "overtaxed" : ["You can barely move a handspan with this load!", None],
         "overloaded" : ["You collapse under your load.", None]
     }
+    riding_skill = {
+        "unskilled" : -20,
+        "basic" : 0,
+        "skilled" : 15,
+        "expert" : 30
+    }
     
     def __init__(self):
         self._kb = Prolog()
@@ -122,7 +128,7 @@ class KBwrapper():
             self._kb.asserta(f'stepping_on(agent,{element},{element})')
         else:
             self._kb.asserta(f'stepping_on(agent,{category},{element})')
-
+            
     def query_stepping_on(self, spaced_elem:str):
         element = spaced_elem.replace(' ','')
         category = self._get_key(spaced_elem, self._categories)
@@ -174,9 +180,19 @@ class KBwrapper():
     def query_riding(self, steed:str):
         category = self._get_key(steed, self._categories)
         if category == "steed": 
-            return bool(list(self._kb.query(f'riding(agent,steed')))
+          return bool(list(self._kb.query(f'riding(agent,steed')))
         else: 
-            return bool(list(self._kb.query(f'riding(agent,{steed})'))) # when the steed is not a *steed* but, for example, a monster.
+          return bool(list(self._kb.query(f'riding(agent,{steed})'))) # when the steed is not a *steed* but, for example, a monster.
+
+    def assert_saddled_steed(self, steed:str):
+        category = self._get_key(steed, self._categories)
+        if category == 'steed': self._kb.asserta(f'saddled({category})')
+        else: self._kb.asserta(f'saddled({steed})')
+          
+    def retract_saddled_steed(self, steed:str):
+        category = self._get_key(steed, self._categories)
+        if category == 'steed': self._kb.retractall(f'saddled({category})')
+        else: self._kb.retractall(f'saddled({steed})')
     
     def get_steed_tameness(self, steed:str='pony'):
         category = self._get_key(steed, self._categories)
@@ -186,6 +202,12 @@ class KBwrapper():
     
     def is_slippery(self):
         return self._kb.query("slippery")[0]
+    
+    def is_agent_confused(self):
+        return self._kb.query("confused(agent)")[0]
+    
+    def is_agent_fumbling(self):
+        return self._kb.query("fumbling(agent)")[0]
     
     def update_encumbrance(self, encumbrance:str):
         for keys in self.encumbrance_messages.keys():
