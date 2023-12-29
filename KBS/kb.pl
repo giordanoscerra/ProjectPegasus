@@ -48,7 +48,9 @@ action(getCarrot) :-
 
 
 action(hoardCarrots) :- 
-    %carrots(X), X == 0, 
+    % I decommented this line to make the merge possibile.
+    % I think that it should not be there, I can explain why [Andrea]
+    carrots(X), X == 0, 
     \+ hostile(Steed), 
     tameness(Steed, T),
     is_steed(Steed), 
