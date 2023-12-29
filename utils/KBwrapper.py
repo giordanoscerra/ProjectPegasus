@@ -147,6 +147,16 @@ class KBwrapper():
         else: 
             self._kb.retractall(f'hostile({creature})')
 
+    # Q: get_steed_tameness could be used for the same purpose,
+    #   but maybe the KB messes up. Who knows.
+    def query_hostile(self,creature:str='pony'):
+        category = self._get_key(creature, self._categories)
+        if category == 'steed':
+            return bool(list(self._kb.query(f'hostile({category})')))
+        else:
+            return bool(list(self._kb.query(f'hostile({creature})')))
+
+
     def update_tameness(self, inc:int, steed:str='pony'):
         try:
             old_t = self.get_steed_tameness(steed)

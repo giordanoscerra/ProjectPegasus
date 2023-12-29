@@ -480,9 +480,11 @@ class Agent():
         agent_pos = self.kb.get_element_position_query('agent')[0]
         closest_element_pos = self.closest_element_position(element=target)
         game_map_array = game_map.get_map_as_nparray()
+        pony_hostile = self.kb.query_hostile(creature='pony')
         return a_star(game_map_array, start=agent_pos,
                         target=closest_element_pos, heuristic=heuristic,
-                        maxDistance=maxDistance, minDistance=minDistance)
+                        maxDistance=maxDistance, minDistance=minDistance,
+                        pony_hostile=pony_hostile)
 
     def go_to_closer_element(self,level:Map,element:str='carrot', show_steps=False,
                              heuristic:callable = lambda t,s: manhattan_distance([t],s)[1],
