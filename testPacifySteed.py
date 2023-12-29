@@ -6,20 +6,28 @@ from utils.heuristics import manhattan_distance, infinity_distance, euclidean_di
 def calculate_throw_range(strength):
     return 0 + math.floor(strength/2)
 
-for i in range(3, 26):
-    print(i, ' range ', calculate_throw_range(i))
+#for i in range(3, 26):
+#    print(i, ' range ', calculate_throw_range(i))
 
-level = Map(pony=False)
-knight = Agent()
+for i in range (100):
+    level = Map()
+    knight = Agent()
 
-knight.percept(level)
-level.render()
+    #agent_strenght = level.get_agent_strength()
+
+    knight.interact_with_pony(level=level, action='THROW', what='carrot', maxOffset=calculate_throw_range(level.get_agent_strength()), show_steps=False)
 
 
 
-knight.get_carrot(level = level, heuristic= lambda x,y: manhattan_distance([x],y)[1])
+#knight.percept(level)
 #level.render()
 
+#go_to_closer_element potrebbe usare il maxOffsets
+
+#knight.get_carrot(level = level, heuristic= lambda x,y: manhattan_distance([x],y)[1])
+#level.render()
+
+"""
 # https://nethackwiki.com/wiki/Throw#Food
 agent_strenght = level.get_agent_strength() 
 max_throw_range = 6
@@ -35,3 +43,4 @@ knight.go_to_closer_element(level,element='pony',show_steps=True, delay=0.2, heu
 
 level.apply_action(actionName='THROW', what='carrot', where='S')
 level.render()
+"""

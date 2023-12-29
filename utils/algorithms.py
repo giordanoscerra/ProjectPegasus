@@ -1,7 +1,7 @@
 import numpy as np
 from queue import PriorityQueue
 from typing import Tuple, List
-from .general import are_close, build_path, get_valid_moves, is_within
+from .general import are_close, are_aligned, build_path, get_valid_moves, is_within
 from .heuristics import manhattan_distance, euclidean_distance
 
 def a_star(game_map: np.ndarray, start: Tuple[int, int], target: Tuple[int, int],
@@ -37,7 +37,9 @@ def a_star(game_map: np.ndarray, start: Tuple[int, int], target: Tuple[int, int]
         # add the node to the close list
         close_list.append(current)
 
-        if is_within(current,target,extRadius=maxDistance,intRadius=minDistance):
+        # Experimental check to assure a stopping only when they are aligned
+        # If it stopped within range but unaligned then he wouldn't move but couldn't thorw either
+        if is_within(current,target,extRadius=maxDistance,intRadius=minDistance) and are_aligned(current, target):
         #if current == target:
             #print("Target found!")
             path = build_path(parent, current)
