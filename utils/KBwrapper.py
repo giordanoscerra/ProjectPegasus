@@ -182,6 +182,12 @@ class KBwrapper():
     def is_slippery(self):
         return self._kb.query("slippery")[0]
     
+    def is_agent_confused(self):
+        return self._kb.query("confused(agent)")[0]
+    
+    def is_agent_fumbling(self):
+        return self._kb.query("fumbling(agent)")[0]
+    
     def update_encumbrance(self, encumbrance:str):
         for keys in self.encumbrance_messages.keys():
             self._kb.retractall(f'{keys}(agent)')
