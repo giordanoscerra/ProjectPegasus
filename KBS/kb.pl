@@ -10,6 +10,7 @@
 :- dynamic riding/2. % riding(agent, steed), assert it when mounting, retract it when dismounting/slipping etc.
 :- dynamic burdened/1, stressed/1, strained/1, overtaxed/1, overloaded/1.
 :- dynamic unencumbered/1.
+:- dynamic saddled/1.
 
 % To translate into Prolog:
 % Chance of succeeding a mounting action is: 5 * (exp level + steed tameness)
@@ -24,7 +25,7 @@
 %     You or your steed are trapped.
 %     You are levitating and cannot come down at will.
 %     You are wearing rusty or corroded body armor.
-rideable(X) :- is_steed(X), \+ riding(agent,_), \+ hallucinating(agent), \+ wounded_legs(agent), \+ encumbered(agent), \+ (blind(agent), \+ telepathic(agent)), \+ punished(agent)
+rideable(X) :- is_steed(X), saddled(X), \+ riding(agent,_), \+ hallucinating(agent), \+ wounded_legs(agent), \+ encumbered(agent), \+ (blind(agent), \+ telepathic(agent)), \+ punished(agent)
     , \+ trapped(agent), \+ (wearing(agent, Y), (rusty(Y); corroded(Y))). % I do not intend to implement everything but we can do what we can in the time we have, as a flex
 
 % You will always fail and slip if any of the following apply:[3]
@@ -43,46 +44,64 @@ action(getCarrot) :-
     carrots(X), X == 0, 
     \+ stepping_on(agent,carrot,_), 
     position(comestible,carrot,_,_), 
-    hostile(steed).
+    hostile(Steed),
+    is_steed(Steed).
+
+
+action(hoardCarrots) :- 
+    % I decommented this line to make the merge possibile.
+    % I think that it should not be there, I can explain why [Andrea]
+    carrots(X), X == 0, 
+    is_steed(Steed),  
+    \+ hostile(Steed), 
+    tameness(Steed, T),
+    max_tameness(MT), 
+    T < MT.
 
 action(getSaddle) :- 
     saddles(X), X == 0, 
     \+ stepping_on(agent,saddle,_), 
-    position(applicable,saddle,_,_).
+    position(applicable,saddle,_,_),
+    % [Andrea] I'd say that the agent gets the saddle after he's
+    % given at least one carrot to the pony
+    \+ hostile(steed).
 
 action(pacifySteed) :- 
-    hostile(steed), 
-    carrots(X), 
-    X > 0.
-
-action(hoardCarrots) :- 
-    carrots(X), X == 0, 
-    \+ hostile(steed), 
-    tameness(steed, T), 
-    max_tameness(MT), 
-    T < MT.
+    hostile(Steed),
+    is_steed(Steed), 
+    carrots(X), X > 0,
+    % [Andrea] I felt free to add this rule, feel free to change:
+    % The idea is: if the pony isn't in sight the agent can hoard
+    % carrots in the meantime
+    position(steed,_,_,_).
 
 action(feedSteed) :- 
     carrots(X), 
-    X > 0, 
-    \+ hostile(steed), 
-    tameness(steed, T), 
+    X > 0,
+    is_steed(Steed),
+    \+ hostile(Steed), 
+    tameness(Steed, T),
     max_tameness(MT), 
     T < MT.
 
 action(rideSteed) :- 
-    rideable(steed), 
-    \+ hostile(steed), 
-    carrots(X), 
+    rideable(Steed), 
+    \+ hostile(Steed),
+    carrots(X),
     X == 0, 
     \+ position(comestible,carrot,_,_).
+
+% this action here will probably be unused
+action(pick) :-
+    stepping_on(agent,ObjClass,_),
+    is_pickable(ObjClass).
 
 %we need to explore if the pony is tamed but we dont't know where it is
 %we need to ecplore if the pony is not tamed and we don't have carrots
 %TODO: we can decide to explore if we haven't enough carrots to tame the pony
 action(explore) :- 
     (tameness(_, T), max_tameness(MT)),
-    ((T == MT, \+ position(_, Steed, _, _), is_steed(Steed)); 
+    ((T == MT, is_steed(Steed), \+ position(_, Steed, _, _)); 
     (T < MT, carrots(X), X == 0, \+ position(_, carrot, _, _))).
 
 %%% INTERRUPT CONDITIONS
@@ -90,46 +109,36 @@ interrupt(getCarrot) :-
     carrots(X), X > 0; 
     stepping_on(agent,carrot,_); 
     \+ position(comestible,carrot,_,_); 
-    \+ hostile(steed).
+    (is_steed(Steed), \+ hostile(Steed)).
 
 interrupt(getSaddle) :- 
     saddles(X), X > 0; 
     stepping_on(agent,saddle,_); 
     \+ position(applicable,saddle,_,_).
+
 interrupt(pacifySteed) :- 
-    \+ hostile(steed); 
+    (is_steed(Steed), \+ hostile(Steed)); 
     carrots(X), 
     X == 0. % steed distance further than carrot? Need to differentiate between getting the first carrot and the subsequents
+
 interrupt(feedSteed) :- 
     carrots(X), X == 0; 
-    (tameness(steed, T), max_tameness(MT), T == MT).
+    (tameness(Steed, T), is_steed(Steed), max_tameness(MT), T == MT).
+
 interrupt(rideSteed) :- 
-    \+ rideable(steed); 
-    hostile(steed); 
-    ((carrots(X), X > 0); position(comestible,carrot,_,_), (tameness(steed, T), max_tameness(MT), T < MT)).
-interrupt(hoardCarrots) :- (carrots(X), tameness(steed, T), max_tameness(MT), T+X >= MT); hostile(steed).
+    (is_steed(Steed), \+ rideable(Steed)); 
+    (hostile(Steed), is_steed(Steed)); 
+    ((carrots(X), X > 0); position(comestible,carrot,_,_), (tameness(Steed, T), is_steed(Steed), max_tameness(MT), T < MT)).
+
+interrupt(hoardCarrots) :- 
+    (carrots(X), tameness(Steed, T), is_steed(Steed), max_tameness(MT), T+X >= MT);
+    (hostile(Steed), is_steed(Steed)).
 
 interrupt(explore) :- \+ action(explore).
 
-% We need to count how many times we fed the steed to calculate its tameness.
-increment_action_count(A) :- retract(action_count(A, N)),  % remove the old value. At initialization the we assert action_count(A, 0) for A = feed
-                             NewN is N+1, % increment the value
-                             assert(action_count(A, NewN)). % assert the new value
-
-increment_tameness(X) :- retract(tameness(X, N)),  % remove the old value. At initialization we assert tameness(X, 1) for X = steed
-                         NewN is N+1, % increment the value
-                         assert(tameness(X, NewN)). % assert the new value
-
-% Decreased when using the ride action
-decrease_tameness(X) :- retract(tameness(X, N)),  % remove the old value.
-                         NewN is N-1, % increment the value
-                         assert(tameness(X, NewN)). % assert the new value
-
-feed(X) :- increment_action_count(feed), increment_tameness(X).
-
 % We make use of hostile(steed) predicate. But when is a steed hostile?
 % Very naively, I'd say that
-% we infer it from the screen description. If the steed is peaceful, it says "tame pony/horse/etc"
+% we infer it from the screen description. If the steed is peaceful, it says "tame/peaceful pony/horse/etc"
 % hostile(steed) :- tameness(steed, T), T < 2. In the 1% chance the steed spawns peaceful, it will nevertheless start with tameness = 1
 
 % We need to check this if we are to throw carrots at a horse.
@@ -197,7 +206,9 @@ close_direction(west, northwest).
 close_direction(northwest, north).
 
 % we need to pick a carrot if we are stepping on it. 
-is_pickable(carrots).
+is_pickable(comestible).
+is_pickable(applicable).
+is_pickable(weapon).
 
 % what is a steed?
 is_steed(steed).
@@ -206,6 +217,10 @@ is_steed(horse).
 is_steed(warhorse).
 carrots(0).
 saddles(0).
-tameness(steed, 1). % tameness is 1 at the beginning of the game
 action_count(feed, 0).
+% tameness is 1 at the beginning of the game
+tameness(steed, 1).
+tameness(pony, 1).
+tameness(horse, 1).
+tameness(warhorse, 1).
 max_tameness(20).

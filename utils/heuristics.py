@@ -13,7 +13,7 @@ def euclidean_distance(positions:List[Tuple], toCompare:Tuple[int,int]) -> Tuple
     in positions closest to toCompare, and closest_p_dist is its distance
     '''
     
-    argmin = min(positions, key=lambda x: np.linalg.norm([np.array(x)-np.array(toCompare)]))
+    argmin = min(positions, key=lambda x: np.linalg.norm(np.array(x)-np.array(toCompare)))
     min_dist = np.linalg.norm(np.array(argmin) - np.array(toCompare))
     return argmin, min_dist
 
@@ -25,7 +25,7 @@ def manhattan_distance(positions:List[Tuple], toCompare:Tuple[int,int]) -> Tuple
     in positions closest to toCompare, and closest_p_dist is its distance
     '''
     
-    argmin = min(positions, key=lambda x: np.linalg.norm([np.array(x)-np.array(toCompare)], ord=1))
+    argmin = min(positions, key=lambda x: np.linalg.norm(np.array(x)-np.array(toCompare), ord=1))
     min_dist = np.linalg.norm(np.array(argmin) - np.array(toCompare), ord=1)
     return argmin, min_dist
 
@@ -37,6 +37,6 @@ def infinity_distance(positions:List[Tuple], toCompare:Tuple[int,int]) -> Tuple[
     in positions closest to toCompare, and closest_p_dist is its distance
     '''
     
-    argmin = min(positions, key=lambda x: np.linalg.norm([np.array(x)-np.array(toCompare)], ord=np.inf))
+    argmin = min(positions, key=lambda x: np.linalg.norm(np.array(x)-np.array(toCompare), ord=np.inf))
     min_dist = np.linalg.norm(np.array(argmin) - np.array(toCompare), ord=np.inf)
     return argmin, min_dist
