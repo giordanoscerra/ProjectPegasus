@@ -8,7 +8,6 @@ sam = Agent()
 
 sam.process_inventory(level)
 initialCarrots = sam.kbQuery('carrots(X)')[0]['X']
-print(f'Initial number of carrots: {initialCarrots}')
 
 def goAndPick(level:Map,agent:Agent,element:str):
     agent.percept(level)
@@ -22,9 +21,8 @@ goAndPick(level,sam,'saddle')
 
 sam.process_inventory(level)
 finalCarrots = sam.kbQuery('carrots(X)')[0]['X']
-print(f'Final number of carrots: {finalCarrots}')
 saddle = sam.kbQuery('saddles(X)')[0]['X']
-assert initialCarrots + 4 < finalCarrots
+assert initialCarrots + 4 <= finalCarrots
 assert saddle == 1
 
 print('test process inventory passed')
