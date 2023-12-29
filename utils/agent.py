@@ -294,11 +294,10 @@ class Agent():
             return 'There is no saddle here! (according to KB)'
     
     def _calculate_throw_range(self, strength):
-            return math.floor(strength/2)
+        return math.floor(strength/2)
 
     def pacify_steed(self, level):
         # Calculated from the table here: https://nethackwiki.com/wiki/Throw#Food
-        
         self.interact_with_element(level=level, element='pony', action="THROW",what="carrot", maxOffset=self._calculate_throw_range(level.get_agent_strength()))
     
     def feed_steed(self, level):
