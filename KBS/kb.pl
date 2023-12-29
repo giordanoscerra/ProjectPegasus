@@ -43,12 +43,15 @@ action(getCarrot) :-
     carrots(X), X == 0, 
     \+ stepping_on(agent,carrot,_), 
     position(comestible,carrot,_,_), 
-    hostile(steed).
+    hostile(Steed),
+    is_steed(Steed).
+
 
 action(hoardCarrots) :- 
     %carrots(X), X == 0, 
-    \+ hostile(steed), 
-    tameness(steed, T), 
+    \+ hostile(Steed), 
+    tameness(Steed, T),
+    is_steed(Steed), 
     max_tameness(MT), 
     T < MT.
 
@@ -61,7 +64,8 @@ action(getSaddle) :-
     \+ hostile(steed).
 
 action(pacifySteed) :- 
-    hostile(steed), 
+    hostile(Steed),
+    is_steed(Steed), 
     carrots(X), X > 0,
     % [Andrea] I felt free to add this rule, feel free to change:
     % The idea is: if the pony isn't in sight the agent can hoard
@@ -71,14 +75,16 @@ action(pacifySteed) :-
 action(feedSteed) :- 
     carrots(X), 
     X > 0, 
-    \+ hostile(steed), 
-    tameness(steed, T), 
+    \+ hostile(Steed), 
+    tameness(Steed, T), 
+    is_steed(Steed),
     max_tameness(MT), 
     T < MT.
 
 action(rideSteed) :- 
-    rideable(steed), 
-    \+ hostile(steed), 
+    rideable(Steed), 
+    \+ hostile(Steed),
+    is_steed(Steed), 
     carrots(X), 
     X == 0, 
     \+ position(comestible,carrot,_,_).
@@ -101,42 +107,36 @@ interrupt(getCarrot) :-
     carrots(X), X > 0; 
     stepping_on(agent,carrot,_); 
     \+ position(comestible,carrot,_,_); 
-    \+ hostile(steed).
+    (\+ (hostile(Steed)), is_steed(Steed)).
 
 interrupt(getSaddle) :- 
     saddles(X), X > 0; 
     stepping_on(agent,saddle,_); 
     \+ position(applicable,saddle,_,_).
+
 interrupt(pacifySteed) :- 
-    \+ hostile(steed); 
+    (\+ (hostile(Steed)), is_steed(Steed)); 
     carrots(X), 
     X == 0. % steed distance further than carrot? Need to differentiate between getting the first carrot and the subsequents
+
 interrupt(feedSteed) :- 
     carrots(X), X == 0; 
-    (tameness(steed, T), max_tameness(MT), T == MT).
+    (tameness(Steed, T), is_steed(Steed), max_tameness(MT), T == MT).
+
 interrupt(rideSteed) :- 
-    \+ rideable(steed); 
-    hostile(steed); 
-    ((carrots(X), X > 0); position(comestible,carrot,_,_), (tameness(steed, T), max_tameness(MT), T < MT)).
+    (\+ (rideable(Steed)), is_steed(Steed)); 
+    (hostile(Steed), is_steed(Steed)); 
+    ((carrots(X), X > 0); position(comestible,carrot,_,_), (tameness(Steed, T), is_steed(Steed), max_tameness(MT), T < MT)).
 
 interrupt(hoardCarrots) :- 
-    (carrots(X), tameness(steed, T), max_tameness(MT), T+X >= MT); 
-    % TODO: enemies nearby should interrupt this
-    hostile(steed).
+    (carrots(X), tameness(Steed, T), is_steed(Steed), max_tameness(MT), T+X >= MT);
+    (hostile(Steed), is_steed(Steed)).
 
 interrupt(explore) :- \+ action(explore).
 
-% We need to count how many times we fed the steed to calculate its tameness.
-increment_action_count(A) :- retract(action_count(A, N)),  % remove the old value. At initialization the we assert action_count(A, 0) for A = feed
-                             NewN is N+1, % increment the value
-                             assert(action_count(A, NewN)). % assert the new value
-
-%Q: used when?
-feed(X) :- increment_action_count(feed), increment_tameness(X).
-
 % We make use of hostile(steed) predicate. But when is a steed hostile?
 % Very naively, I'd say that
-% we infer it from the screen description. If the steed is peaceful, it says "tame pony/horse/etc"
+% we infer it from the screen description. If the steed is peaceful, it says "tame/peaceful pony/horse/etc"
 % hostile(steed) :- tameness(steed, T), T < 2. In the 1% chance the steed spawns peaceful, it will nevertheless start with tameness = 1
 
 % We need to check this if we are to throw carrots at a horse.
@@ -215,6 +215,10 @@ is_steed(horse).
 is_steed(warhorse).
 carrots(0).
 saddles(0).
-tameness(steed, 1). % tameness is 1 at the beginning of the game
 action_count(feed, 0).
+% tameness is 1 at the beginning of the game
+tameness(steed, 1).
+tameness(pony, 1).
+tameness(horse, 1).
+tameness(warhorse, 1).
 max_tameness(20).
