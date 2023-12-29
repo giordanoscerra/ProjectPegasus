@@ -6,7 +6,7 @@ lvl = Map(pony=False, level=1)
 samurai = Agent()
 
 for i in range(120):
-    to_explore = samurai.explore(lvl)
+    to_explore = samurai.explore_step(lvl)
     if to_explore == '':
         print("lvl explore 1: Done in", i, "steps")
         break
@@ -17,7 +17,7 @@ for i in range(120):
 lvl = Map(pony=False, level=2)
 samurai = Agent()
 for i in range(120):
-    to_explore = samurai.explore(lvl)
+    to_explore = samurai.explore_step(lvl)
     if to_explore == '':
         print("lvl explore 2: Done in", i, "steps")
         break
@@ -28,7 +28,7 @@ for i in range(120):
 lvl = Map(pony=False, level=3)
 samurai = Agent()
 for i in range(1200):
-    to_explore = samurai.explore(lvl)
+    to_explore = samurai.explore_step(lvl)
     if to_explore == '':
         print("lvl explore 3: Done in", i, "steps")
         break
