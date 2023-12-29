@@ -59,29 +59,27 @@ action(pacifySteed) :-
     X > 0.
 
 action(hoardCarrots) :- 
-    carrots(X), X == 0, 
+    carrots(X), X == 0,
+    is_steed(Steed),  
     \+ hostile(Steed), 
     tameness(Steed, T),
-    is_steed(Steed), 
     max_tameness(MT), 
     T < MT.
 
 action(feedSteed) :- 
     carrots(X), 
-    X > 0, 
-    \+ hostile(Steed), 
-    tameness(Steed, T), 
+    X > 0,
     is_steed(Steed),
+    \+ hostile(Steed), 
+    tameness(Steed, T),
     max_tameness(MT), 
     T < MT.
 
 action(rideSteed) :- 
     rideable(Steed), 
     \+ hostile(Steed),
-    is_steed(Steed), 
-    saddled(Steed),
     carrots(X),
-    X == 0,
+    X == 0, 
     \+ position(comestible,carrot,_,_).
 
 %we need to explore if the pony is tamed but we dont't know where it is
@@ -89,7 +87,7 @@ action(rideSteed) :-
 %TODO: we can decide to explore if we haven't enough carrots to tame the pony
 action(explore) :- 
     (tameness(_, T), max_tameness(MT)),
-    ((T == MT, \+ position(_, Steed, _, _), is_steed(Steed)); 
+    ((T == MT, is_steed(Steed), \+ position(_, Steed, _, _)); 
     (T < MT, carrots(X), X == 0, \+ position(_, carrot, _, _))).
 
 %%% INTERRUPT CONDITIONS
@@ -97,7 +95,7 @@ interrupt(getCarrot) :-
     carrots(X), X > 0; 
     stepping_on(agent,carrot,_); 
     \+ position(comestible,carrot,_,_); 
-    (\+ (hostile(Steed)), is_steed(Steed)).
+    (is_steed(Steed), \+ hostile(Steed)).
 
 interrupt(getSaddle) :- 
     saddles(X), X > 0; 
@@ -105,7 +103,7 @@ interrupt(getSaddle) :-
     \+ position(applicable,saddle,_,_).
 
 interrupt(pacifySteed) :- 
-    (\+ (hostile(Steed)), is_steed(Steed)); 
+    (is_steed(Steed), \+ hostile(Steed)); 
     carrots(X), 
     X == 0. % steed distance further than carrot? Need to differentiate between getting the first carrot and the subsequents
 
@@ -114,7 +112,7 @@ interrupt(feedSteed) :-
     (tameness(Steed, T), is_steed(Steed), max_tameness(MT), T == MT).
 
 interrupt(rideSteed) :- 
-    (\+ (rideable(Steed)), is_steed(Steed)); 
+    (is_steed(Steed), \+ rideable(Steed)); 
     (hostile(Steed), is_steed(Steed)); 
     ((carrots(X), X > 0); position(comestible,carrot,_,_), (tameness(Steed, T), is_steed(Steed), max_tameness(MT), T < MT)).
 
