@@ -98,9 +98,11 @@ action(pick) :-
 %we need to ecplore if the pony is not tamed and we don't have carrots
 %TODO: we can decide to explore if we haven't enough carrots to tame the pony
 action(explore) :- 
-    (tameness(_, T), max_tameness(MT)),
-    ((T == MT, is_steed(Steed), \+ position(_, Steed, _, _)); 
-    (T < MT, carrots(X), X == 0, \+ position(_, carrot, _, _))).
+    (tameness(_, T), max_tameness(MT), carrots(X)),
+    (
+        ((T == MT; X >= MT - T), is_steed(Steed), \+ position(_, Steed, _, _)); 
+        (T < MT, X == 0, \+ position(_, carrot, _, _))
+    ).
 
 %%% INTERRUPT CONDITIONS
 interrupt(getCarrot) :- 
