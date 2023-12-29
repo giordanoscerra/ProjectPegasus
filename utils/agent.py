@@ -1,5 +1,6 @@
 import numpy as np
 import time
+import math
 from typing import List, Callable, Tuple
 from utils.KBwrapper import *
 from utils.map import Map
@@ -182,29 +183,43 @@ class Agent():
         else:
             return 'There is no saddle here! (according to KB)'
     
-    def pacify_steed(self, steedPos):
-        return "TO BE CONTINUED"
+    def _calculate_throw_range(self, strength):
+            return math.floor(strength/2)
+
+    def pacify_steed(self, level):
+        # Calculated from the table here: https://nethackwiki.com/wiki/Throw#Food
+        
+        self.interact_with_element(level=level, element='pony', action="THROW",what="carrot", maxOffset=self._calculate_throw_range(level.get_agent_strength()))
     
     def hoard_carrots(self):
         return "TO BE CONTINUED"
     
-    def feed_steed(self, steedPos):
-        return "TO BE CONTINUED"
+    def feed_steed(self, level):
+        carrots_to_feed = 9
+        while not self.check_interrupt() and carrots_to_feed > 0:
+            self.interact_with_element(level=level, element='pony', action="THROW",what="carrot", maxOffset=self._calculate_throw_range(level.get_agent_strength()))
+            carrots_to_feed -= 1
     
     def ride_steed(self, level):
-        self.interact_with_pony(level=level, action="APPLY",what="saddle", maxOffset=1)
-        self.interact_with_pony(level=level, action="RIDE", maxOffset=1)
+        self.interact_with_element(level=level, element='pony', action="APPLY",what="saddle", maxOffset=1)
+        self.interact_with_element(level=level, element='pony', action="RIDE", maxOffset=1)
 
-    def interact_with_pony_with_silly_steps(self, level: Map, action: str=None, what: str=None, maxOffset: int=1, show_steps:bool=True, delay=0.5,heuristic: callable = lambda t,s: manhattan_distance([t],s)[1]):
+    # To interact with the pony walking step by step, and each time recalculating the best step from zero
+    def interact_with_element(self, level: Map, element: str=None, action: str=None, what: str=None, maxOffset: int=1, show_steps:bool=True, delay=0.5,heuristic: callable = lambda t,s: manhattan_distance([t],s)[1]):
 
-        self.go_to_closer_element(level, element='pony', heuristic=heuristic, show_steps=show_steps, delay=delay, dynamic=True)
         #self.percept(level)
         # goes toward the pony
-        flag = False
-        while not flag:
+        completed_interaction = False
+        while not completed_interaction:
+
+            # Called 
+            self.go_to_closer_element(level, element=element, heuristic=heuristic, show_steps=show_steps, delay=delay, maxDistance=maxOffset, dynamic=(element == 'pony'))
             self.percept(level)
-            agent_pos, pony_pos, closeness_condition = self._check_if_near_pony(maxOffset)
-            delta = (agent_pos[0] - pony_pos[0], agent_pos[1] - pony_pos[1])
+            #agent_pos, pony_pos, closeness_condition = self._check_if_near_pony(maxOffset)
+            agent_pos = self.kb.get_element_position_query('agent')[0]
+            elem_pos = self.kb.get_element_position_query(element)[0]
+            #perform the action!
+            delta = (agent_pos[0] - elem_pos[0], agent_pos[1] - elem_pos[1])
             direction = ''
             if delta[0] > 0:
                 direction += 'N'
@@ -214,100 +229,15 @@ class Agent():
                 direction += 'W'
             elif delta[1] < 0:
                 direction += 'E'
-            # If the distance between the pony and the agent is 
-            # 1, then they're forcibly aligned. So there should
-            # be no risk that the agent hits the pony
-            if closeness_condition:
-                print("I WILL PERFORM THE", action, "ACTION!!!")
-                level.apply_action(actionName=action,what=what,where=direction)
-                flag = True
-            else:
-                # get closer by going in direction
-                print("I AM MOVING WITHOUT AN ALGORITHM!")
-                level.apply_action(actionName=direction)
 
+            level.apply_action(actionName=action,what=what,where=direction)
+            print("I PERFORMED THE", action, "ACTION!!!")
+            completed_interaction = True
             #self.percept(level)
             if(show_steps):
                 time.sleep(delay)
                 level.render()
-                print("is the steed hostile? " + str(bool(self.kbQuery('hostile(steed)'))))       
-        #else:
-            # return exception? Nothing?
-        #    return 'There is no carrot here! (according to KB)'
-    
-    '''
-    this repeats if necessary the go_to_closer_element with the dynamic twist to avoid beating the horse
-    then applies the action,could be throw carrot, apply saddle, ride
-    '''
-    def old_interact_with_pony(self, level: Map, action: str=None, what: str=None, maxOffset: int=1, show_steps:bool=True, delay=0.5,heuristic: callable = lambda t,s: manhattan_distance([t],s)[1]):
-
-        #self.percept(level)
-        # goes toward the pony
-        flag = False
-        while not flag:
-            self.go_to_closer_element(level, element='pony', heuristic=heuristic, show_steps=show_steps, delay=delay, maxDistance=maxOffset, dynamic=True)
-            self.percept(level)
-            agent_pos, pony_pos, closeness_condition = self._check_if_near_pony(maxOffset)
-            #perform the action!
-            if closeness_condition:
-                delta = (agent_pos[0] - pony_pos[0], agent_pos[1] - pony_pos[1])
-                direction = ''
-                if delta[0] > 0:
-                    direction += 'N'
-                elif delta[0] < 0:
-                    direction += 'S'
-                if delta[1] > 0:
-                    direction += 'W'
-                elif delta[1] < 0:
-                    direction += 'E'
-                print("I WILL PERFORM THE", action, "ACTION!!!")
-                level.apply_action(actionName=action,what=what,where=direction)
-                flag = True
-                #self.percept(level)
-                if(show_steps):
-                    time.sleep(delay)
-                    level.render()
-                    print("is the steed hostile? " + str(bool(self.kbQuery('hostile(steed)'))))
-
-    # To interact with the pony walking step by step, and each time recalculating the best step from zero
-    def interact_with_pony(self, level: Map, action: str=None, what: str=None, maxOffset: int=1, show_steps:bool=True, delay=0.5,heuristic: callable = lambda t,s: manhattan_distance([t],s)[1]):
-
-        #self.percept(level)
-        # goes toward the pony
-        completed_interaction = False
-        while not completed_interaction:
-
-            # Called 
-            self.go_to_closer_element(level, element='pony', heuristic=heuristic, show_steps=show_steps, delay=delay, maxDistance=maxOffset, dynamic=True)
-            self.percept(level)
-            agent_pos, pony_pos, closeness_condition = self._check_if_near_pony(maxOffset)
-            #perform the action!
-            if closeness_condition:
-                delta = (agent_pos[0] - pony_pos[0], agent_pos[1] - pony_pos[1])
-                direction = ''
-                if delta[0] > 0:
-                    direction += 'N'
-                elif delta[0] < 0:
-                    direction += 'S'
-                if delta[1] > 0:
-                    direction += 'W'
-                elif delta[1] < 0:
-                    direction += 'E'
-                
-                level.apply_action(actionName=action,what=what,where=direction)
-                print("I PERFORMED THE", action, "ACTION!!!")
-                completed_interaction = True
-                #self.percept(level)
-                if(show_steps):
-                    time.sleep(delay)
-                    level.render()
-                    print("is the steed hostile? " + str(bool(self.kbQuery('hostile(steed)'))))
-
-    def _check_if_near_pony(self, maxOffset):
-        agent_pos = self.kb.get_element_position_query('agent')[0]
-        pony_pos = self.kb.get_element_position_query('pony')[0]
-        closeness_condition = are_close(agent_pos,pony_pos,maxOffset=maxOffset) and are_aligned(agent_pos,pony_pos)
-        return agent_pos, pony_pos, closeness_condition
+                print("is the steed hostile? " + str(bool(self.kbQuery('hostile(steed)'))))
 
     def explore_subtask(self, level:Map, heuristic:callable = lambda t,s: manhattan_distance(t,s), render:bool = False, graphic:bool = True, delay:float = 0.5):
         next_action = self.explore_step(level, heuristic)
