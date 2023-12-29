@@ -98,22 +98,31 @@ class Agent():
         asserts in the agent.kb if the agent is stepping on an item.
         '''
         #TODO: process other important messages, if any
-
-        if 'You see here' in message:
-            # Remove "You see here" and trailing dot
-            portion = message[message.find('You see here ')+13:message.find('.')]   
-            # Remove article
-            element = ' '.join(portion.split(' ')[1:])  
-            # Maybe it doesn't make much sense to tell the kb that the agent
-            # and an item that will (most probably) immediately be picked up
-            # are in the same position
-            x, y = self.kb.get_element_position_query(element='agent')[0]
-            self.kb.assert_element_position(element.replace(' ',''),x,y) 
-            # Actually assert that the agent is stepping on the element
-            # Q: hopefully the message is processed correctly!
-            #   I mean, if the message is like 'You see here a blessed carrot.
-            #   we're screwed...
-            self.kb.assert_stepping_on(element)      
+        submex_list = message.split('. ')
+        for msg in submex_list:
+            if 'You see here' in msg:
+                # Remove "You see here" and trailing dot
+                portion = msg[msg.find('You see here ')+13:msg.find('.')]   
+                # Remove article
+                element = ' '.join(portion.split(' ')[1:])  
+                # Maybe it doesn't make much sense to tell the kb that the agent
+                # and an item that will (most probably) immediately be picked up
+                # are in the same position
+                x, y = self.kb.get_element_position_query(element='agent')[0]
+                self.kb.assert_element_position(element.replace(' ',''),x,y) 
+                # Actually assert that the agent is stepping on the element
+                # Q: hopefully the message is processed correctly!
+                #   I mean, if the message is like 'You see here a blessed carrot.
+                #   we're screwed...
+                self.kb.assert_stepping_on(element)
+            for x in ['saddle']:    #add other interesting stuff here
+                if 'picks up a '+x in msg:
+                    # 4: all those messages (hopefully!) start with 'The '
+                    picker = msg[4:msg.find('picks up a '+x)]
+                    self.kb.assert_has(owner=picker,item=x)
+                if 'drops a '+x in msg:
+                    dropper = msg[4:msg.find('picks up a '+x)]
+                    self.kb.retract_has(owner=dropper,item=x)
 
         for key, value in self.kb.encumbrance_messages.items():
             if message in value: 

@@ -11,6 +11,8 @@
 :- dynamic burdened/1, stressed/1, strained/1, overtaxed/1, overloaded/1.
 :- dynamic unencumbered/1.
 :- dynamic saddled/1.
+% semantics: has(ownerCategory,owner,ownedObjectCat,ownedObject)
+:- dynamic has/4.   % It could be recycled for the carrots(X) thing
 
 % To translate into Prolog:
 % Chance of succeeding a mounting action is: 5 * (exp level + steed tameness)

@@ -222,3 +222,17 @@ class KBwrapper():
         if item in ['carrot', 'apple', 'saddle']: item += 's'
         self._kb.retractall(f'{item}(_)')
         self._kb.asserta(f'{item}({quantity})')
+
+    def assert_has(self, owner:str, item:str):
+        ownerCategory = self._get_key(owner, self._categories) if self._get_key(owner ,self._categories) is not None else owner
+        itemCategory = self._get_key(item, self._categories) if self._get_key(item ,self._categories) is not None else item
+        self._kb.asserta(f'has({ownerCategory},{owner},{itemCategory},{item})')
+
+    # This function is VERY brittle. Basically, it doesn't work in general,
+    # but it does the job when (e.g.) not multiple elements of a category exist
+    # or just a single possible owner exists
+    def retract_has(self, owner:str, item:str):
+        ownerCategory = self._get_key(owner, self._categories) if self._get_key(owner ,self._categories) is not None else owner
+        itemCategory = self._get_key(item, self._categories) if self._get_key(item ,self._categories) is not None else item
+        # Here comes the problem!
+        self._kb.retract(f'has({ownerCategory},{owner},{itemCategory},{item})')
