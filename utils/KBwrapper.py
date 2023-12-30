@@ -180,20 +180,27 @@ class KBwrapper():
     # ---------------- tameness-related methods START ----------------
     def update_tameness(self, inc:int, steed:str='pony'):
         category = self._get_key(steed, self._categories)
-        try:
-            old_t = self.get_steed_tameness(steed)
-            # mamma mia che ciofeca sta roba...
-            word = category if category == 'steed' else steed
-            self._kb.retractall(f'tameness({word},_)')
-            self._kb.asserta(f'tameness({word},{old_t+inc})')            
-        except IndexError:
-            print('The predicate hasn\'t been found')
+        if category == 'steed':
+            try:
+                old_t = self.get_steed_tameness(steed)
+                # mamma mia che ciofeca sta roba...
+                #word = category if category == 'steed' else steed
+                self._kb.retractall(f'tameness({steed},_)')
+                self._kb.asserta(f'tameness({steed},{old_t+inc})')            
+            except IndexError:
+                print("update_tameness: the predicate hasn't been found")
+        else:
+            print('Error: only tameness of steeds can be updated')
     
     def get_steed_tameness(self, steed:str='pony'):
         category = self._get_key(steed, self._categories)
         if category == 'steed': 
-            return list(self._kb.query(f"tameness({category}, X)"))[0]['X']
-        return list(self._kb.query(f"tameness({steed}, X)"))[0]['X']
+            try:
+                return list(self._kb.query(f"tameness({steed}, X)"))[0]['X']
+            except IndexError:
+                print("get_steed_tameness: the predicate hasn't been found")
+        else:
+            print('Error: only tameness of steeds can be gotten')
     
     # ---------------- tameness-related methods END ----------------
     
