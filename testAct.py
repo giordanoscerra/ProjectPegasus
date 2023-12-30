@@ -9,5 +9,6 @@ agent = Agent()
 # this percept could be useless
 agent.percept(level)
 # let him ACT !!!!!!!!!
-agent.act(level)
-level.render()
+while level.rewards[-1] != 100:
+    agent.act(level)
+    level.render()

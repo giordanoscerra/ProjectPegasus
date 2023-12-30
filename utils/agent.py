@@ -123,7 +123,7 @@ class Agent():
                 if 'drops a '+x in msg:
                     dropper = msg[4:msg.find(' drops a '+x)]
                     self.kb.retract_has(owner=dropper,item=x)
-                for steed in self.kb_categories['steed']:
+                for steed in self.kb._categories['steed']:
                     for synonimous in ['eats','devours','catches']:
                         # we assume that 
                         if 'The '+steed+' '+synonimous in msg and x in msg:
@@ -161,9 +161,9 @@ class Agent():
         return np.random.choice(actions)
 
     def act(self, level:Map):
-        #self.current_subtask = self.kb.query_for_action() # returns subtask to execute
+        self.current_subtask = self.kb.query_for_action() # returns subtask to execute
         # yeah for now we have it like this because yeah query be like difficult
-        self.current_subtask = self.randomSubtask()
+        # self.current_subtask = self.randomSubtask()
         print("\n\n UHM. the voices in my head are telling me to", self.current_subtask)
         time.sleep(0.5)
         #args = self.getArgs(self.current_subtask) # returns arguments for the subtask
