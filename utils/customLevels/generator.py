@@ -99,7 +99,22 @@ def _level_74(pony:bool = True, peaceful:bool = True, enemy:bool = False):
     lvl.add_object(name='saddle', symbol="(", place=None)
     lvl.set_start_pos((random.randint(1,14),random.randint(1,9)))
     lvl.wallify()
-    return lvl.get_des()    
+    return lvl.get_des() 
+
+def _level_tameness_message(pony:bool=True, 
+                            saddle:bool=False, 
+                            peaceful_steeds:bool=True):
+    lvl = LevelGenerator(w=15, h=15)
+    steed_args = ('peaceful',) if peaceful_steeds else None
+    if(pony):
+        lvl.add_monster(name='pony', symbol='u', place=(3,7), args=steed_args)
+    lvl.add_monster(name='horse', symbol='u', place=(11,7), args=steed_args)
+    lvl.add_monster(name='warhorse', symbol='u', place=(7,3), args=steed_args)
+    if(saddle):
+        lvl.add_object(name='saddle', symbol='(', place = None)
+    lvl.set_start_pos((7,7))
+    lvl.wallify()
+    return lvl.get_des()
 
 def _level_test_saddle_ride(pony:bool = True):
     lvl = LevelGenerator(w=20,h=20)
@@ -142,6 +157,8 @@ def createLevel(level:int = 0, pony:bool = True,**kwargs):
         lvl = _level_pony_paradise(pony)
     elif(level == 6):
         lvl = _level_desolation()
+    elif(level == 42):
+        lvl = _level_tameness_message(pony,**kwargs)
     else:
         lvl = _level_0(True)
     
