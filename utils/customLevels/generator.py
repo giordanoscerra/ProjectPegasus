@@ -180,6 +180,7 @@ def createLevel(level:int = 0, pony:bool = True,**kwargs):
             'pixel'),
         des_file = lvl,
         reward_manager = reward_manager_defined,
+        max_episode_steps = 100000,
     )
     #20 * 20 -> [15:, 480:800]
     #19 * 11 -> [y:, x1:x2]

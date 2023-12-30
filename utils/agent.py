@@ -7,6 +7,7 @@ from utils.map import Map
 from utils import exceptions
 # from utils.exceptions import *
 from utils.heuristics import *
+from utils.map_graph import MapGraph
 from .general import actions_from_path, are_aligned, are_close, decode
 from .algorithms import a_star
 
@@ -152,17 +153,32 @@ class Agent():
             self.kb.update_quantity(item, interesting_collection[item])
 
     # --------- Percept-related methods END ---------
-
-
-
+    # this function is for testing purposes. don't ask. used only in "act", hopefully not for long.
+    def randomSubtask(self):
+        #actions = ["getCarrot", "getSaddle", "pacifySteed", "hoardCarrots", "feedSteed", "rideSteed"]
+        # without feedSteed because davidem is slow af
+        actions = ["getCarrot", "getSaddle", "pacifySteed", "hoardCarrots", "rideSteed"]
+        return np.random.choice(actions)
 
     def act(self, level:Map):
-        self.current_subtask = self.kb.query_for_action() # returns subtask to execute
-        args = self.getArgs(self.current_subtask) # returns arguments for the subtask
+        #self.current_subtask = self.kb.query_for_action() # returns subtask to execute
+        # yeah for now we have it like this because yeah query be like difficult
+        self.current_subtask = self.randomSubtask()
+        print("\n\n UHM. the voices in my head are telling me to", self.current_subtask)
+        time.sleep(0.5)
+        #args = self.getArgs(self.current_subtask) # returns arguments for the subtask
         subtask = self.actions.get(self.current_subtask, lambda: None) # calls the function that executes the subtask
         if subtask is None: 
             raise Exception(f'Action {self.current_subtask} is not defined')
-        subtask(*args) # execute the subtask
+        #subtask(*args) # execute the subtask
+        #yeah so most of the time we just need the map, other stuff is optional
+        subtask(level)
+
+    # is this useless ?
+    def getArgs(subtask:str):
+        args = []
+
+        return args
 
     def chance_of_mount_succeeding(self, steed):
         if steed not in self.kb.get_rideable_steeds() or self.kb.is_slippery():
@@ -362,16 +378,34 @@ class Agent():
 
 
     # --------- Explore subtask (DavideB) START ---------
-    def explore_subtask(self, level:Map, heuristic:callable = lambda t,s: manhattan_distance(t,s), render:bool = False, graphic:bool = True, delay:float = 0.5):
+    def explore_subtask(self, level:Map, heuristic:callable = lambda t,s: manhattan_distance(t,s), render:bool = False, graphic:bool = False, delay:float = 0.5):
         next_action = self.explore_step(level, heuristic)
-        if next_action == '':
-            raise Exception('No cells to explore')
-        while next_action != '' and not self.kb.query_for_interrupt('explore'):
-            next_action = self.explore_step(level, heuristic)
-            level.apply_action(actionName=next_action)
-            if render:
-                level.render(delay=delay, graphic=graphic)
-            self.percept(level)
+        if next_action == '': # if there is nothing to explore
+            searchGraph = MapGraph(level)
+            while not searchGraph.fullVisited() and not self.kb.query_for_interrupt('explore'):
+                next_action = self.search_step(searchGraph, level, heuristic)
+                level.apply_action(actionName=next_action)
+                if render: level.render(delay=delay, graphic=graphic)
+                self.percept(level)
+                searchGraph.update()
+        else: # if there is something to explore
+            while next_action != '' and not self.kb.query_for_interrupt('explore'):
+                level.apply_action(actionName=next_action)
+                if render: level.render(delay=delay, graphic=graphic)
+                self.percept(level)
+                next_action = self.explore_step(level, heuristic)
+    
+    def search_step(self, searchGraph:MapGraph, level:Map, heuristic:callable = lambda t,s: manhattan_distance(t,s)):
+        try:
+            agent_pos = self.kb.get_element_position_query('agent')[0]
+        except:
+            agent_pos = level.get_agent_position()
+        closestUnsearched = heuristic(searchGraph.lastVisit, agent_pos)[0]
+        next_cell = a_star(level.get_map_as_nparray(),start=agent_pos, target=closestUnsearched, maxDistance=1, minDistance=1)[1]
+        #now we get the direction to go to reach the cell
+        return actions_from_path(agent_pos, [next_cell])[0]
+            
+        
 
     def explore_step(self, level: Map, heuristic: callable = lambda t,s: manhattan_distance(t,s)):
         toExplore = set()
