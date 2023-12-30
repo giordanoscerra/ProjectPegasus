@@ -102,12 +102,11 @@ class Agent():
         for msg in submex_list:
             if 'You see here' in msg:
                 # Remove "You see here" and trailing dot
-                portion = msg[msg.find('You see here ')+13:msg.find('.')]   
+                portion = msg[msg.find('You see here ')+13:]
+                portion = portion.strip('.')   
                 # Remove article
                 element = ' '.join(portion.split(' ')[1:])  
-                # Maybe it doesn't make much sense to tell the kb that the agent
-                # and an item that will (most probably) immediately be picked up
-                # are in the same position
+                # assert position of element in the KB
                 x, y = self.kb.get_element_position_query(element='agent')[0]
                 self.kb.assert_element_position(element.replace(' ',''),x,y) 
                 # Actually assert that the agent is stepping on the element
@@ -115,7 +114,7 @@ class Agent():
                 #   I mean, if the message is like 'You see here a blessed carrot.
                 #   we're screwed...
                 self.kb.assert_stepping_on(element)
-            for x in ['saddle']:    #add other interesting stuff here
+            for x in ['saddle', 'carrot']:    #add other interesting stuff here
                 if 'picks up a '+x in msg:
                     # 4: all those messages (hopefully!) start with 'The '
                     picker = msg[4:msg.find('picks up a '+x)]
@@ -123,6 +122,12 @@ class Agent():
                 if 'drops a '+x in msg:
                     dropper = msg[4:msg.find('drops a '+x)]
                     self.kb.retract_has(owner=dropper,item=x)
+                for steed in ['pony','horse','warhorse']:
+                    for synonimous in ['eats','devours','catches']:
+                        # we assume that 
+                        if 'The '+steed+' '+synonimous in msg:
+                            print(f'Increase tameness of {steed} due to {synonimous}')
+                            self.kb.update_tameness(inc=1,steed=steed)
 
             for key, value in self.kb.encumbrance_messages.items():
                 if msg in value: 
@@ -237,7 +242,7 @@ class Agent():
                 continue
             arrived = True
 
-        self.percept(level)
+        ###self.percept(level)
 
         if self.kb.query_stepping_on(spaced_elem='carrot'):
             level.apply_action(actionName='PICKUP')
@@ -278,7 +283,7 @@ class Agent():
                     arrived = True
                     print('arrivato')
                 
-                self.percept(level)
+                ###self.percept(level)
 
                 if self.kb.query_stepping_on(spaced_elem='carrot'):
                     level.apply_action(actionName='PICKUP')
@@ -292,13 +297,13 @@ class Agent():
             except exceptions.ElemNotFoundException as exc:
                 print('Apparently, the pony snagged away the last carrot, '
                       'and there aren\'t any more in sight.')
-                print(f'hoard_carrots catched and exception with message {exc}')
+                print(f'hoard_carrots catched and exception with message: {exc}')
                 break
 
     # --------- Saddle and ride subtask (Giordano) START ---------
     def get_saddle(self, level:Map, heuristic:callable = lambda t,s: manhattan_distance([t],s)[1]):
         self.go_to_closer_element(level, element='saddle', heuristic=heuristic, show_steps = True, delay=0.2)
-        self.percept(level)
+        ###self.percept(level)
         if self.kb.query_stepping_on(spaced_elem='saddle'):
             level.apply_action(actionName='PICKUP')
             self.percept(level)
@@ -327,8 +332,12 @@ class Agent():
     def interact_with_element(self, level: Map, element: str=None, action: str=None, what: str=None, maxOffset: int=1, show_steps:bool=True, delay=0.5,heuristic: callable = lambda t,s: manhattan_distance([t],s)[1]):
 
         # TODO: May throw exceptions that have to be handled
-        self.go_to_closer_element(level, element=element, heuristic=heuristic, show_steps=show_steps, delay=delay, maxDistance=maxOffset, dynamic=(element == 'pony'))
-        self.percept(level)
+        self.go_to_closer_element(level, element=element, 
+                                  heuristic=heuristic, 
+                                  show_steps=show_steps, 
+                                  delay=delay, maxDistance=maxOffset, 
+                                  dynamic=(element == 'pony'))
+        ###self.percept(level)
         #agent_pos, pony_pos, closeness_condition = self._check_if_near_pony(maxOffset)
         agent_pos = self.kb.get_element_position_query('agent')[0]
         elem_pos = self.kb.get_element_position_query(element)[0]
@@ -418,7 +427,7 @@ class Agent():
     def go_to_closer_element(self,level:Map,element:str='carrot', show_steps=False,
                              heuristic:callable = lambda t,s: manhattan_distance([t],s)[1],
                               delay=0.5, maxDistance:int=0, minDistance:int=0, dynamic:bool=False):   
-        self.percept(level)
+        ###self.percept(level)
         agent_pos = self.kb.get_element_position_query('agent')[0]
         path = self._get_best_path_to_target(level, target = element,
                                              heuristic=heuristic,
@@ -460,7 +469,7 @@ class Agent():
                         level.render()
 
                     if dynamic:
-                        self.percept(level)
+                        ###self.percept(level)
                         agent_pos = self.kb.get_element_position_query('agent')[0]
                         path = self._get_best_path_to_target(level, target = element,
                                              heuristic=heuristic,
