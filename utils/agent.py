@@ -121,13 +121,13 @@ class Agent():
                     picker = msg[4:msg.find('picks up a '+x)]
                     self.kb.assert_has(owner=picker,item=x)
                 if 'drops a '+x in msg:
-                    dropper = msg[4:msg.find('picks up a '+x)]
+                    dropper = msg[4:msg.find('drops a '+x)]
                     self.kb.retract_has(owner=dropper,item=x)
 
-        for key, value in self.kb.encumbrance_messages.items():
-            if message in value: 
-                self.kb.update_encumbrance(key)
-                self.attributes["encumbrance"] = key
+            for key, value in self.kb.encumbrance_messages.items():
+                if msg in value: 
+                    self.kb.update_encumbrance(key)
+                    self.attributes["encumbrance"] = key
 
     def process_inventory(self, game_map:Map, interesting_items:list = ['saddle', 'carrot', 'apple']):
         '''called to save the intresting element of the inventory in the kb
@@ -201,13 +201,16 @@ class Agent():
     def throw_element(self, level, throwDir:str, element:str='carrot'):
         '''Calls the apply_action() method from the Map class to 
         throw an element (given as input) in a direction given as input.
-        If the thrown element is a carrot, the tameness of the pony is
-        increased by 1'''
+        If the thrown element is a carrot and it is eaten by the steed,
+        the tameness of the pony is increased by 1'''
         try:
             level.apply_action(actionName='THROW',what=element,where=throwDir)
-            if 'carrot' in element:
-                self.kb.update_tameness(inc = 1,steed='pony')
+            # TODO: update tameness only if the pony catches the carrot
             self.percept(level)
+            if 'carrot' in element:
+                for steed in ['pony','horse','warhorse']:
+                    if 'The '+steed+' eats':
+                        self.kb.update_tameness(inc = 1,steed=steed)
         except Exception as exc:
             print(f'throw_element catched Exception with message: {exc}')
     
