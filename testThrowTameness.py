@@ -22,11 +22,12 @@ knight.percept(level, interesting_item_list=to_perceive)
 
 tameness_dict={}
 update_tameness_dictMk2(tameness_dict)
-tameness_dict
+print('Starting tameness: ')
+print(tameness_dict)
 
-for thr in ['N','E','W']:
+for thr in ['N','W','E']:
     knight.throw_element(level,throwDir=thr)
-    knight.percept(level, interesting_item_list=to_perceive)
+    #knight.percept(level, interesting_item_list=to_perceive)
     update_tameness_dictMk2(tameness_dict)
     level.render()
     print(f'After throwing carrot in direction {thr}, tameness are: ')

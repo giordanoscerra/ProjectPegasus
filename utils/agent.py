@@ -126,7 +126,7 @@ class Agent():
                 for steed in ['pony','horse','warhorse']:
                     for synonimous in ['eats','devours','catches']:
                         # we assume that 
-                        if 'The '+steed+' '+synonimous in msg:
+                        if 'The '+steed+' '+synonimous in msg and x in msg:
                             print(f'Increase tameness of {steed} due to {synonimous}')
                             self.kb.update_tameness(inc=1,steed=steed)
 
@@ -228,11 +228,11 @@ class Agent():
             level.apply_action(actionName='THROW',what=element,where=throwDir)
             # TODO: update tameness only if the pony catches the carrot
             self.percept(level)
-            if 'carrot' in element:
-                for steed in ['pony','horse','warhorse']:
-                    for synonimous in ['eats', 'devours', 'cathces']:
-                        if 'The '+steed+' '+synonimous in decode(level.state['message']):
-                            self.kb.update_tameness(inc = 1,steed=steed)
+            #if 'carrot' in element:
+            #    for steed in ['pony','horse','warhorse']:
+            #        for synonimous in ['eats', 'devours', 'cathces']:
+            #            if 'The '+steed+' '+synonimous in decode(level.state['message']):
+            #                self.kb.update_tameness(inc = 1,steed=steed)
         except Exception as exc:
             print(f'throw_element catched Exception with message: {exc}')
     
