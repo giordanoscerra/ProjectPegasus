@@ -7,6 +7,7 @@ from utils.map import Map
 from utils import exceptions
 # from utils.exceptions import *
 from utils.heuristics import *
+from utils.map_graph import MapGraph
 from .general import actions_from_path, are_aligned, are_close, decode
 from .algorithms import a_star
 
@@ -340,16 +341,34 @@ class Agent():
 
 
     # --------- Explore subtask (DavideB) START ---------
-    def explore_subtask(self, level:Map, heuristic:callable = lambda t,s: manhattan_distance(t,s), render:bool = False, graphic:bool = True, delay:float = 0.5):
+    def explore_subtask(self, level:Map, heuristic:callable = lambda t,s: manhattan_distance(t,s), render:bool = False, graphic:bool = False, delay:float = 0.5):
         next_action = self.explore_step(level, heuristic)
-        if next_action == '':
-            raise Exception('No cells to explore')
-        while next_action != '' and not self.kb.query_for_interrupt('explore'):
-            next_action = self.explore_step(level, heuristic)
-            level.apply_action(actionName=next_action)
-            if render:
-                level.render(delay=delay, graphic=graphic)
-            self.percept(level)
+        if next_action == '': # if there is nothing to explore
+            searchGraph = MapGraph(level)
+            while not searchGraph.fullVisited() and not self.kb.query_for_interrupt('explore'):
+                next_action = self.search_step(searchGraph, level, heuristic)
+                level.apply_action(actionName=next_action)
+                if render: level.render(delay=delay, graphic=graphic)
+                self.percept(level)
+                searchGraph.update()
+        else: # if there is something to explore
+            while next_action != '' and not self.kb.query_for_interrupt('explore'):
+                level.apply_action(actionName=next_action)
+                if render: level.render(delay=delay, graphic=graphic)
+                self.percept(level)
+                next_action = self.explore_step(level, heuristic)
+    
+    def search_step(self, searchGraph:MapGraph, level:Map, heuristic:callable = lambda t,s: manhattan_distance(t,s)):
+        try:
+            agent_pos = self.kb.get_element_position_query('agent')[0]
+        except:
+            agent_pos = level.get_agent_position()
+        closestUnsearched = heuristic(searchGraph.lastVisit, agent_pos)[0]
+        next_cell = a_star(level.get_map_as_nparray(),start=agent_pos, target=closestUnsearched, maxDistance=1, minDistance=1)[1]
+        #now we get the direction to go to reach the cell
+        return actions_from_path(agent_pos, [next_cell])[0]
+            
+        
 
     def explore_step(self, level: Map, heuristic: callable = lambda t,s: manhattan_distance(t,s)):
         toExplore = set()
