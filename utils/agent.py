@@ -219,22 +219,22 @@ class Agent():
 
 
     # --------- Carrot-related subtasks (Andrea) START ---------
-    def throw_element(self, level, throwDir:str, element:str='carrot'):
-        '''Calls the apply_action() method from the Map class to 
-        throw an element (given as input) in a direction given as input.
-        If the thrown element is a carrot and it is eaten by the steed,
-        the tameness of the pony is increased by 1'''
-        try:
-            level.apply_action(actionName='THROW',what=element,where=throwDir)
-            # TODO: update tameness only if the pony catches the carrot
-            self.percept(level)
-            #if 'carrot' in element:
-            #    for steed in ['pony','horse','warhorse']:
-            #        for synonimous in ['eats', 'devours', 'cathces']:
-            #            if 'The '+steed+' '+synonimous in decode(level.state['message']):
-            #                self.kb.update_tameness(inc = 1,steed=steed)
-        except Exception as exc:
-            print(f'throw_element catched Exception with message: {exc}')
+    #def throw_element(self, level, throwDir:str, element:str='carrot'):
+    #    '''Calls the apply_action() method from the Map class to 
+    #    throw an element (given as input) in a direction given as input.
+    #    If the thrown element is a carrot and it is eaten by the steed,
+    #    the tameness of the pony is increased by 1'''
+    #    try:
+    #        level.apply_action(actionName='THROW',what=element,where=throwDir)
+    #        # TODO: update tameness only if the pony catches the carrot
+    #        self.percept(level)
+    #        #if 'carrot' in element:
+    #        #    for steed in ['pony','horse','warhorse']:
+    #        #        for synonimous in ['eats', 'devours', 'cathces']:
+    #        #            if 'The '+steed+' '+synonimous in decode(level.state['message']):
+    #        #                self.kb.update_tameness(inc = 1,steed=steed)
+    #    except Exception as exc:
+    #        print(f'throw_element catched Exception with message: {exc}')
     
     def get_carrot(self, level: Map, show_steps:bool=True, delay=0.5,
                    heuristic: callable = lambda t,s: manhattan_distance([t],s)[1]):
