@@ -63,7 +63,8 @@ action(getSaddle) :-
     \+ stepping_on(agent,saddle,_), 
     position(applicable,saddle,_,_),
     % [Andrea] I'd say that the agent gets the saddle after he's
-    % given at least one carrot to the pony
+    % given at least one carrot to the pony 
+    % agreed, but only because it slows you down [giordano]
     \+ hostile(steed).
 
 % The idea is: if the pony isn't in sight the agent can hoard carrots in the meantime
@@ -95,7 +96,7 @@ action(pick) :-
     is_pickable(ObjClass).
 
 %we need to explore if the pony is tamed but we dont't know where it is
-%we need to ecplore if the pony is not tamed and we don't have carrots
+%we need to explore if the pony is not tamed and we don't have carrots
 %TODO: we can decide to explore if we haven't enough carrots to tame the pony
 action(explore) :- 
     (tameness(_, T), max_tameness(MT), carrots(X)),
@@ -208,7 +209,7 @@ is_pickable(comestible).
 is_pickable(applicable).
 is_pickable(weapon).
 
-% what is a steed?
+% what is a steed? it's a horse-like creature. "destriero" in italian.
 is_steed(steed).
 is_steed(pony).
 is_steed(horse).
