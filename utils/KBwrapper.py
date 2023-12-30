@@ -270,6 +270,6 @@ class KBwrapper():
         ownerCategory = self._get_key(owner, self._categories) if self._get_key(owner ,self._categories) is not None else owner
         itemCategory = self._get_key(item, self._categories) if self._get_key(item ,self._categories) is not None else item
         # Here comes the problem!
-        self._kb.retract(f'has({ownerCategory},{owner},{itemCategory},{item})')
+        self._kb.retractall(f'has({ownerCategory},{owner},{itemCategory},{item})')
 
     # ---------------- has predicate related methods END ----------------
