@@ -209,8 +209,9 @@ class Agent():
             self.percept(level)
             if 'carrot' in element:
                 for steed in ['pony','horse','warhorse']:
-                    if 'The '+steed+' eats':
-                        self.kb.update_tameness(inc = 1,steed=steed)
+                    for synonimous in ['eats', 'devours', 'cathces']:
+                        if 'The '+steed+' '+synonimous in decode(level.state['message']):
+                            self.kb.update_tameness(inc = 1,steed=steed)
         except Exception as exc:
             print(f'throw_element catched Exception with message: {exc}')
     
