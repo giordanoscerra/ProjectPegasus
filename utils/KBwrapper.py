@@ -69,14 +69,14 @@ class KBwrapper():
             interrupt = False
         return interrupt
     
+
     #def assert_performed_action(self):
         # Q: quindi devo dire alla KB l'azione che ho fatto?
         # problema: se ogni azione richiede un formato specifico, in questa funzione
         # c'è un'esplosione di if (ovvero di cose da dire). Non è più chiaro ed 
         # elegante dire la cosa giusta al momento giusto?
 
-    # the idea is that the position of an element should be returned by 
-    # the KB        
+    # ---------------- element position related methods START ----------------     
     def get_element_position_query(self, element:str):
         if element in self._categories.keys():
             query_sentence = f'position({element},_,Row,Col)'
@@ -118,6 +118,11 @@ class KBwrapper():
         else:
             self._kb.asserta(f'position({category},{element},{x},{y})')
 
+    # ---------------- element position related methods END ----------------
+            
+
+
+    # ---------------- stepping_on related methods START ----------------
     def retractall_stepping_on(self):
         self._kb.retractall('stepping_on(agent,_,_)')
 
@@ -134,6 +139,12 @@ class KBwrapper():
         category = self._get_key(spaced_elem, self._categories)
         stepping_on_sentence = f'stepping_on(agent,{category},{element})' if category is None else f'stepping_on(agent,_,{element})'
         return bool(self._kb.query(stepping_on_sentence))
+    
+    # ---------------- stepping_on related methods END ----------------
+
+
+
+    # ---------------- hostility-related methods START ----------------
 
     # assert that a certain creature (or its category) is hostile in the kb.
     # It's ok like this for now: when we'll want to implement multiple steeds or good and bad monsters we'll modify this.
@@ -161,19 +172,41 @@ class KBwrapper():
             return bool(list(self._kb.query(f'hostile({category})')))
         else:
             return bool(list(self._kb.query(f'hostile({creature})')))
+    
+    # ---------------- hostility-related methods END ----------------
 
 
+
+    # ---------------- tameness-related methods START ----------------
     def update_tameness(self, inc:int, steed:str='pony'):
         category = self._get_key(steed, self._categories)
-        try:
-            old_t = self.get_steed_tameness(steed)
-            # mamma mia che ciofeca sta roba...
-            word = category if category == 'steed' else steed
-            self._kb.retractall(f'tameness({word},_)')
-            self._kb.asserta(f'tameness({word},{old_t+inc})')            
-        except IndexError:
-            print('The predicate hasn\'t been found')
+        if category == 'steed':
+            try:
+                old_t = self.get_steed_tameness(steed)
+                # mamma mia che ciofeca sta roba...
+                #word = category if category == 'steed' else steed
+                self._kb.retractall(f'tameness({steed},_)')
+                self._kb.asserta(f'tameness({steed},{old_t+inc})')            
+            except IndexError:
+                print("update_tameness: the predicate hasn't been found")
+        else:
+            print('Error: only tameness of steeds can be updated')
+    
+    def get_steed_tameness(self, steed:str='pony'):
+        category = self._get_key(steed, self._categories)
+        if category == 'steed': 
+            try:
+                return list(self._kb.query(f"tameness({steed}, X)"))[0]['X']
+            except IndexError:
+                print("get_steed_tameness: the predicate hasn't been found")
+        else:
+            print('Error: only tameness of steeds can be gotten')
+    
+    # ---------------- tameness-related methods END ----------------
+    
 
+
+    # ---------------- riding and saddled steed-related methods START ----------------
     def get_rideable_steeds(self):
         return self._kb.query("rideable(X)")
     
@@ -191,14 +224,13 @@ class KBwrapper():
           
     def retract_saddled_steed(self, steed:str):
         category = self._get_key(steed, self._categories)
-        if category == 'steed': self._kb.retractall(f'saddled({category})')
-        else: self._kb.retractall(f'saddled({steed})')
-    
-    def get_steed_tameness(self, steed:str='pony'):
-        category = self._get_key(steed, self._categories)
         if category == 'steed': 
-            return list(self._kb.query(f"tameness({category}, X)"))[0]['X']
-        return list(self._kb.query(f"tameness({steed}, X)"))[0]['X']
+            self._kb.retractall(f'saddled({category})')
+        else: 
+            self._kb.retractall(f'saddled({steed})')
+    
+    # ---------------- riding and saddled steed-related methods END ----------------
+
     
     def is_slippery(self):
         return self._kb.query("slippery")[0]
@@ -222,3 +254,22 @@ class KBwrapper():
         if item in ['carrot', 'apple', 'saddle']: item += 's'
         self._kb.retractall(f'{item}(_)')
         self._kb.asserta(f'{item}({quantity})')
+
+
+
+    # ---------------- has predicate related methods START ----------------
+    def assert_has(self, owner:str, item:str):
+        ownerCategory = self._get_key(owner, self._categories) if self._get_key(owner ,self._categories) is not None else owner
+        itemCategory = self._get_key(item, self._categories) if self._get_key(item ,self._categories) is not None else item
+        self._kb.asserta(f'has({ownerCategory},{owner},{itemCategory},{item})')
+
+    # This function is VERY brittle. Basically, it doesn't work in general,
+    # but it does the job when (e.g.) not multiple elements of a category exist
+    # or just a single possible owner exists
+    def retract_has(self, owner:str, item:str):
+        ownerCategory = self._get_key(owner, self._categories) if self._get_key(owner ,self._categories) is not None else owner
+        itemCategory = self._get_key(item, self._categories) if self._get_key(item ,self._categories) is not None else item
+        # Here comes the problem!
+        self._kb.retractall(f'has({ownerCategory},{owner},{itemCategory},{item})')
+
+    # ---------------- has predicate related methods END ----------------
