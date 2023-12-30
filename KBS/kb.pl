@@ -11,7 +11,6 @@
 :- dynamic burdened/1, stressed/1, strained/1, overtaxed/1, overloaded/1.
 :- dynamic unencumbered/1.
 :- dynamic saddled/1.
-
 % semantics: has(ownerCategory,owner,ownedObjectCat,ownedObject)
 :- dynamic has/4.   % It could be recycled for the carrots(X) thing
 
@@ -44,38 +43,31 @@ encumbered(agent) :- stressed(agent); strained(agent); overtaxed(agent); overloa
 
 %%% GENERAL SUBTASKS feel free to add other conditions or comments to suggest them
 action(getCarrot) :- 
-    carrots(X), X == 0, 
-    \+ stepping_on(agent,carrot,_), 
-    position(comestible,carrot,_,_), 
-    hostile(Steed),
-    is_steed(Steed).
+    carrots(X),is_steed(Steed),(
+        (X == 0, \+ stepping_on(agent,_,carrot), position(comestible,carrot,_,_), 
+        hostile(Steed));
+        (max_tameness(MT), tameness(Steed,T), MT > X+T, 
+        \+ hostile(Steed))
+    ).    % Can be stopped if danger (to implement)
 
-
-action(hoardCarrots) :- 
-    % I decommented this line to make the merge possibile.
-    % I think that it should not be there, I can explain why [Andrea]
-    carrots(X), X == 0, 
-    is_steed(Steed),  
-    \+ hostile(Steed), 
-    tameness(Steed, T),
-    max_tameness(MT), 
-    T < MT.
 
 action(getSaddle) :- 
     saddles(X), X == 0, 
-    \+ stepping_on(agent,saddle,_), 
-    position(applicable,saddle,_,_),
-    % [Andrea] I'd say that the agent gets the saddle after he's
-    % given at least one carrot to the pony 
-    % agreed, but only because it slows you down [giordano]
-    \+ hostile(steed).
+    \+ stepping_on(agent,_,saddle), 
+    position(applicable,saddle,_,_),  
+    tameness(Steed,T),
+    max_tameness(T),
+    is_steed(Steed).
+
 
 % The idea is: if the pony isn't in sight the agent can hoard carrots in the meantime
-action(pacifySteed) :- 
-    hostile(Steed),
-    is_steed(Steed), 
-    carrots(X), X > 0,
-    position(steed,Steed,_,_).
+action(feedSteed) :- 
+    is_steed(Steed), carrots(X), position(steed,Steed,RS,CS),(
+        (hostile(Steed), X > 0);    % if the pony is far away, but there are enemies then fight may be worthwile
+        (\+hostile(Steed), position(agent,agent,RA,CA), is_close(RA,CA,RS,CS),
+        tameness(Steed,T))        %this has to be finished
+    ).
+     
 
 action(feedSteed) :- 
     carrots(X),
