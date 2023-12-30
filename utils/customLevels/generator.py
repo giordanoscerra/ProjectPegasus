@@ -68,7 +68,7 @@ def _level_pony_paradise(pony:bool = True):
     lvl = LevelGenerator(w=17,h=15)
     lvl.set_start_pos((2,9))
     if(pony):
-            lvl.add_monster(name='pony', symbol="u", place=(2,7), args=("peaceful", "awake"))
+            lvl.add_monster(name='pony', symbol="u", place=(2,7), args=("hostile", "awake"))
     for i in range(17):
         for j in range(15):
             if (i != 2 or j != 10):
@@ -163,6 +163,7 @@ def createLevel(level:int = 0, pony:bool = True,**kwargs):
             'pixel'),
         des_file = lvl,
         reward_manager = reward_manager_defined,
+        max_episode_steps = 100000,
     )
     #20 * 20 -> [15:, 480:800]
     #19 * 11 -> [y:, x1:x2]

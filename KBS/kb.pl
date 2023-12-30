@@ -66,23 +66,21 @@ action(getSaddle) :-
     % given at least one carrot to the pony
     \+ hostile(steed).
 
+% The idea is: if the pony isn't in sight the agent can hoard carrots in the meantime
 action(pacifySteed) :- 
     hostile(Steed),
     is_steed(Steed), 
     carrots(X), X > 0,
-    % [Andrea] I felt free to add this rule, feel free to change:
-    % The idea is: if the pony isn't in sight the agent can hoard
-    % carrots in the meantime
-    position(steed,_,_,_).
+    position(steed,Steed,_,_).
 
 action(feedSteed) :- 
-    carrots(X), 
-    X > 0,
+    carrots(X),
     is_steed(Steed),
     \+ hostile(Steed), 
     tameness(Steed, T),
     max_tameness(MT), 
-    T < MT.
+    T < MT,
+    X >= MT - T.
 
 action(rideSteed) :- 
     rideable(Steed), 
@@ -100,9 +98,11 @@ action(pick) :-
 %we need to ecplore if the pony is not tamed and we don't have carrots
 %TODO: we can decide to explore if we haven't enough carrots to tame the pony
 action(explore) :- 
-    (tameness(_, T), max_tameness(MT)),
-    ((T == MT, is_steed(Steed), \+ position(_, Steed, _, _)); 
-    (T < MT, carrots(X), X == 0, \+ position(_, carrot, _, _))).
+    (tameness(_, T), max_tameness(MT), carrots(X)),
+    (
+        ((T == MT; X >= MT - T), is_steed(Steed), \+ position(_, Steed, _, _)); 
+        (T < MT, X == 0, \+ position(_, carrot, _, _))
+    ).
 
 %%% INTERRUPT CONDITIONS
 interrupt(getCarrot) :- 
@@ -116,13 +116,11 @@ interrupt(getSaddle) :-
     stepping_on(agent,saddle,_); 
     \+ position(applicable,saddle,_,_).
 
-interrupt(pacifySteed) :- 
-    (is_steed(Steed), \+ hostile(Steed)); 
-    carrots(X), 
-    X == 0. % steed distance further than carrot? Need to differentiate between getting the first carrot and the subsequents
+interrupt(pacifySteed) :-
+    \+ action(pacifySteed).
 
 interrupt(feedSteed) :- 
-    carrots(X), X == 0; 
+    (carrots(X), X == 0); 
     (tameness(Steed, T), is_steed(Steed), max_tameness(MT), T == MT).
 
 interrupt(rideSteed) :- 

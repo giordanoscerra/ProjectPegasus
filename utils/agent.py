@@ -1,11 +1,13 @@
 import numpy as np
 import time
+import math
 from typing import List, Callable, Tuple
 from utils.KBwrapper import *
 from utils.map import Map
 from utils import exceptions
 # from utils.exceptions import *
 from utils.heuristics import *
+from utils.map_graph import MapGraph
 from .general import actions_from_path, are_aligned, are_close, decode
 from .algorithms import a_star
 
@@ -296,64 +298,6 @@ class Agent():
                 print(f'hoard_carrots catched and exception with message {exc}')
                 break
 
-    # --------- Carrot-related subtasks END ---------
-            
-
-
-    
-    # For now, this is Andrea's version. DavideM is in charge of this
-    def pacify_steed(self,level:Map, show_steps:bool=True, delay=0.5):
-        # goes toward the pony
-        thrown = False
-        while not thrown:
-            self.percept(level)
-            # THERE'S A FUNCTION FOR THIS PLEASE USE IT !!!! by giordano
-            agent_pos = self.kb.get_element_position_query('agent')[0]
-            pony_pos = self.kb.get_element_position_query('pony')[0]
-            delta = (agent_pos[0] - pony_pos[0], agent_pos[1] - pony_pos[1])
-            direction = ''
-            if delta[0] > 0:
-                direction += 'N'
-            elif delta[0] < 0:
-                direction += 'S'
-            if delta[1] > 0:
-                direction += 'W'
-            elif delta[1] < 0:
-                direction += 'E'
-            #experimentally, the throwing distance of a carrot is 7
-            close = are_close(agent_pos,pony_pos,maxOffset=7)
-            # IDEA: if the agent and pony are close and aligned, then 
-            # the direction is suitable for throwing the carrot,
-            # otherwise it is suitable for moving
-            #
-            # If the distance between the pony and the agent is 
-            # 1, then they're forcibly aligned. So there should
-            # be no risk that the agent hits the pony
-            if close and are_aligned(agent_pos,pony_pos):
-                #level.apply_action(actionName='THROW',what='carrot',where=direction)
-                self.throw_element(level, element='carrot', throwDir=direction)
-                thrown = True
-            else:
-                # get closer by going in direction
-                level.apply_action(actionName=direction)
-            self.percept(level)
-            if(show_steps):
-                time.sleep(delay)
-                level.render()
-        return "TO BE CONTINUED"
-    
-
-
-
-
-    # --------- Feed steed subtask (DavideM) ---------  
-    def feed_steed(self, steedPos):
-        return "TO BE CONTINUED"
-    
-    # --------- Feed steed subtask (DavideM) ---------
-
-
-
     # --------- Saddle and ride subtask (Giordano) START ---------
     def get_saddle(self, level:Map, heuristic:callable = lambda t,s: manhattan_distance([t],s)[1]):
         self.go_to_closer_element(level, element='saddle', heuristic=heuristic, show_steps = True, delay=0.2)
@@ -365,113 +309,81 @@ class Agent():
         else:
             return 'There is no saddle here! (according to KB)'
     
+    def _calculate_throw_range(self, strength):
+        return math.floor(strength/2)
+
+    def pacify_steed(self, level):
+        # Calculated from the table here: https://nethackwiki.com/wiki/Throw#Food
+        self.interact_with_element(level=level, element='pony', action="THROW",what="carrot", maxOffset=self._calculate_throw_range(level.get_agent_strength()))
+    
+    def feed_steed(self, level):
+        carrots_to_feed = self.kb.queryDirectly('carrots(X)')[0]['X']
+        while not self.check_interrupt() and carrots_to_feed > 0:
+            self.interact_with_element(level=level, element='pony', action="THROW",what="carrot", maxOffset=self._calculate_throw_range(level.get_agent_strength()))
+            carrots_to_feed -= 1
+    
     def ride_steed(self, level):
-        self.interact_with_pony(level=level, action="APPLY",what="saddle", maxOffset=1)
-        self.interact_with_pony(level=level, action="RIDE", maxOffset=1)
+        self.interact_with_element(level=level, element='pony', action="APPLY",what="saddle", maxOffset=1)
+        self.interact_with_element(level=level, element='pony', action="RIDE", maxOffset=1)
 
-    # --------- Saddle and ride steed subtask END ---------
+    # To interact with the pony walking step by step, and each time recalculating the best step from zero
+    def interact_with_element(self, level: Map, element: str=None, action: str=None, what: str=None, maxOffset: int=1, show_steps:bool=True, delay=0.5,heuristic: callable = lambda t,s: manhattan_distance([t],s)[1]):
 
-
-
-    # --------- General stuff to interact with the pony ---------
-    def interact_with_pony_with_silly_steps(self, level: Map, action: str=None, what: str=None, maxOffset: int=1, show_steps:bool=True, delay=0.5,heuristic: callable = lambda t,s: manhattan_distance([t],s)[1]):
-
-        self.go_to_closer_element(level, element='pony', heuristic=heuristic, show_steps=show_steps, delay=delay, dynamic=True)
-        #self.percept(level)
-        # goes toward the pony
-        flag = False
-        while not flag:
-            self.percept(level)
-            agent_pos, pony_pos, closeness_condition = self._check_if_near_pony(maxOffset)
-            delta = (agent_pos[0] - pony_pos[0], agent_pos[1] - pony_pos[1])
-            direction = ''
-            if delta[0] > 0:
-                direction += 'N'
-            elif delta[0] < 0:
-                direction += 'S'
-            if delta[1] > 0:
-                direction += 'W'
-            elif delta[1] < 0:
-                direction += 'E'
-            # If the distance between the pony and the agent is 
-            # 1, then they're forcibly aligned. So there should
-            # be no risk that the agent hits the pony
-            if closeness_condition:
-                print("I WILL PERFORM THE", action, "ACTION!!!")
-                level.apply_action(actionName=action,what=what,where=direction)
-                flag = True
-            else:
-                # get closer by going in direction
-                # the reason this is called silly steps is because of these silly steps outside of a*
-                print("I AM MOVING WITHOUT AN ALGORITHM!")
-                level.apply_action(actionName=direction)
-
-            #self.percept(level)
-            if(show_steps):
-                time.sleep(delay)
-                level.render()
-                print("is the steed hostile? " + str(bool(self.kbQuery('hostile(steed)'))))       
-    
-    '''
-    this repeats if necessary the go_to_closer_element with the dynamic twist to avoid beating the horse
-    then applies the action,could be throw carrot, apply saddle, ride
-    '''
-    def interact_with_pony(self, level: Map, action: str=None, what: str=None,
-                            maxOffset: int=1, show_steps:bool=True, delay=0.5,
-                            heuristic: callable = lambda t,s: manhattan_distance([t],s)[1]):
-
-        #self.percept(level)
-        # goes toward the pony
-        flag = False
-        while not flag:
-            self.go_to_closer_element(level, element='pony', 
-                                      heuristic=heuristic, 
-                                      show_steps=show_steps, delay=delay, 
-                                      dynamic=True)
-            self.percept(level)
-            agent_pos, pony_pos, closeness_condition = self._check_if_near_pony(maxOffset)
-            #perform the action!
-            if closeness_condition:
-                delta = (agent_pos[0] - pony_pos[0], agent_pos[1] - pony_pos[1])
-                direction = ''
-                if delta[0] > 0:
-                    direction += 'N'
-                elif delta[0] < 0:
-                    direction += 'S'
-                if delta[1] > 0:
-                    direction += 'W'
-                elif delta[1] < 0:
-                    direction += 'E'
-                print("I WILL PERFORM THE", action, "ACTION!!!")
-                level.apply_action(actionName=action,what=what,where=direction)
-                flag = True
-                #self.percept(level)
-                if(show_steps):
-                    time.sleep(delay)
-                    level.render()
-                    print("is the steed hostile? " + str(bool(self.kbQuery('hostile(steed)'))))
-
-    def _check_if_near_pony(self, maxOffset):
+        # TODO: May throw exceptions that have to be handled
+        self.go_to_closer_element(level, element=element, heuristic=heuristic, show_steps=show_steps, delay=delay, maxDistance=maxOffset, dynamic=(element == 'pony'))
+        self.percept(level)
+        #agent_pos, pony_pos, closeness_condition = self._check_if_near_pony(maxOffset)
         agent_pos = self.kb.get_element_position_query('agent')[0]
-        pony_pos = self.kb.get_element_position_query('pony')[0]
-        closeness_condition = are_close(agent_pos,pony_pos,maxOffset=maxOffset) and are_aligned(agent_pos,pony_pos)
-        return agent_pos, pony_pos, closeness_condition
-    
-    # --------- General stuff to interact with the pony END ---------
+        elem_pos = self.kb.get_element_position_query(element)[0]
+        #perform the action!
+        delta = (agent_pos[0] - elem_pos[0], agent_pos[1] - elem_pos[1])
+        direction = ''
+        if delta[0] > 0:
+            direction += 'N'
+        elif delta[0] < 0:
+            direction += 'S'
+        if delta[1] > 0:
+            direction += 'W'
+        elif delta[1] < 0:
+            direction += 'E'
 
+        # TODO: Now if go_to_closer_element fails it still perform the action
+        # TODO: May throw exceptions that have to be handled
+        level.apply_action(actionName=action,what=what,where=direction)
+        self.percept(level)
+        level.render()
+        #print("is the steed hostile? " + str(bool(self.kbQuery('hostile(steed)'))))
 
 
     # --------- Explore subtask (DavideB) START ---------
-    def explore_subtask(self, level:Map, heuristic:callable = lambda t,s: manhattan_distance(t,s), render:bool = False, graphic:bool = True, delay:float = 0.5):
+    def explore_subtask(self, level:Map, heuristic:callable = lambda t,s: manhattan_distance(t,s), render:bool = False, graphic:bool = False, delay:float = 0.5):
         next_action = self.explore_step(level, heuristic)
-        if next_action == '':
-            raise Exception('No cells to explore')
-        while next_action != '' and not self.kb.query_for_interrupt('explore'):
-            next_action = self.explore_step(level, heuristic)
-            level.apply_action(actionName=next_action)
-            if render:
-                level.render(delay=delay, graphic=graphic)
-            self.percept(level)
+        if next_action == '': # if there is nothing to explore
+            searchGraph = MapGraph(level)
+            while not searchGraph.fullVisited() and not self.kb.query_for_interrupt('explore'):
+                next_action = self.search_step(searchGraph, level, heuristic)
+                level.apply_action(actionName=next_action)
+                if render: level.render(delay=delay, graphic=graphic)
+                self.percept(level)
+                searchGraph.update()
+        else: # if there is something to explore
+            while next_action != '' and not self.kb.query_for_interrupt('explore'):
+                level.apply_action(actionName=next_action)
+                if render: level.render(delay=delay, graphic=graphic)
+                self.percept(level)
+                next_action = self.explore_step(level, heuristic)
+    
+    def search_step(self, searchGraph:MapGraph, level:Map, heuristic:callable = lambda t,s: manhattan_distance(t,s)):
+        try:
+            agent_pos = self.kb.get_element_position_query('agent')[0]
+        except:
+            agent_pos = level.get_agent_position()
+        closestUnsearched = heuristic(searchGraph.lastVisit, agent_pos)[0]
+        next_cell = a_star(level.get_map_as_nparray(),start=agent_pos, target=closestUnsearched, maxDistance=1, minDistance=1)[1]
+        #now we get the direction to go to reach the cell
+        return actions_from_path(agent_pos, [next_cell])[0]
+            
+        
 
     def explore_step(self, level: Map, heuristic: callable = lambda t,s: manhattan_distance(t,s)):
         toExplore = set()
@@ -532,12 +444,15 @@ class Agent():
         path = self._get_best_path_to_target(level, target = element,
                                              heuristic=heuristic,
                                              maxDistance=maxDistance, minDistance=minDistance)
+
         # translate the path into a sequence of actions to perform
-        actions = actions_from_path(agent_pos, path[1:])
+        # If the target is dynamic i can only keep the first step
+        actions = actions_from_path(agent_pos, path[1:] if not dynamic else path[1:2])
 
         # follow the path (i.e. actually move) as long as the 
         # kb gives green light.
-        for move_dir in actions:
+        while actions:
+
             # TODO: a true query for greenlight
             try:
                 # Hopefully this is the way to go: at each step the agent
@@ -550,25 +465,31 @@ class Agent():
                 # sort of a homemade interrupt: if someone else 
                 # (e.g. the pony) gets to the element (e.g.) carrot 
                 # earlier and steals it, 
-                destination = path[-1:][0]
-                if destination not in self.kb.get_element_position_query(element):
+                
+                destination = path[-1]
+                if not dynamic and destination not in self.kb.get_element_position_query(element):
                     raise exceptions.ElemNotInDestinationException\
                             (f'Somebody got to {destination} before the agent'
                              f' and took the {element}.')
+                
 
                 interrupt = self.check_interrupt()
-                try:
-                    _,_,closeness_condition = self._check_if_near_pony(1)
-                except exceptions.ElemNotFoundException:
-                    closeness_condition = False
-                if(dynamic and closeness_condition):
-                    #print("DON'T KILL IT!!!!!!!!! DON'T KILL THE PONY BY STEPPING ON IT!!!!!!")
-                    break
                 if not interrupt:
-                    level.apply_action(actionName = move_dir)
+                    level.apply_action(actionName = actions.pop(0))
                     if(show_steps):
                         time.sleep(delay)
                         level.render()
+
+                    if dynamic:
+                        self.percept(level)
+                        agent_pos = self.kb.get_element_position_query('agent')[0]
+                        path = self._get_best_path_to_target(level, target = element,
+                                             heuristic=heuristic,
+                                             maxDistance=maxDistance, minDistance=minDistance)
+
+                        # translate the path into a sequence of actions to perform
+                        actions = actions_from_path(agent_pos, path[1:2])
+                    
                 else:
                     break
             # Who knows, maybe the query_for_greenlight raises an exception...

@@ -1,3 +1,7 @@
+import sys
+import os
+sys.path.append(os.path.join(sys.path[0], '..'))
+
 from utils.agent import Agent
 from utils.map import Map
 from utils.general import decode
@@ -58,7 +62,7 @@ def go_to_pony(carrotFarm:Map):
 successfulRides = 0
 notSaddled = 0
 failure = 0
-totTries = 1000
+totTries = 100
 for i in range(totTries):
     printProgressBar(i, totTries, prefix = 'Progress:', suffix = 'Complete', length = 50)
     carrotFarm = Map(pony=True, level=5)
@@ -80,7 +84,7 @@ for i in range(totTries):
             eatenCarrots += 1
 
     #wait for the pony to eat 20 carrots
-    while eatenCarrots < 13:
+    while eatenCarrots < 0:
         carrotFarm.apply_action(actionName='N')
         carrotFarm.apply_action(actionName='S')
         message=decode(carrotFarm.state['message'])

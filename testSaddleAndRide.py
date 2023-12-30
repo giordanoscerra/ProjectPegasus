@@ -12,9 +12,7 @@ level.apply_action('PICKUP')
 level.render()
 # this could be better with condition of tameness probability
 for _ in range(10):
-    # magic function
-    agent.interact_with_pony(level=level, action="THROW",what="carrot", maxOffset=7, delay=0)
-
-# hell yeah
+    agent.interact_with_element(level=level, element='pony', action="THROW",what="carrot", maxOffset=7, delay=0)
 agent.ride_steed(level)
+
 
