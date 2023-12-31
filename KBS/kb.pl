@@ -60,9 +60,9 @@ action(pick) :-
     ).
 
 action(getCarrot) :- 
-    carrots(X),is_steed(Steed),(
-        (X == 0, \+ stepping_on(agent,_,carrot), position(comestible,carrot,_,_), 
-        hostile(Steed));
+    carrots(X), is_steed(Steed), \+ stepping_on(agent,_,carrot), position(comestible,carrot,_,_), 
+    (
+        (X == 0, hostile(Steed));
         (max_tameness(MT), tameness(Steed,T), MT - T > X, 
         \+ hostile(Steed))
     ).    % Can be stopped if danger (to implement)
@@ -102,6 +102,7 @@ action(applySaddle) :-
     saddles(X), X > 0,
     is_steed(Steed),
     \+ saddled(Steed),
+    position(steed, Steed, _, _),
     (
         (max_tameness(MT),tameness(Steed,MT));
         (starvationRiding)
@@ -110,6 +111,7 @@ action(applySaddle) :-
 action(rideSteed) :- 
     rideable(Steed), 
     \+ hostile(Steed),
+    position(steed, Steed, _, _),
     (
         (max_tameness(MT),tameness(Steed,T), T >= MT);
         (starvationRiding)
@@ -190,8 +192,7 @@ max_tameness(20).
 fullyExplored(0).
 starvationRiding :- fullyExplored(X), X > 2, \+ position(comestible, carrot, _, _), carrots(0).
 
-% if pony dies
-
+% if pony dies ???
 
 carrots(0).
 saddles(0).
