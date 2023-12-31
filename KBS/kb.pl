@@ -128,32 +128,23 @@ action(explore) :-
     ).
 
 %%% INTERRUPT CONDITIONS
-interrupt(getCarrot) :- 
-    carrots(X), X > 0; 
-    stepping_on(agent,comestible,carrot); 
-    \+ position(comestible,carrot,_,_); 
-    (is_steed(Steed), \+ hostile(Steed)).
+%TODO: add conditions for enemies
 
-interrupt(getSaddle) :- 
-    saddles(X), X > 0; 
-    stepping_on(agent,saddle,_); 
-    \+ position(applicable,saddle,_,_).
+% if you can't prove that this is wrong please don't change it
+interrupt(getCarrot) :- \+ stepping_on(agent, comestible, carrot), \+ action(getCarrot).
 
-interrupt(pacifySteed) :-
-    \+ action(pacifySteed).
+interrupt(getSaddle) :- \+ stepping_on(agent, applicable, saddle), \+ action(getSaddle).
+
+interrupt(pacifySteed) :- \+ action(pacifySteed).
 
 interrupt(feedSteed) :- 
     (carrots(X), X == 0); 
-    (tameness(Steed, T), is_steed(Steed), max_tameness(MT), T == MT).
+    (tameness(Steed, T), is_steed(Steed), max_tameness(MT), T == MT);
+    (\+ position(_, Steed, _, _)).
 
-interrupt(rideSteed) :- 
-    (is_steed(Steed), \+ rideable(Steed)); 
-    (hostile(Steed), is_steed(Steed)); 
-    ((carrots(X), X > 0); position(comestible,carrot,_,_), (tameness(Steed, T), is_steed(Steed), max_tameness(MT), T < MT)).
+interrupt(applySaddle) :- \+ action(applySaddle).
 
-interrupt(hoardCarrots) :- 
-    (carrots(X), tameness(Steed, T), is_steed(Steed), max_tameness(MT), T+X >= MT);
-    (hostile(Steed), is_steed(Steed)).
+interrupt(rideSteed) :- \+ action(rideSteed).
 
 interrupt(explore) :- \+ action(explore).
 
