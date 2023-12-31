@@ -95,6 +95,9 @@ action(feedSteed) :-
                 is_close(RA,CA,RS,CS);  %not hostile but close
                 (tameness(Steed,T), max_tameness(MT), X >= MT - T) %max tameanes can be reached
             )
+        );
+        (
+            starvationRiding, X > 0
         )
     ).
 
@@ -134,8 +137,6 @@ action(explore) :-
 interrupt(getCarrot) :- \+ stepping_on(agent, comestible, carrot), \+ action(getCarrot).
 
 interrupt(getSaddle) :- \+ stepping_on(agent, applicable, saddle), \+ action(getSaddle).
-
-interrupt(pacifySteed) :- \+ action(pacifySteed).
 
 interrupt(feedSteed) :- 
     (carrots(X), X == 0); 
