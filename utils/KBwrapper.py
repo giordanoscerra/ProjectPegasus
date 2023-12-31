@@ -133,7 +133,7 @@ class KBwrapper():
         element = spaced_elem.replace(' ','')
         category = self._get_key(spaced_elem, self._categories)
         stepping_on_sentence = f'stepping_on(agent,{category},{element})' if category is None else f'stepping_on(agent,_,{element})'
-        return bool(self._kb.query(stepping_on_sentence))
+        return bool(list(self._kb.query(stepping_on_sentence)))
     
     # ---------------- stepping_on related methods END ----------------
 
@@ -143,14 +143,17 @@ class KBwrapper():
 
     # assert that a certain creature (or its category) is hostile in the kb.
     # It's ok like this for now: when we'll want to implement multiple steeds or good and bad monsters we'll modify this.
+    # It's not ok anymore, we have to modify it now.
     def assert_hostile(self, creature: str):
         category = self._get_key(creature, self._categories)
-        if category == 'steed': 
-            if not bool(list(self._kb.query(f'hostile({category})'))):
-                self._kb.asserta(f'hostile({category})')
-        else: 
+        if category == 'steed':
+            # Hopefully we'll only have one pony 
             if not bool(list(self._kb.query(f'hostile({creature})'))):
                 self._kb.asserta(f'hostile({creature})')
+        else: 
+            print("For now, only hostility of steeds is supported")
+            #if not bool(list(self._kb.query(f'hostile({creature})'))):
+            #    self._kb.asserta(f'hostile({creature})')
 
     def retract_hostile(self, creature:str):
         category = self._get_key(creature, self._categories)
