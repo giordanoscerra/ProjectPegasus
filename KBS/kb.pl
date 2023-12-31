@@ -42,68 +42,93 @@ unencumbered(agent) :- \+ burdened(agent), \+ stressed(agent), \+ strained(agent
 encumbered(agent) :- stressed(agent); strained(agent); overtaxed(agent); overloaded(agent). %no burdened?
 
 %%% GENERAL SUBTASKS feel free to add other conditions or comments to suggest them
+
+action(pick) :-
+    stepping_on(agent,ObjClass,Obj),
+    is_pickable(ObjClass),
+    (
+        ( %the bject is a saddle
+            (Obj == saddle),
+            (
+                (max_tameness(MT), tameness(Steed,T), is_steed(Steed), carrots(X), MT - T > X); % can start mounting procedure
+                starvationRiding % there is nothing we can do to tame the pony
+            )
+        );
+        ( %the object is not a saddle
+            \+ (Obj == saddle)
+        )
+    ).
+
 action(getCarrot) :- 
     carrots(X),is_steed(Steed),(
         (X == 0, \+ stepping_on(agent,_,carrot), position(comestible,carrot,_,_), 
         hostile(Steed));
-        (max_tameness(MT), tameness(Steed,T), MT > X+T, 
+        (max_tameness(MT), tameness(Steed,T), MT - T > X, 
         \+ hostile(Steed))
     ).    % Can be stopped if danger (to implement)
 
 
 action(getSaddle) :- 
-    saddles(X), X == 0, 
-    \+ stepping_on(agent,_,saddle), 
-    position(applicable,saddle,_,_),  
-    tameness(Steed,T),
-    max_tameness(T),
-    is_steed(Steed).
+    saddles(X), X == 0, \+ stepping_on(agent,_,saddle), position(applicable,saddle,_,_),  
+    (
+        ( 
+            tameness(Steed,MT),
+            max_tameness(MT),
+            is_steed(Steed)
+        );
+        (
+            starvationRiding
+        )
+    ).
 
 
 % The idea is: if the pony isn't in sight the agent can hoard carrots in the meantime
 action(feedSteed) :- 
-    is_steed(Steed), carrots(X), position(steed,Steed,RS,CS),(
-        (hostile(Steed), X > 0);    % if the pony is far away, but there are enemies then fight may be worthwile
-        (\+hostile(Steed), position(agent,agent,RA,CA), is_close(RA,CA,RS,CS),
-        tameness(Steed,T))        %this has to be finished
+    is_steed(Steed), carrots(X), position(steed,Steed,RS,CS),position(agent,agent,RA,CA),
+    (
+        (
+            hostile(Steed), X > 0  % if the pony is far away, but there are enemies then fight may be worthwile
+        );
+        (
+            \+hostile(Steed), % consider enemies if they are close
+            (
+                is_close(RA,CA,RS,CS);  %not hostile but close
+                (tameness(Steed,T), max_tameness(MT), X >= MT - T) %max tameanes can be reached
+            )
+        )
     ).
-     
 
-action(feedSteed) :- 
-    carrots(X),
+action(applySaddle) :- 
+    saddles(X), X > 0,
     is_steed(Steed),
-    \+ hostile(Steed), 
-    tameness(Steed, T),
-    max_tameness(MT), 
-    T < MT,
-    X >= MT - T.
+    \+ saddled(Steed),
+    (
+        (max_tameness(MT),tameness(Steed,MT));
+        (starvationRiding)
+    ).
 
 action(rideSteed) :- 
     rideable(Steed), 
     \+ hostile(Steed),
-    carrots(X),
-    X == 0, 
-    \+ position(comestible,carrot,_,_).
-
-% this action here will probably be unused
-action(pick) :-
-    stepping_on(agent,ObjClass,_),
-    is_pickable(ObjClass).
-
-%we need to explore if the pony is tamed but we dont't know where it is
-%we need to explore if the pony is not tamed and we don't have carrots
-%TODO: we can decide to explore if we haven't enough carrots to tame the pony
-action(explore) :- 
-    (tameness(_, T), max_tameness(MT), carrots(X)),
     (
-        ((T == MT; X >= MT - T), is_steed(Steed), \+ position(_, Steed, _, _)); 
-        (T < MT, X == 0, \+ position(_, carrot, _, _))
+        (max_tameness(MT),tameness(Steed,T), T >= MT);
+        (starvationRiding)
+    ).
+
+
+%we need to explore if the pony is/can_be tamed but we dont't know where it is
+%we need to explore if the pony is not tamed and we don't have carrots
+action(explore) :- 
+    (tameness(Steed, T), max_tameness(MT), carrots(X), is_steed(Steed)),
+    (
+        (X >= MT - T, \+ position(_, Steed, _, _)); 
+        (X < MT - T, \+ position(comestible, carrot, _, _))
     ).
 
 %%% INTERRUPT CONDITIONS
 interrupt(getCarrot) :- 
     carrots(X), X > 0; 
-    stepping_on(agent,carrot,_); 
+    stepping_on(agent,comestible,carrot); 
     \+ position(comestible,carrot,_,_); 
     (is_steed(Steed), \+ hostile(Steed)).
 
@@ -218,3 +243,14 @@ tameness(pony, 1).
 tameness(horse, 1).
 tameness(warhorse, 1).
 max_tameness(20).
+
+%here some extreme conditions
+% if we have explored the map 3 times and the pony is not tamed
+% we are should accept the fact that we cannot tame it (maybe he stoole some carrots)
+% so we should try to ride it anyway
+fullyExplored(0).
+starvationRiding :- fullyExplored(X), X > 2, \+ position(comestible, carrot, _, _), carrots(0).
+
+%add wait conditions if agent has saddle and steed is tamed
+%also enemies close to the pony (save the pony Ryan)
+%add condition fullyExplored(X) wher X is the number of times the agent has explored the map
