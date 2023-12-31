@@ -1,9 +1,3 @@
-from utils.general import decode
-import numpy as np
-# import os
-# import sys
-# import string
-from nle import nethack
 from pyswip import Prolog
 from utils import exceptions
 
@@ -78,6 +72,7 @@ class KBwrapper():
 
     # ---------------- element position related methods START ----------------     
     def get_element_position_query(self, element:str):
+        element = element.lower()   # pointless. Just to be sure
         if element in self._categories.keys():
             query_sentence = f'position({element},_,Row,Col)'
             err_sentence = f'any element in the {element} category '
@@ -107,16 +102,16 @@ class KBwrapper():
 
         category = self._get_key(element, self._categories)
         if category is None:
-            self._kb.retractall(f'position({element},{element},{x},{y})')
+            self._kb.retractall(f'position({element.lower()},{element.lower()},{x},{y})')
         else:
-            self._kb.retractall(f'position({category},{element},{x},{y})')
+            self._kb.retractall(f'position({category},{element.lower()},{x},{y})')
 
     def assert_element_position(self,element:str, x:int, y:int):
         category = self._get_key(element, self._categories)
         if category is None:
-            self._kb.asserta(f'position({element},{element},{x},{y})')
+            self._kb.asserta(f'position({element.lower()},{element.lower()},{x},{y})')
         else:
-            self._kb.asserta(f'position({category},{element},{x},{y})')
+            self._kb.asserta(f'position({category},{element.lower()},{x},{y})')
 
     # ---------------- element position related methods END ----------------
             
@@ -213,14 +208,16 @@ class KBwrapper():
     def query_riding(self, steed:str):
         category = self._get_key(steed, self._categories)
         if category == "steed": 
-          return bool(list(self._kb.query(f'riding(agent,steed')))
+          return bool(list(self._kb.query('riding(agent,steed')))
         else: 
           return bool(list(self._kb.query(f'riding(agent,{steed})'))) # when the steed is not a *steed* but, for example, a monster.
 
     def assert_saddled_steed(self, steed:str):
         category = self._get_key(steed, self._categories)
-        if category == 'steed': self._kb.asserta(f'saddled({category})')
-        else: self._kb.asserta(f'saddled({steed})')
+        if category == 'steed': 
+            self._kb.asserta(f'saddled({category})')
+        else: 
+            self._kb.asserta(f'saddled({steed})')
           
     def retract_saddled_steed(self, steed:str):
         category = self._get_key(steed, self._categories)
@@ -251,7 +248,8 @@ class KBwrapper():
         self._kb.asserta(f'health({health})')
 
     def update_quantity(self, item:str, quantity:int):
-        if item in ['carrot', 'apple', 'saddle']: item += 's'
+        if item in ['carrot', 'apple', 'saddle']: 
+            item += 's'
         self._kb.retractall(f'{item}(_)')
         self._kb.asserta(f'{item}({quantity})')
 
