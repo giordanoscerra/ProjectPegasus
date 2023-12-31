@@ -455,6 +455,8 @@ class Agent():
                     break
             # Who knows, maybe the query_for_greenlight raises an exception...
             except:
-                raise Exception(f'Action was interrupted from KB.')
+                raise exceptions.ElemNotInDestinationException\
+                            (f'Somebody got to {destination} before the agent'
+                             f' and took the {element}.')
                 break
 
