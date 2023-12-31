@@ -268,56 +268,58 @@ class Agent():
     # To interact with the pony walking step by step, and each time recalculating the best step from zero
     def interact_with_element(self, level: Map, element: str=None, action: str=None, what: str=None, maxOffset: int=1, show_steps:bool=True, delay=0.5,heuristic: callable = lambda t,s: manhattan_distance([t],s)[1], graphic:bool = False):
 
-        # TODO: May throw exceptions that have to be handled
-        self.go_to_closer_element(level, element=element, 
-                                  heuristic=heuristic, 
-                                  show_steps=show_steps, 
-                                  delay=delay, maxDistance=maxOffset, 
-                                  dynamic=(element == 'pony'), graphic=graphic)
+        try:
+            # this baddie here could raise interestings exceptions if it's interrupted. be ready to catch 'em all !
+            self.go_to_closer_element(level, element=element, 
+                                    heuristic=heuristic, 
+                                    show_steps=show_steps, 
+                                    delay=delay, maxDistance=maxOffset, 
+                                    dynamic=(element == 'pony'), graphic=graphic)
 
-        direction = None
-        if (maxOffset > 0):
-            agent_pos = self.kb.get_element_position_query('agent')[0]
-            elem_pos = self.kb.get_element_position_query(element)[0]
+            direction = None
+            if (maxOffset > 0):
+                agent_pos = self.kb.get_element_position_query('agent')[0]
+                elem_pos = self.kb.get_element_position_query(element)[0]
 
-            delta = (agent_pos[0] - elem_pos[0], agent_pos[1] - elem_pos[1])
-            direction = ''
-            if delta[0] > 0:
-                direction += 'N'
-            elif delta[0] < 0:
-                direction += 'S'
-            if delta[1] > 0:
-                direction += 'W'
-            elif delta[1] < 0:
-                direction += 'E'
+                delta = (agent_pos[0] - elem_pos[0], agent_pos[1] - elem_pos[1])
+                direction = ''
+                if delta[0] > 0:
+                    direction += 'N'
+                elif delta[0] < 0:
+                    direction += 'S'
+                if delta[1] > 0:
+                    direction += 'W'
+                elif delta[1] < 0:
+                    direction += 'E'
 
-        """
-        while not arrived:
-            try:
-                self.go_to_closer_element(level, element='carrot', heuristic=heuristic, show_steps=show_steps, delay=delay)
-            except exceptions.ElemNotInDestinationException as exc:
-                print('Eccezzzionale!')
-                print(f'go_to_closer_element raised a ElemNotInDestinationException'
-                    f' with the following message: {exc}.\n'
-                    f'Recomputing best path to closer carrot.')
-                continue
-            arrived = True
-            print('arrivato')
+            """
+            while not arrived:
+                try:
+                    self.go_to_closer_element(level, element='carrot', heuristic=heuristic, show_steps=show_steps, delay=delay)
+                except exceptions.ElemNotInDestinationException as exc:
+                    print('Eccezzzionale!')
+                    print(f'go_to_closer_element raised a ElemNotInDestinationException'
+                        f' with the following message: {exc}.\n'
+                        f'Recomputing best path to closer carrot.')
+                    continue
+                arrived = True
+                print('arrivato')
 
-        if self.kb.query_stepping_on(spaced_elem='carrot'):
-            level.apply_action(actionName='PICKUP')
-            # percept here just for safety: mainly to update inventory
-            self.percept(level)
-                   
-        else:
-            # return exception? Nothing?
-            return 'There is no carrot here! (according to KB)'
-        """
+            if self.kb.query_stepping_on(spaced_elem='carrot'):
+                level.apply_action(actionName='PICKUP')
+                # percept here just for safety: mainly to update inventory
+                self.percept(level)
+                    
+            else:
+                # return exception? Nothing?
+                return 'There is no carrot here! (according to KB)'
+            """
 
-        # TODO: Now if go_to_closer_element fails it still perform the action
-        # TODO: May throw exceptions that have to be handled
-        self._perform_action(level=level,actionName=action,what=what,where=direction,graphic=graphic)
-        #print("is the steed hostile? " + str(bool(self.kbQuery('hostile(steed)'))))
+            self._perform_action(level=level,actionName=action,what=what,where=direction,graphic=graphic)
+            #print("is the steed hostile? " + str(bool(self.kbQuery('hostile(steed)'))))
+        except:
+            #Here control returns to agent main action loop, we need another agent.act !
+            return
 
 
     # --------- Explore subtask (DavideB) START ---------
@@ -449,8 +451,10 @@ class Agent():
                         actions = actions_from_path(agent_pos, path[1:2])
                     
                 else:
+                    raise Exception(f'Action was interrupted from KB.')
                     break
             # Who knows, maybe the query_for_greenlight raises an exception...
             except:
+                raise Exception(f'Action was interrupted from KB.')
                 break
 
