@@ -22,9 +22,8 @@ class Agent():
         self.actions = {
             "getCarrot": self.get_carrot,
             "getSaddle": self.get_saddle,
-            "pacifySteed": self.pacify_steed,
-            "hoardCarrots": self.hoard_carrots,
             "feedSteed": self.feed_steed,
+            "applySaddle": self.apply_saddle,
             "rideSteed": self.ride_steed
         }
         self.current_subtask = None
@@ -156,8 +155,7 @@ class Agent():
     # this function is for testing purposes. don't ask. used only in "act", hopefully not for long.
     def randomSubtask(self):
         #actions = ["getCarrot", "getSaddle", "pacifySteed", "hoardCarrots", "feedSteed", "rideSteed"]
-        # without feedSteed because davidem is slow af
-        actions = ["getCarrot", "getSaddle", "pacifySteed", "hoardCarrots", "rideSteed"]
+        actions = ["getCarrot", "getSaddle", "feedSteed", "applySaddle", "rideSteed"]
         return np.random.choice(actions)
 
     def act(self, level:Map):
@@ -249,80 +247,22 @@ class Agent():
     def get_carrot(self, level: Map, show_steps:bool=True, delay=0.5,
                    heuristic: callable = lambda t,s: manhattan_distance([t],s)[1], graphic:bool = False):
         self.interact_with_element(level=level, element='carrot', action="PICKUP", maxOffset=0, graphic=graphic)
-        
-    def hoard_carrots(self, level:Map, show_steps:bool=True, delay=0.5,heuristic: callable = lambda t,s: manhattan_distance([t],s)[1]):
-        carrots_exist = True
-        while carrots_exist:
-            try:
-                carrots_exist = bool(self.kb.get_element_position_query('carrot'))
-                self.percept(level)
-                # Q: rn the agent is blindly going towards the element.
-                #   I think that for this task it is important that
-                #   the interrupts are seriously implemented
-                # Q2: this is basically get_carrots multiple times!
-                # Q3: remember that an ElemNotFoundException can still
-                #   be risen by closest_element_position. The question of
-                #   who catches this and to do what remains open...
-                ###self.go_to_closer_element(level,element='carrot',show_steps=show_steps,
-                ###                          delay=delay, heuristic=heuristic)
-                
-                # Experiment!
-                arrived = False
-                while not arrived:
-                    try:
-                        self.go_to_closer_element(level, element='carrot', heuristic=heuristic, show_steps=show_steps, delay=delay)
-                    except exceptions.ElemNotInDestinationException as exc:
-                        print('Eccezzzionale!')
-                        print(f'go_to_closer_element raised a ElemNotInDestinationException'
-                            f' with the following message: {exc}.\n'
-                            f'Recomputing best path to closer carrot.')
-                        continue
-                    arrived = True
-                    print('arrivato')
-                
-                ###self.percept(level)
-
-                if self.kb.query_stepping_on(spaced_elem='carrot'):
-                    level.apply_action(actionName='PICKUP')
-                    # percept here just for safety: mainly to update inventory
-                    self.percept(level)  
-                else:
-                    # return exception? Nothing?
-                    # this could happen if another entity (e.g. pony)
-                    # gets to the carrot before the agent. It's unlikely
-                    return 'There is no carrot here! (according to KB)'
-            except exceptions.ElemNotFoundException as exc:
-                print('Apparently, the pony snagged away the last carrot, '
-                      'and there aren\'t any more in sight.')
-                print(f'hoard_carrots catched and exception with message: {exc}')
-                break
 
     # --------- Saddle and ride subtask (Giordano) START ---------
     def get_saddle(self, level:Map, heuristic:callable = lambda t,s: manhattan_distance([t],s)[1]):
-        self.go_to_closer_element(level, element='saddle', heuristic=heuristic, show_steps = True, delay=0.2)
-        ###self.percept(level)
-        if self.kb.query_stepping_on(spaced_elem='saddle'):
-            level.apply_action(actionName='PICKUP')
-            self.percept(level)
-            print('get_saddle successful!')
-        else:
-            return 'There is no saddle here! (according to KB)'
+        self.interact_with_element(level=level, element='saddle', action="PICKUP", maxOffset=0)
     
-    def _calculate_throw_range(self, strength):
-        return math.floor(strength/2)
-
-    def pacify_steed(self, level):
-        # Calculated from the table here: https://nethackwiki.com/wiki/Throw#Food
-        self.interact_with_element(level=level, element='pony', action="THROW",what="carrot", maxOffset=self._calculate_throw_range(level.get_agent_strength()))
+    # Calculated from the table here: https://nethackwiki.com/wiki/Throw#Food for objects weighting less than 40
+    def _get_throw_range(self, level:Map):
+        return math.floor(level.get_agent_strength()/2)
     
     def feed_steed(self, level):
-        carrots_to_feed = self.kb.queryDirectly('carrots(X)')[0]['X']
-        while not self.check_interrupt() and carrots_to_feed > 0:
-            self.interact_with_element(level=level, element='pony', action="THROW",what="carrot", maxOffset=self._calculate_throw_range(level.get_agent_strength()))
-            carrots_to_feed -= 1
+        self.interact_with_element(level=level, element='pony', action="THROW",what="carrot", maxOffset=self._get_throw_range(level))
     
-    def ride_steed(self, level):
+    def apply_saddle(self, level):
         self.interact_with_element(level=level, element='pony', action="APPLY",what="saddle", maxOffset=1)
+
+    def ride_steed(self, level):
         self.interact_with_element(level=level, element='pony', action="RIDE", maxOffset=1)
 
     # To interact with the pony walking step by step, and each time recalculating the best step from zero
