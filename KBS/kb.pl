@@ -160,9 +160,6 @@ interrupt(explore) :- \+ action(explore).
 % we infer it from the screen description. If the steed is peaceful, it says "tame/peaceful pony/horse/etc"
 % hostile(Steed) :- is_steed(Steed), tameness(Steed, T), T < 2. In the 1% chance the steed spawns peaceful, it will nevertheless start with tameness = 1
 
-% We need to check this if we are to throw carrots at a horse.
-is_aligned(R1,C1,R2,C2) :- R1 == R2; C1 == C2; ((R1 is R2+X;R1 is R2-X), (C1 is C2+X;C1 is C2-X)).
-
 % Directionality and space conditions, taken from handson2
 % test the different condition for closeness
 % two objects are close if they are at 1 cell distance, including diagonals
@@ -170,59 +167,8 @@ is_close(R1,C1,R2,C2) :- R1 == R2, (C1 is C2+1; C1 is C2-1).
 is_close(R1,C1,R2,C2) :- C1 == C2, (R1 is R2+1; R1 is R2-1).
 is_close(R1,C1,R2,C2) :- (R1 is R2+1; R1 is R2-1), (C1 is C2+1; C1 is C2-1).
 
-% check if the selected direction is safe
-safe_direction(R, C, D,Direction) :- resulting_position(R, C, NewR, NewC, D),
-                                      ( safe_position(NewR, NewC) ->Direction = D;
-                                      % else, get a new close direction
-                                      % and check its safety
-                                      close_direction(D, ND), safe_direction(R, C, ND,Direction)
-                                      ).
 
-% a square is unsafe if there is a trap or an enemy
-unsafe_position(R, C) :- position(trap,_, R, C).
-unsafe_position(R, C) :- position(enemy,_, R, C).
-unsafe_position(R,C) :- 
-    position(enemy,_, ER, EC), 
-    is_close(ER, EC, R, C).
-unsafe_position(_,_) :- fail.
-% \+ means "the proposition is not entailed by KB". Sort of a not, but more general
-safe_position(R,C) :- \+ unsafe_position(R,C).
-
-%%%% known facts %%%%
-opposite(north, south).
-opposite(south, north).
-opposite(east, west).
-opposite(west, east).
-opposite(northeast, southwest).
-opposite(southwest, northeast).
-opposite(northwest, southeast).
-opposite(southeast, northwest).
-
-resulting_position(R, C, NewR, NewC, north) :-
-    NewR is R-1, NewC = C.
-resulting_position(R, C, NewR, NewC, south) :-
-    NewR is R+1, NewC = C.
-resulting_position(R, C, NewR, NewC, west) :-
-    NewR = R, NewC is C-1.
-resulting_position(R, C, NewR, NewC, east) :-
-    NewR = R, NewC is C+1.
-resulting_position(R, C, NewR, NewC, northeast) :-
-    NewR is R-1, NewC is C+1.
-resulting_position(R, C, NewR, NewC, northwest) :-
-    NewR is R-1, NewC is C-1.
-resulting_position(R, C, NewR, NewC, southeast) :-
-    NewR is R+1, NewC is C+1.
-resulting_position(R, C, NewR, NewC, southwest) :-
-    NewR is R+1, NewC is C-1.
-
-close_direction(north, northeast).
-close_direction(northeast, east).
-close_direction(east, southeast).
-close_direction(southeast, south).
-close_direction(south, southwest).
-close_direction(southwest, west).
-close_direction(west, northwest).
-close_direction(northwest, north).
+%%%% KNOWN FACTS %%%%
 
 % we need to pick a carrot if we are stepping on it. 
 is_pickable(comestible).
@@ -234,23 +180,26 @@ is_steed(steed).
 is_steed(pony).
 is_steed(horse).
 is_steed(warhorse).
+max_tameness(20).
+
+%%% INITIALIZATION %%%
+
+% if we have explored the map 3 times and the pony is not tamed
+% we should accept the fact that we cannot tame it (maybe he stole some carrots)
+% so we should try to ride it anyway
+fullyExplored(0).
+starvationRiding :- fullyExplored(X), X > 2, \+ position(comestible, carrot, _, _), carrots(0).
+
+% if pony dies
+
+
 carrots(0).
 saddles(0).
-action_count(feed, 0).
 % tameness is 1 at the beginning of the game
 %tameness(steed, 1).
 tameness(pony, 1).
 tameness(horse, 1).
 tameness(warhorse, 1).
-max_tameness(20).
-
-%here some extreme conditions
-% if we have explored the map 3 times and the pony is not tamed
-% we are should accept the fact that we cannot tame it (maybe he stoole some carrots)
-% so we should try to ride it anyway
-fullyExplored(0).
-starvationRiding :- fullyExplored(X), X > 2, \+ position(comestible, carrot, _, _), carrots(0).
 
 %add wait conditions if agent has saddle and steed is tamed
 %also enemies close to the pony (save the pony Ryan)
-%add condition fullyExplored(X) wher X is the number of times the agent has explored the map
