@@ -24,7 +24,8 @@ class Agent():
             "getSaddle": self.get_saddle,
             "feedSteed": self.feed_steed,
             "applySaddle": self.apply_saddle,
-            "rideSteed": self.ride_steed
+            "rideSteed": self.ride_steed,
+            "explore": self.explore_subtask
         }
         self.current_subtask = None
 
@@ -222,7 +223,10 @@ class Agent():
         interrupt = self.check_interrupt()
         if interrupt:
             # Situation changed, the plan is no good
-            raise Exception("Exception raised after performing an action.")
+            print(f"According to KB, the {self.current_subtask} has to be "
+                  f"interrupted after the action {actionName} that has just "
+                  "been applied")
+            raise exceptions.SubtaskInterruptedException("Exception raised after performing an action.")
 
 
 
@@ -270,11 +274,19 @@ class Agent():
 
         try:
             # this baddie here could raise interestings exceptions if it's interrupted. be ready to catch 'em all !
-            self.go_to_closer_element(level, element=element, 
-                                    heuristic=heuristic, 
-                                    show_steps=show_steps, 
-                                    delay=delay, maxDistance=maxOffset, 
-                                    dynamic=(element == 'pony'), graphic=graphic)
+            stop = False
+            while not stop:
+                try:
+                    self.go_to_closer_element(level, element=element, 
+                                            heuristic=heuristic, 
+                                            show_steps=show_steps, 
+                                            delay=delay, maxDistance=maxOffset, 
+                                            dynamic=(element == 'pony'), graphic=graphic)
+                    stop = True
+                except exceptions.ElemNotInDestinationException as exc1:
+                    # You sure about that? Catching this exception means the target moved. 
+                    # We just need to call again the go_to_closer_element and try harder
+                    print(f"Caught ElemNotInDestinationException with message: {exc1}")
 
             direction = None
             if (maxOffset > 0):
@@ -292,34 +304,16 @@ class Agent():
                 elif delta[1] < 0:
                     direction += 'E'
 
-            """
-            while not arrived:
-                try:
-                    self.go_to_closer_element(level, element='carrot', heuristic=heuristic, show_steps=show_steps, delay=delay)
-                except exceptions.ElemNotInDestinationException as exc:
-                    print('Eccezzzionale!')
-                    print(f'go_to_closer_element raised a ElemNotInDestinationException'
-                        f' with the following message: {exc}.\n'
-                        f'Recomputing best path to closer carrot.')
-                    continue
-                arrived = True
-                print('arrivato')
-
-            if self.kb.query_stepping_on(spaced_elem='carrot'):
-                level.apply_action(actionName='PICKUP')
-                # percept here just for safety: mainly to update inventory
-                self.percept(level)
-                    
-            else:
-                # return exception? Nothing?
-                return 'There is no carrot here! (according to KB)'
-            """
-
             self._perform_action(level=level,actionName=action,what=what,where=direction,graphic=graphic)
             #print("is the steed hostile? " + str(bool(self.kbQuery('hostile(steed)'))))
-        except:
-            #Here control returns to agent main action loop, we need another agent.act !
+        except exceptions.SubtaskInterruptedException as exc2:
+            print(f"SubtaskInterruptedExceptions caught with message: {exc2}")
             return
+        except Exception as exc3:
+            #Here control returns to agent main action loop, we need another agent.act !
+            print(f"Caught Exception with message: {exc3}")
+            return
+
 
 
     # --------- Explore subtask (DavideB) START ---------
@@ -414,49 +408,35 @@ class Agent():
 
         # follow the path (i.e. actually move) as long as the 
         # kb gives green light.
-        while actions:
-
-            # TODO: a true query for greenlight
+        while actions:            
+            destination = path[-1]
             try:
-                # Hopefully this is the way to go: at each step the agent
-                # senses the environment, checks if it can proceed by 
-                # querying the kb for a greenlight (otherwise control 
-                # is returned to the action picker I guess (agent.act maybe))
-                # and moves
-                #self.percept(level)
-
-                # sort of a homemade interrupt: if someone else 
-                # (e.g. the pony) gets to the element (e.g.) carrot 
-                # earlier and steals it, 
-                
-                destination = path[-1]
                 if not dynamic and destination not in self.kb.get_element_position_query(element):
                     raise exceptions.ElemNotInDestinationException\
                             (f'Somebody got to {destination} before the agent'
-                             f' and took the {element}.')
-                
+                                f' and took the {element}.')
+            except exceptions.ElemNotFoundException as exc:
+                print(f"go_to_closer_element caught a ElemNotFoundException with message: {exc}")
+                print("This means that the element that was trying to be reached is not in "
+                        "sight anymore. ")
+                raise Exception("The best thing to do is to raise another exception that "
+                                "gets caught by interact_with_element, which in turn will "
+                                "give back control to agent.act")
+            
 
-                interrupt = self.check_interrupt()
-                if not interrupt:
-                    self._perform_action(level=level,actionName = actions.pop(0), delay=delay, show_steps=show_steps, graphic=graphic)
 
-                    if dynamic:
-                        ###self.percept(level)
-                        agent_pos = self.kb.get_element_position_query('agent')[0]
-                        path = self._get_best_path_to_target(level, target = element,
-                                             heuristic=heuristic,
-                                             maxDistance=maxDistance, minDistance=minDistance)
+            self._perform_action(level=level,actionName = actions.pop(0), delay=delay, show_steps=show_steps, graphic=graphic)
 
-                        # translate the path into a sequence of actions to perform
-                        actions = actions_from_path(agent_pos, path[1:2])
-                    
-                else:
-                    raise Exception(f'Action was interrupted from KB.')
-                    break
-            # Who knows, maybe the query_for_greenlight raises an exception...
-            except:
-                raise exceptions.ElemNotInDestinationException\
-                            (f'Somebody got to {destination} before the agent'
-                             f' and took the {element}.')
-                break
+            if dynamic:
+                ###self.percept(level)
+                agent_pos = self.kb.get_element_position_query('agent')[0]
+                path = self._get_best_path_to_target(level, target = element,
+                                        heuristic=heuristic,
+                                        maxDistance=maxDistance, minDistance=minDistance)
+
+                # translate the path into a sequence of actions to perform
+                actions = actions_from_path(agent_pos, path[1:2])
+            
+
+
 
