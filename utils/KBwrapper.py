@@ -220,16 +220,18 @@ class KBwrapper():
     def assert_saddled_steed(self, steed:str):
         category = self._get_key(steed, self._categories)
         if category == 'steed': 
-            self._kb.asserta(f'saddled({category})')
+            if not bool(list(self._kb.query(f'saddled({steed})'))):
+                self._kb.asserta(f'saddled({steed})')
         else: 
-            self._kb.asserta(f'saddled({steed})')
+            print("Sorry, only steeds can be saddled!")
           
     def retract_saddled_steed(self, steed:str):
         category = self._get_key(steed, self._categories)
         if category == 'steed': 
-            self._kb.retractall(f'saddled({category})')
+            if bool(list(self._kb.query(f'saddled({steed})'))):
+                self._kb.retractall(f'saddled({steed})')
         else: 
-            self._kb.retractall(f'saddled({steed})')
+            print("Sorry, only steeds can be saddled!")
     
     # ---------------- riding and saddled steed-related methods END ----------------
 

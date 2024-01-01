@@ -292,6 +292,8 @@ class Agent():
         next_action = self.explore_step(level, heuristic)
         if next_action == '': # if there is nothing to explore
             searchGraph = MapGraph(level)
+            if searchGraph.fullVisited():
+                self._perform_action(level=level,actionName='WAIT',graphic=graphic)
             while not searchGraph.fullVisited() and not self.kb.query_for_interrupt('explore'):
                 next_action = self.search_step(searchGraph, level, heuristic)
                 self._perform_action(level=level,actionName=next_action,graphic=graphic)

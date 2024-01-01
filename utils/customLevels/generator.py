@@ -9,7 +9,7 @@ from utils.rewards import define_reward
 
 def _level_0(pony:bool = True):
     lvl = LevelGenerator(w=20,h=15)
-    for _ in range(10):
+    for _ in range(15):
         lvl.add_object(name='carrot', symbol="%", place=None)
     if(pony):
             lvl.add_monster(name='pony', symbol="u", place=None)
