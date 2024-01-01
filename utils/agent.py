@@ -22,10 +22,10 @@ class Agent():
         self.actions = {
             "getCarrot": self.get_carrot,
             "getSaddle": self.get_saddle,
-            "pacifySteed": self.pacify_steed,
-            "hoardCarrots": self.hoard_carrots,
             "feedSteed": self.feed_steed,
-            "rideSteed": self.ride_steed
+            "applySaddle": self.apply_saddle,
+            "rideSteed": self.ride_steed,
+            "explore": self.explore_subtask
         }
         self.current_subtask = None
 
@@ -156,11 +156,11 @@ class Agent():
     # this function is for testing purposes. don't ask. used only in "act", hopefully not for long.
     def randomSubtask(self):
         #actions = ["getCarrot", "getSaddle", "pacifySteed", "hoardCarrots", "feedSteed", "rideSteed"]
-        # without feedSteed because davidem is slow af
-        actions = ["getCarrot", "getSaddle", "pacifySteed", "hoardCarrots", "rideSteed"]
+        actions = ["getCarrot", "getSaddle", "feedSteed", "applySaddle", "rideSteed"]
         return np.random.choice(actions)
 
     def act(self, level:Map):
+        ##self.percept(level)
         #self.current_subtask = self.kb.query_for_action() # returns subtask to execute
         # yeah for now we have it like this because yeah query be like difficult
         self.current_subtask = self.randomSubtask()
@@ -215,166 +215,92 @@ class Agent():
         '''
         return self.kb.queryDirectly(query)
     
+    def _perform_action(self, level: Map, actionName: str, what:str = None, where:str = None, show_steps:bool=True, graphic:bool = False, delay:float = 0.5):
+        level.apply_action(actionName, what, where)
+        self.percept(level)
+        if (show_steps):
+            level.render(delay=delay, graphic=graphic)
+        interrupt = self.check_interrupt()
+        if interrupt:
+            # Situation changed, the plan is no good
+            print(f"According to KB, the {self.current_subtask} has to be "
+                  f"interrupted after the action {actionName} that has just "
+                  "been applied")
+            raise exceptions.SubtaskInterruptedException("Exception raised after performing an action.")
 
 
 
     # --------- Carrot-related subtasks (Andrea) START ---------
-    #def throw_element(self, level, throwDir:str, element:str='carrot'):
-    #    '''Calls the apply_action() method from the Map class to 
-    #    throw an element (given as input) in a direction given as input.
-    #    If the thrown element is a carrot and it is eaten by the steed,
-    #    the tameness of the pony is increased by 1'''
-    #    try:
-    #        level.apply_action(actionName='THROW',what=element,where=throwDir)
-    #        # TODO: update tameness only if the pony catches the carrot
-    #        self.percept(level)
-    #        #if 'carrot' in element:
-    #        #    for steed in ['pony','horse','warhorse']:
-    #        #        for synonimous in ['eats', 'devours', 'cathces']:
-    #        #            if 'The '+steed+' '+synonimous in decode(level.state['message']):
-    #        #                self.kb.update_tameness(inc = 1,steed=steed)
-    #    except Exception as exc:
-    #        print(f'throw_element catched Exception with message: {exc}')
     
     def get_carrot(self, level: Map, show_steps:bool=True, delay=0.5,
-                   heuristic: callable = lambda t,s: manhattan_distance([t],s)[1]):
-        '''Performs the getCarrot task: the agent goes towards the closer carrots,
-        picks it up and then goes towards the pony to throw the first carrot at it
-        to make it not aggressive.
-        '''
-        # carrot_position = heuristic(self.kb.get_element_position_query("carrot"), self.kb.get_element_position_query("agent"))
-        # Experiment!
-        arrived = False
-        while not arrived:
-            try:
-                self.go_to_closer_element(level, element='carrot', heuristic=heuristic, show_steps=show_steps, delay=delay)
-            except exceptions.ElemNotInDestinationException as exc:
-                #TODO: for some reason, this doesn't get printed even though
-                #       the program gets to this point: it seems to be behaving
-                #       as expected for what concerns the pathfinding
-                print(f'go_to_carrot raised a ElemNotInDestinationException'
-                    f' with the following message: {exc}.\n'
-                    f'Recomputing best path to closer carrot.')
-                continue
-            arrived = True
+                   heuristic: callable = lambda t,s: manhattan_distance([t],s)[1], graphic:bool = False):
+        while self.interact_with_element(level=level, element='carrot', action="PICKUP", maxOffset=0, graphic=graphic): pass
 
-        ###self.percept(level)
-
-        if self.kb.query_stepping_on(spaced_elem='carrot'):
-            level.apply_action(actionName='PICKUP')
-            # percept here just for safety: mainly to update inventory
-            self.percept(level)
-                   
-        else:
-            # return exception? Nothing?
-            return 'There is no carrot here! (according to KB)'
-        
-    def hoard_carrots(self, level:Map, show_steps:bool=True, delay=0.5,heuristic: callable = lambda t,s: manhattan_distance([t],s)[1]):
-        carrots_exist = True
-        while carrots_exist:
-            try:
-                carrots_exist = bool(self.kb.get_element_position_query('carrot'))
-                self.percept(level)
-                # Q: rn the agent is blindly going towards the element.
-                #   I think that for this task it is important that
-                #   the interrupts are seriously implemented
-                # Q2: this is basically get_carrots multiple times!
-                # Q3: remember that an ElemNotFoundException can still
-                #   be risen by closest_element_position. The question of
-                #   who catches this and to do what remains open...
-                ###self.go_to_closer_element(level,element='carrot',show_steps=show_steps,
-                ###                          delay=delay, heuristic=heuristic)
-                
-                # Experiment!
-                arrived = False
-                while not arrived:
-                    try:
-                        self.go_to_closer_element(level, element='carrot', heuristic=heuristic, show_steps=show_steps, delay=delay)
-                    except exceptions.ElemNotInDestinationException as exc:
-                        print('Eccezzzionale!')
-                        print(f'go_to_closer_element raised a ElemNotInDestinationException'
-                            f' with the following message: {exc}.\n'
-                            f'Recomputing best path to closer carrot.')
-                        continue
-                    arrived = True
-                    print('arrivato')
-                
-                ###self.percept(level)
-
-                if self.kb.query_stepping_on(spaced_elem='carrot'):
-                    level.apply_action(actionName='PICKUP')
-                    # percept here just for safety: mainly to update inventory
-                    self.percept(level)  
-                else:
-                    # return exception? Nothing?
-                    # this could happen if another entity (e.g. pony)
-                    # gets to the carrot before the agent. It's unlikely
-                    return 'There is no carrot here! (according to KB)'
-            except exceptions.ElemNotFoundException as exc:
-                print('Apparently, the pony snagged away the last carrot, '
-                      'and there aren\'t any more in sight.')
-                print(f'hoard_carrots catched and exception with message: {exc}')
-                break
 
     # --------- Saddle and ride subtask (Giordano) START ---------
     def get_saddle(self, level:Map, heuristic:callable = lambda t,s: manhattan_distance([t],s)[1]):
-        self.go_to_closer_element(level, element='saddle', heuristic=heuristic, show_steps = True, delay=0.2)
-        ###self.percept(level)
-        if self.kb.query_stepping_on(spaced_elem='saddle'):
-            level.apply_action(actionName='PICKUP')
-            self.percept(level)
-            print('get_saddle successful!')
-        else:
-            return 'There is no saddle here! (according to KB)'
+        self.interact_with_element(level=level, element='saddle', action="PICKUP", maxOffset=0)
     
-    def _calculate_throw_range(self, strength):
-        return math.floor(strength/2)
-
-    def pacify_steed(self, level):
-        # Calculated from the table here: https://nethackwiki.com/wiki/Throw#Food
-        self.interact_with_element(level=level, element='pony', action="THROW",what="carrot", maxOffset=self._calculate_throw_range(level.get_agent_strength()))
+    # Calculated from the table here: https://nethackwiki.com/wiki/Throw#Food for objects weighting less than 40
+    def _get_throw_range(self, level:Map):
+        return math.floor(level.get_agent_strength()/2)
     
     def feed_steed(self, level):
-        carrots_to_feed = self.kb.queryDirectly('carrots(X)')[0]['X']
-        while not self.check_interrupt() and carrots_to_feed > 0:
-            self.interact_with_element(level=level, element='pony', action="THROW",what="carrot", maxOffset=self._calculate_throw_range(level.get_agent_strength()))
-            carrots_to_feed -= 1
+        self.interact_with_element(level=level, element='pony', action="THROW",what="carrot", maxOffset=self._get_throw_range(level))
     
-    def ride_steed(self, level):
+    def apply_saddle(self, level):
         self.interact_with_element(level=level, element='pony', action="APPLY",what="saddle", maxOffset=1)
+
+    def ride_steed(self, level):
         self.interact_with_element(level=level, element='pony', action="RIDE", maxOffset=1)
 
     # To interact with the pony walking step by step, and each time recalculating the best step from zero
-    def interact_with_element(self, level: Map, element: str=None, action: str=None, what: str=None, maxOffset: int=1, show_steps:bool=True, delay=0.5,heuristic: callable = lambda t,s: manhattan_distance([t],s)[1]):
+    def interact_with_element(self, level: Map, element: str=None, action: str=None, what: str=None, maxOffset: int=1, show_steps:bool=True, delay=0.5,heuristic: callable = lambda t,s: manhattan_distance([t],s)[1], graphic:bool = False) -> bool:
 
-        # TODO: May throw exceptions that have to be handled
-        self.go_to_closer_element(level, element=element, 
-                                  heuristic=heuristic, 
-                                  show_steps=show_steps, 
-                                  delay=delay, maxDistance=maxOffset, 
-                                  dynamic=(element == 'pony'))
-        ###self.percept(level)
-        #agent_pos, pony_pos, closeness_condition = self._check_if_near_pony(maxOffset)
-        agent_pos = self.kb.get_element_position_query('agent')[0]
-        elem_pos = self.kb.get_element_position_query(element)[0]
-        #perform the action!
-        delta = (agent_pos[0] - elem_pos[0], agent_pos[1] - elem_pos[1])
-        direction = ''
-        if delta[0] > 0:
-            direction += 'N'
-        elif delta[0] < 0:
-            direction += 'S'
-        if delta[1] > 0:
-            direction += 'W'
-        elif delta[1] < 0:
-            direction += 'E'
+        try:
+            # this baddie here could raise interestings exceptions if it's interrupted. be ready to catch 'em all !
+            stop = False
+            while not stop:
+                try:
+                    self.go_to_closer_element(level, element=element, 
+                                            heuristic=heuristic, 
+                                            show_steps=show_steps, 
+                                            delay=delay, maxDistance=maxOffset, 
+                                            dynamic=(element == 'pony'), graphic=graphic)
+                    stop = True
+                except exceptions.ElemNotInDestinationException as exc1:
+                    # You sure about that? Catching this exception means the target moved. 
+                    # We just need to call again the go_to_closer_element and try harder
+                    print(f"Caught ElemNotInDestinationException with message: {exc1}")
 
-        # TODO: Now if go_to_closer_element fails it still perform the action
-        # TODO: May throw exceptions that have to be handled
-        level.apply_action(actionName=action,what=what,where=direction)
-        self.percept(level)
-        level.render()
-        #print("is the steed hostile? " + str(bool(self.kbQuery('hostile(steed)'))))
+            direction = None
+            if (maxOffset > 0):
+                agent_pos = self.kb.get_element_position_query('agent')[0]
+                elem_pos = self.kb.get_element_position_query(element)[0]
+
+                delta = (agent_pos[0] - elem_pos[0], agent_pos[1] - elem_pos[1])
+                direction = ''
+                if delta[0] > 0:
+                    direction += 'N'
+                elif delta[0] < 0:
+                    direction += 'S'
+                if delta[1] > 0:
+                    direction += 'W'
+                elif delta[1] < 0:
+                    direction += 'E'
+
+            self._perform_action(level=level,actionName=action,what=what,where=direction,graphic=graphic)
+            #print("is the steed hostile? " + str(bool(self.kbQuery('hostile(steed)'))))
+        except exceptions.SubtaskInterruptedException as exc2:
+            print(f"SubtaskInterruptedExceptions caught with message: {exc2}")
+            return False    
+        except Exception as exc3:
+            #Here control returns to agent main action loop, we need another agent.act !
+            print(f"Caught Exception with message: {exc3}")
+            return False   
+        return True 
+        
+
 
 
     # --------- Explore subtask (DavideB) START ---------
@@ -384,15 +310,11 @@ class Agent():
             searchGraph = MapGraph(level)
             while not searchGraph.fullVisited() and not self.kb.query_for_interrupt('explore'):
                 next_action = self.search_step(searchGraph, level, heuristic)
-                level.apply_action(actionName=next_action)
-                if render: level.render(delay=delay, graphic=graphic)
-                self.percept(level)
+                self._perform_action(level=level,actionName=next_action,graphic=graphic)
                 searchGraph.update()
         else: # if there is something to explore
             while next_action != '' and not self.kb.query_for_interrupt('explore'):
-                level.apply_action(actionName=next_action)
-                if render: level.render(delay=delay, graphic=graphic)
-                self.percept(level)
+                self._perform_action(level=level,actionName=next_action,graphic=graphic)
                 next_action = self.explore_step(level, heuristic)
     
     def search_step(self, searchGraph:MapGraph, level:Map, heuristic:callable = lambda t,s: manhattan_distance(t,s)):
@@ -460,7 +382,7 @@ class Agent():
 
     def go_to_closer_element(self,level:Map,element:str='carrot', show_steps=False,
                              heuristic:callable = lambda t,s: manhattan_distance([t],s)[1],
-                              delay=0.5, maxDistance:int=0, minDistance:int=0, dynamic:bool=False):   
+                              delay=0.5, maxDistance:int=0, minDistance:int=0, dynamic:bool=False, graphic:bool = False):   
         ###self.percept(level)
         agent_pos = self.kb.get_element_position_query('agent')[0]
         path = self._get_best_path_to_target(level, target = element,
@@ -473,48 +395,32 @@ class Agent():
 
         # follow the path (i.e. actually move) as long as the 
         # kb gives green light.
-        while actions:
-
-            # TODO: a true query for greenlight
+        while actions:            
+            destination = path[-1]
             try:
-                # Hopefully this is the way to go: at each step the agent
-                # senses the environment, checks if it can proceed by 
-                # querying the kb for a greenlight (otherwise control 
-                # is returned to the action picker I guess (agent.act maybe))
-                # and moves
-                self.percept(level)
-
-                # sort of a homemade interrupt: if someone else 
-                # (e.g. the pony) gets to the element (e.g.) carrot 
-                # earlier and steals it, 
-                
-                destination = path[-1]
                 if not dynamic and destination not in self.kb.get_element_position_query(element):
                     raise exceptions.ElemNotInDestinationException\
                             (f'Somebody got to {destination} before the agent'
-                             f' and took the {element}.')
-                
+                                f' and took the {element}.')
+            except exceptions.ElemNotFoundException as exc:
+                print(f"go_to_closer_element caught a ElemNotFoundException with message: {exc}")
+                print("This means that the element that was trying to be reached is not in "
+                        "sight anymore. ")
+                raise Exception("The best thing to do is to raise another exception that "
+                                "gets caught by interact_with_element, which in turn will "
+                                "give back control to agent.act")
+            
 
-                interrupt = self.check_interrupt()
-                if not interrupt:
-                    level.apply_action(actionName = actions.pop(0))
-                    if(show_steps):
-                        time.sleep(delay)
-                        level.render()
 
-                    if dynamic:
-                        ###self.percept(level)
-                        agent_pos = self.kb.get_element_position_query('agent')[0]
-                        path = self._get_best_path_to_target(level, target = element,
-                                             heuristic=heuristic,
-                                             maxDistance=maxDistance, minDistance=minDistance)
+            self._perform_action(level=level,actionName = actions.pop(0), delay=delay, show_steps=show_steps, graphic=graphic)
 
-                        # translate the path into a sequence of actions to perform
-                        actions = actions_from_path(agent_pos, path[1:2])
-                    
-                else:
-                    break
-            # Who knows, maybe the query_for_greenlight raises an exception...
-            except:
-                break
+            if dynamic:
+                ###self.percept(level)
+                agent_pos = self.kb.get_element_position_query('agent')[0]
+                path = self._get_best_path_to_target(level, target = element,
+                                        heuristic=heuristic,
+                                        maxDistance=maxDistance, minDistance=minDistance)
 
+                # translate the path into a sequence of actions to perform
+                actions = actions_from_path(agent_pos, path[1:2])
+            

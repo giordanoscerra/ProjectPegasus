@@ -3,7 +3,8 @@
 ## To Do
 - Good path finding (Avoid crash in absence of saddle when under or in the inventory of the horse) 
 - KB 
-- improve graphics 
+- improve graphics
+- check if target is still in position before performing an action
 ### KB must contain
 - Position of object 
 - Ownership of object (saddle in horse mouth)

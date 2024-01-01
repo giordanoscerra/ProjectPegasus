@@ -3,3 +3,6 @@ class ElemNotFoundException(Exception):
 
 class ElemNotInDestinationException(Exception):
     pass
+
+class SubtaskInterruptedException(Exception):
+    pass
