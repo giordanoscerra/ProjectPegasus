@@ -160,7 +160,7 @@ class Agent():
         return np.random.choice(actions)
 
     def act(self, level:Map):
-        self.percept(level)
+        ##self.percept(level)
         #self.current_subtask = self.kb.query_for_action() # returns subtask to execute
         # yeah for now we have it like this because yeah query be like difficult
         self.current_subtask = self.randomSubtask()
