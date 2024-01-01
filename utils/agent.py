@@ -231,26 +231,11 @@ class Agent():
 
 
     # --------- Carrot-related subtasks (Andrea) START ---------
-    #def throw_element(self, level, throwDir:str, element:str='carrot'):
-    #    '''Calls the apply_action() method from the Map class to 
-    #    throw an element (given as input) in a direction given as input.
-    #    If the thrown element is a carrot and it is eaten by the steed,
-    #    the tameness of the pony is increased by 1'''
-    #    try:
-    #        level.apply_action(actionName='THROW',what=element,where=throwDir)
-    #        # TODO: update tameness only if the pony catches the carrot
-    #        self.percept(level)
-    #        #if 'carrot' in element:
-    #        #    for steed in ['pony','horse','warhorse']:
-    #        #        for synonimous in ['eats', 'devours', 'cathces']:
-    #        #            if 'The '+steed+' '+synonimous in decode(level.state['message']):
-    #        #                self.kb.update_tameness(inc = 1,steed=steed)
-    #    except Exception as exc:
-    #        print(f'throw_element catched Exception with message: {exc}')
     
     def get_carrot(self, level: Map, show_steps:bool=True, delay=0.5,
                    heuristic: callable = lambda t,s: manhattan_distance([t],s)[1], graphic:bool = False):
-        self.interact_with_element(level=level, element='carrot', action="PICKUP", maxOffset=0, graphic=graphic)
+        while self.interact_with_element(level=level, element='carrot', action="PICKUP", maxOffset=0, graphic=graphic): pass
+
 
     # --------- Saddle and ride subtask (Giordano) START ---------
     def get_saddle(self, level:Map, heuristic:callable = lambda t,s: manhattan_distance([t],s)[1]):
@@ -270,7 +255,7 @@ class Agent():
         self.interact_with_element(level=level, element='pony', action="RIDE", maxOffset=1)
 
     # To interact with the pony walking step by step, and each time recalculating the best step from zero
-    def interact_with_element(self, level: Map, element: str=None, action: str=None, what: str=None, maxOffset: int=1, show_steps:bool=True, delay=0.5,heuristic: callable = lambda t,s: manhattan_distance([t],s)[1], graphic:bool = False):
+    def interact_with_element(self, level: Map, element: str=None, action: str=None, what: str=None, maxOffset: int=1, show_steps:bool=True, delay=0.5,heuristic: callable = lambda t,s: manhattan_distance([t],s)[1], graphic:bool = False) -> bool:
 
         try:
             # this baddie here could raise interestings exceptions if it's interrupted. be ready to catch 'em all !
@@ -308,11 +293,13 @@ class Agent():
             #print("is the steed hostile? " + str(bool(self.kbQuery('hostile(steed)'))))
         except exceptions.SubtaskInterruptedException as exc2:
             print(f"SubtaskInterruptedExceptions caught with message: {exc2}")
-            return
+            return False    
         except Exception as exc3:
             #Here control returns to agent main action loop, we need another agent.act !
             print(f"Caught Exception with message: {exc3}")
-            return
+            return False   
+        return True 
+        
 
 
 
@@ -437,6 +424,3 @@ class Agent():
                 # translate the path into a sequence of actions to perform
                 actions = actions_from_path(agent_pos, path[1:2])
             
-
-
-
