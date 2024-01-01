@@ -1,3 +1,6 @@
+import sys
+import os
+sys.path.append(os.path.join(sys.path[0], '..'))
 from utils.heuristics import manhattan_distance, infinity_distance, euclidean_distance
 from utils.map import Map
 from utils.agent import Agent
