@@ -292,21 +292,21 @@ class Agent():
 
 
     # --------- Explore subtask (DavideB) START ---------
-    def explore_subtask(self, level:Map, heuristic:callable = lambda t,s: manhattan_distance(t,s), render:bool = False, graphic:bool = False, delay:float = 0.5):
+    def explore_subtask(self, level:Map, heuristic:callable = lambda t,s: manhattan_distance(t,s), render:bool = False, graphic:bool = False, delay:float = 0.1):
         next_action = self.explore_step(level, heuristic)
         if next_action == '': # if there is nothing to explore
             searchGraph = MapGraph(level)
             if searchGraph.fullVisited(): # handle rectangular room case
-                self._perform_action(level=level,actionName='WAIT',graphic=graphic)
+                self._perform_action(level=level,actionName='WAIT',graphic=graphic, delay=delay)
             while not searchGraph.fullVisited():
                 next_action = self.search_step(searchGraph, level, heuristic)
-                self._perform_action(level=level,actionName=next_action,graphic=graphic)
+                self._perform_action(level=level,actionName=next_action,graphic=graphic, delay=delay)
                 searchGraph.update()
         else: # if there is something to explore
             while next_action != '':
-                self._perform_action(level=level,actionName=next_action,graphic=graphic)
+                self._perform_action(level=level,actionName=next_action,graphic=graphic, delay=delay)
                 next_action = self.explore_step(level, heuristic)
-        self.kb.assert_full_explored()
+        self.kb.assert_full_visited()
     
     def search_step(self, searchGraph:MapGraph, level:Map, heuristic:callable = lambda t,s: manhattan_distance(t,s)):
         try:

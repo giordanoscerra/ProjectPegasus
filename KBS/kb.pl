@@ -11,6 +11,7 @@
 :- dynamic burdened/1, stressed/1, strained/1, overtaxed/1, overloaded/1.
 :- dynamic unencumbered/1.
 :- dynamic saddled/1.
+:- dynamic fullyExplored/1.
 % semantics: has(ownerCategory,owner,ownedObjectCat,ownedObject)
 :- dynamic has/4.   % It could be recycled for the carrots(X) thing
 
@@ -50,7 +51,7 @@ action(pick) :-
         ( %the bject is a saddle
             (Obj == saddle),
             (
-                (max_tameness(MT), tameness(Steed,T), is_steed(Steed), carrots(X), MT - T > X); % can start mounting procedure
+                (max_tameness(MT), tameness(Steed,T), is_steed(Steed), carrots(X),  X + T >= MT); % can start mounting procedure
                 starvationRiding % there is nothing we can do to tame the pony
             )
         );
