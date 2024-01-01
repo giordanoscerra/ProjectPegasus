@@ -89,11 +89,12 @@ action(feedSteed) :-
 
 
 action(getSaddle) :- 
-    saddles(X), X == 0, \+ stepping_on(agent,_,saddle), position(applicable,saddle,_,_),  
+    saddles(X), X == 0, \+ stepping_on(agent,_,saddle), 
+    position(applicable,saddle,_,_), \+ saddled(Steed),
     (
         ( 
-            tameness(Steed,MT),
-            max_tameness(MT),
+            tameness(Steed,T), 
+            max_tameness(MT),T >= MT,
             is_steed(Steed)
         );
         (
@@ -107,7 +108,7 @@ action(applySaddle) :-
     \+ saddled(Steed),
     position(steed, Steed, _, _),
     (
-        (max_tameness(MT),tameness(Steed,MT));
+        (max_tameness(MT),tameness(Steed,T),T >= MT);
         (starvationRiding)
     ).
 
@@ -124,13 +125,15 @@ action(rideSteed) :-
 %we need to explore if the pony is/can_be tamed but we dont't know where it is
 %we need to explore if the pony is not tamed and we don't have carrots
 %we need to explore if the pony is tame but has our saddle
-action(explore) :- 
-    (tameness(Steed, T), max_tameness(MT), carrots(X), is_steed(Steed)),
-    (
-        (X >= MT - T, \+ position(_, Steed, _, _));
-        (MT == T, \+ position(_,saddle,_,_));
-        (X < MT - T, \+ position(comestible, carrot, _, _))
-    ).
+
+%%%action(explore) :- 
+%%%    (tameness(Steed, T), max_tameness(MT), carrots(X), is_steed(Steed)),
+%%%    (
+%%%        (X >= MT - T, \+ position(_, Steed, _, _));
+%%%        (MT == T, \+ position(_,saddle,_,_));
+%%%        (X < MT - T, \+ position(comestible, carrot, _, _))
+%%%    ).
+action(explore).
 
 %%% INTERRUPT CONDITIONS
 %TODO: add conditions for enemies
@@ -144,7 +147,7 @@ interrupt(feedSteed) :-
     (carrots(X), X == 0);
     (is_steed(Steed),
         (
-            (tameness(Steed,MT), max_tameness(MT));
+            (tameness(Steed,T), max_tameness(MT), T >= MT);
             (\+ position(_,Steed,_,_))
         )
     ).
@@ -153,7 +156,10 @@ interrupt(applySaddle) :- \+ action(applySaddle).
 
 interrupt(rideSteed) :- \+ action(rideSteed).
 
-interrupt(explore) :- \+ action(explore).
+%interrupt(explore) :- \+ action(explore).
+interrupt(explore) :- action(X), \+ (X == explore).
+
+
 
 % We make use of hostile(steed) predicate. But when is a steed hostile?
 % Very naively, I'd say that
