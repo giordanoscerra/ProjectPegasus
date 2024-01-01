@@ -162,7 +162,11 @@ class Agent():
         if subtask is None: 
             raise Exception(f'Action {self.current_subtask} is not defined')
         #yeah so most of the time we just need the map, other stuff is optional
-        subtask(level)
+        try:
+            subtask(level)
+        except exceptions.SubtaskInterruptedException as exc:
+            # Oh nooo, someone passed the exception up to this level !!!! :O
+            print(f"SubtaskInterruptedExceptions caught with message: {exc}")
 
     def chance_of_mount_succeeding(self, steed):
         if steed not in self.kb.get_rideable_steeds() or self.kb.is_slippery():
@@ -292,16 +296,17 @@ class Agent():
         next_action = self.explore_step(level, heuristic)
         if next_action == '': # if there is nothing to explore
             searchGraph = MapGraph(level)
-            if searchGraph.fullVisited():
+            if searchGraph.fullVisited(): # handle rectangular room case
                 self._perform_action(level=level,actionName='WAIT',graphic=graphic)
-            while not searchGraph.fullVisited() and not self.kb.query_for_interrupt('explore'):
+            while not searchGraph.fullVisited():
                 next_action = self.search_step(searchGraph, level, heuristic)
                 self._perform_action(level=level,actionName=next_action,graphic=graphic)
                 searchGraph.update()
         else: # if there is something to explore
-            while next_action != '' and not self.kb.query_for_interrupt('explore'):
+            while next_action != '':
                 self._perform_action(level=level,actionName=next_action,graphic=graphic)
                 next_action = self.explore_step(level, heuristic)
+        self.kb.assert_full_explored()
     
     def search_step(self, searchGraph:MapGraph, level:Map, heuristic:callable = lambda t,s: manhattan_distance(t,s)):
         try:

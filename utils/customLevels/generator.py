@@ -58,7 +58,7 @@ def _level_3(pony:bool = True):
     lvl = LevelGenerator(map=desDescriton)
     if(pony):
         lvl.add_monster(name='pony', symbol="u", place=None)
-    for _ in range(12):
+    for _ in range(15):
         lvl.add_object(name='carrot', symbol="%", place=None)
     lvl.add_object(name='saddle', symbol="(", place=None)
     lvl.set_start_pos((2,2))
