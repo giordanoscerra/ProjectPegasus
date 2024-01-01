@@ -68,26 +68,12 @@ action(getCarrot) :-
     ).    % Can be stopped if danger (to implement)
 
 
-action(getSaddle) :- 
-    saddles(X), X == 0, \+ stepping_on(agent,_,saddle), position(applicable,saddle,_,_),  
-    (
-        ( 
-            tameness(Steed,MT),
-            max_tameness(MT),
-            is_steed(Steed)
-        );
-        (
-            starvationRiding
-        )
-    ).
-
-
 % The idea is: if the pony isn't in sight the agent can hoard carrots in the meantime
 action(feedSteed) :- 
-    is_steed(Steed), carrots(X), position(steed,Steed,RS,CS),position(agent,agent,RA,CA),
+    is_steed(Steed), carrots(X), position(steed,Steed,RS,CS),position(agent,agent,RA,CA), X > 0,
     (
         (
-            hostile(Steed), X > 0  % if the pony is far away, but there are enemies then fight may be worthwile
+            hostile(Steed)  % if the pony is far away, but there are enemies then fight may be worthwile
         );
         (
             \+hostile(Steed), % consider enemies if they are close
@@ -98,6 +84,20 @@ action(feedSteed) :-
         );
         (
             starvationRiding, X > 0
+        )
+    ).
+
+
+action(getSaddle) :- 
+    saddles(X), X == 0, \+ stepping_on(agent,_,saddle), position(applicable,saddle,_,_),  
+    (
+        ( 
+            tameness(Steed,MT),
+            max_tameness(MT),
+            is_steed(Steed)
+        );
+        (
+            starvationRiding
         )
     ).
 
@@ -123,10 +123,12 @@ action(rideSteed) :-
 
 %we need to explore if the pony is/can_be tamed but we dont't know where it is
 %we need to explore if the pony is not tamed and we don't have carrots
+%we need to explore if the pony is tame but has our saddle
 action(explore) :- 
     (tameness(Steed, T), max_tameness(MT), carrots(X), is_steed(Steed)),
     (
-        (X >= MT - T, \+ position(_, Steed, _, _)); 
+        (X >= MT - T, \+ position(_, Steed, _, _));
+        (MT == T, \+ position(_,saddle,_,_));
         (X < MT - T, \+ position(comestible, carrot, _, _))
     ).
 
@@ -142,8 +144,8 @@ interrupt(feedSteed) :-
     (carrots(X), X == 0);
     (is_steed(Steed),
         (
-            (tameness(Steed, T), max_tameness(MT), T == MT);
-            (\+ position(_, Steed, _, _))
+            (tameness(Steed,MT), max_tameness(MT));
+            (\+ position(_,Steed,_,_))
         )
     ).
 
@@ -156,7 +158,8 @@ interrupt(explore) :- \+ action(explore).
 % We make use of hostile(steed) predicate. But when is a steed hostile?
 % Very naively, I'd say that
 % we infer it from the screen description. If the steed is peaceful, it says "tame/peaceful pony/horse/etc"
-% hostile(Steed) :- is_steed(Steed), tameness(Steed, T), T < 2. In the 1% chance the steed spawns peaceful, it will nevertheless start with tameness = 1
+%In the 1% chance the steed spawns peaceful, it will nevertheless start with tameness = 1
+%hostile(Steed) :- is_steed(Steed), tameness(Steed, T), T < 2. 
 
 % Directionality and space conditions, taken from handson2
 % test the different condition for closeness
@@ -174,10 +177,10 @@ is_pickable(applicable).
 is_pickable(weapon).
 
 % what is a steed? it's a horse-like creature. "destriero" in italian.
-is_steed(steed).
+%is_steed(steed).
 is_steed(pony).
-is_steed(horse).
-is_steed(warhorse).
+%is_steed(horse).
+%is_steed(warhorse).
 max_tameness(20).
 
 %%% INITIALIZATION %%%
@@ -195,8 +198,8 @@ saddles(0).
 % tameness is 1 at the beginning of the game
 %tameness(steed, 1).
 tameness(pony, 1).
-tameness(horse, 1).
-tameness(warhorse, 1).
+%tameness(horse, 1).
+%tameness(warhorse, 1).
 
 %add wait conditions if agent has saddle and steed is tamed
 %also enemies close to the pony (save the pony Ryan)

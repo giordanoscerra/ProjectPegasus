@@ -158,9 +158,11 @@ class KBwrapper():
     def retract_hostile(self, creature:str):
         category = self._get_key(creature, self._categories)
         if category == 'steed': 
-            self._kb.retractall(f'hostile({category})')
+            # Hopefully we'll only have one pony 
+            if bool(list(self._kb.query(f'hostile({creature})'))):
+                self._kb.retractall(f'hostile({creature})')
         else: 
-            self._kb.retractall(f'hostile({creature})')
+            print("For now, only hostility of steeds is supported")
 
     # Q: get_steed_tameness could be used for the same purpose,
     #   but maybe the KB messes up. Who knows.

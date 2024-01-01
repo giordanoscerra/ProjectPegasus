@@ -124,7 +124,7 @@ class Agent():
                     dropper = msg[4:msg.find(' drops a '+x)]
                     self.kb.retract_has(owner=dropper,item=x)
                 for steed in self.kb._categories['steed']:
-                    for synonimous in ['eats','devours','catches']:
+                    for synonimous in ['eats','devours']:
                         # we assume that 
                         if 'The '+steed+' '+synonimous in msg and x in msg:
                             print(f'Increase tameness of {steed} due to {synonimous}')
@@ -157,7 +157,7 @@ class Agent():
     def act(self, level:Map):
         self.current_subtask = self.kb.query_for_action() # returns subtask to execute
         print("\n\n UHM. the voices in my head are telling me to", self.current_subtask, "!!!!!!!!!!!!!!")
-        time.sleep(3)
+        time.sleep(0.5)
         subtask = self.actions.get(self.current_subtask, lambda: None) # calls the function that executes the subtask
         if subtask is None: 
             raise Exception(f'Action {self.current_subtask} is not defined')
