@@ -153,32 +153,16 @@ class Agent():
             self.kb.update_quantity(item, interesting_collection[item])
 
     # --------- Percept-related methods END ---------
-    # this function is for testing purposes. don't ask. used only in "act", hopefully not for long.
-    def randomSubtask(self):
-        #actions = ["getCarrot", "getSaddle", "pacifySteed", "hoardCarrots", "feedSteed", "rideSteed"]
-        actions = ["getCarrot", "getSaddle", "feedSteed", "applySaddle", "rideSteed"]
-        return np.random.choice(actions)
 
     def act(self, level:Map):
-        ##self.percept(level)
-        #self.current_subtask = self.kb.query_for_action() # returns subtask to execute
-        # yeah for now we have it like this because yeah query be like difficult
-        self.current_subtask = self.randomSubtask()
-        print("\n\n UHM. the voices in my head are telling me to", self.current_subtask)
-        time.sleep(0.5)
-        #args = self.getArgs(self.current_subtask) # returns arguments for the subtask
+        self.current_subtask = self.kb.query_for_action() # returns subtask to execute
+        print("\n\n UHM. the voices in my head are telling me to", self.current_subtask, "!!!!!!!!!!!!!!")
+        time.sleep(3)
         subtask = self.actions.get(self.current_subtask, lambda: None) # calls the function that executes the subtask
         if subtask is None: 
             raise Exception(f'Action {self.current_subtask} is not defined')
-        #subtask(*args) # execute the subtask
         #yeah so most of the time we just need the map, other stuff is optional
         subtask(level)
-
-    # is this useless ?
-    def getArgs(subtask:str):
-        args = []
-
-        return args
 
     def chance_of_mount_succeeding(self, steed):
         if steed not in self.kb.get_rideable_steeds() or self.kb.is_slippery():

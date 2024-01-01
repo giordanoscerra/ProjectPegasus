@@ -4,10 +4,10 @@ from utils.agent import Agent
 from utils import exceptions
 
 # spawn level
-level = Map(pony=True, level=0)
+level = Map(pony=False, level=0)
 agent = Agent()
-# this percept could be useless
+# this is important af
 agent.percept(level)
 # let him ACT !!!!!!!!!
-agent.act(level)
-level.render()
+while(True):
+    agent.act(level)

@@ -139,10 +139,12 @@ interrupt(getCarrot) :- \+ stepping_on(agent, comestible, carrot), \+ action(get
 interrupt(getSaddle) :- \+ stepping_on(agent, applicable, saddle), \+ action(getSaddle).
 
 interrupt(feedSteed) :- 
-    (carrots(X), X == 0); 
+    (carrots(X), X == 0);
     (is_steed(Steed),
-        (tameness(Steed, T), max_tameness(MT), T == MT);
-        (\+ position(_, Steed, _, _))
+        (
+            (tameness(Steed, T), max_tameness(MT), T == MT);
+            (\+ position(_, Steed, _, _))
+        )
     ).
 
 interrupt(applySaddle) :- \+ action(applySaddle).
