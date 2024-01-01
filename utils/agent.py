@@ -25,7 +25,8 @@ class Agent():
             "feedSteed": self.feed_steed,
             "applySaddle": self.apply_saddle,
             "rideSteed": self.ride_steed,
-            "explore": self.explore_subtask
+            "explore": self.explore_subtask,
+            "pick": self.pickUp,
         }
         self.current_subtask = None
 
@@ -234,7 +235,7 @@ class Agent():
         return math.floor(level.get_agent_strength()/2)
     
     def feed_steed(self, level):
-        self.interact_with_element(level=level, element='pony', action="THROW",what="carrot", maxOffset=self._get_throw_range(level))
+        while self.interact_with_element(level=level, element='pony', action="THROW",what="carrot", maxOffset=self._get_throw_range(level)): pass
     
     def apply_saddle(self, level):
         self.interact_with_element(level=level, element='pony', action="APPLY",what="saddle", maxOffset=1)
@@ -351,6 +352,15 @@ class Agent():
         return actions_from_path(agent_pos, [next_cell])[0]
     
     # --------- Explore subtask END ---------
+
+
+
+    # --------- PickUp subtask START ---------
+
+    def pickUp(self, level:Map, render:bool = False, graphic:bool = False, delay:float = 0.1):
+        self._perform_action(level=level,actionName='PICKUP',graphic=graphic, delay=delay)
+    
+    # --------- PickUp subtask END ---------
 
 
 

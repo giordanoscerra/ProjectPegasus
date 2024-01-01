@@ -120,13 +120,13 @@ class KBwrapper():
     # ---------------- explore subtask related methods START ----------------
             
     def assert_full_visited(self):
-        tot = self._kb.query("fullyExplored(X)")[0]['X'] + 1
+        tot = list(self._kb.query("fullyExplored(X)"))[0]['X'] + 1
         self._kb.retractall("fullyExplored(_)")
         self._kb.asserta(f"fullyExplored({tot})")
 
     # ---------------- explore subtask related methods END ----------------
         
-        
+
 
     # ---------------- stepping_on related methods START ----------------
     def retractall_stepping_on(self):
