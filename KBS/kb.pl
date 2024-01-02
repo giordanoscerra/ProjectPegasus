@@ -91,12 +91,11 @@ action(feedSteed) :-
 
 action(getSaddle) :- 
     saddles(X), X == 0, \+ stepping_on(agent,_,saddle), 
-    position(applicable,saddle,_,_), \+ saddled(Steed),
+    position(applicable,saddle,_,_), is_steed(Steed), \+ saddled(Steed),
     (
         ( 
             tameness(Steed,T), 
-            max_tameness(MT),T >= MT,
-            is_steed(Steed)
+            max_tameness(MT),T >= MT
         );
         (
             starvationRiding

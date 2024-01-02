@@ -7,7 +7,7 @@ from utils.agent import Agent
 from utils import exceptions
 
 # spawn level
-level = Map(pony=True, level=3)
+level = Map(pony=True, level=74)
 agent = Agent()
 # agent.percept(level)
 # print(f'pony hostile? : {agent.kb.query_hostile()}')
