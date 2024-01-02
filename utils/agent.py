@@ -25,7 +25,8 @@ class Agent():
             "feedSteed": self.feed_steed,
             "applySaddle": self.apply_saddle,
             "rideSteed": self.ride_steed,
-            "explore": self.explore_subtask
+            "explore": self.explore_subtask,
+            "pick": self.pickUp,
         }
         self.current_subtask = None
 
@@ -124,7 +125,7 @@ class Agent():
                     dropper = msg[4:msg.find(' drops a '+x)]
                     self.kb.retract_has(owner=dropper,item=x)
                 for steed in self.kb._categories['steed']:
-                    for synonimous in ['eats','devours','catches']:
+                    for synonimous in ['eats','devours']:
                         # we assume that 
                         if 'The '+steed+' '+synonimous in msg and x in msg:
                             print(f'Increase tameness of {steed} due to {synonimous}')
@@ -153,32 +154,20 @@ class Agent():
             self.kb.update_quantity(item, interesting_collection[item])
 
     # --------- Percept-related methods END ---------
-    # this function is for testing purposes. don't ask. used only in "act", hopefully not for long.
-    def randomSubtask(self):
-        #actions = ["getCarrot", "getSaddle", "pacifySteed", "hoardCarrots", "feedSteed", "rideSteed"]
-        actions = ["getCarrot", "getSaddle", "feedSteed", "applySaddle", "rideSteed"]
-        return np.random.choice(actions)
 
     def act(self, level:Map):
-        ##self.percept(level)
-        #self.current_subtask = self.kb.query_for_action() # returns subtask to execute
-        # yeah for now we have it like this because yeah query be like difficult
-        self.current_subtask = self.randomSubtask()
-        print("\n\n UHM. the voices in my head are telling me to", self.current_subtask)
+        self.current_subtask = self.kb.query_for_action() # returns subtask to execute
+        print("\n\n UHM. the voices in my head are telling me to", self.current_subtask, "!!!!!!!!!!!!!!")
         time.sleep(0.5)
-        #args = self.getArgs(self.current_subtask) # returns arguments for the subtask
         subtask = self.actions.get(self.current_subtask, lambda: None) # calls the function that executes the subtask
         if subtask is None: 
             raise Exception(f'Action {self.current_subtask} is not defined')
-        #subtask(*args) # execute the subtask
         #yeah so most of the time we just need the map, other stuff is optional
-        subtask(level)
-
-    # is this useless ?
-    def getArgs(subtask:str):
-        args = []
-
-        return args
+        try:
+            subtask(level)
+        except exceptions.SubtaskInterruptedException as exc:
+            # Oh nooo, someone passed the exception up to this level !!!! :O
+            print(f"SubtaskInterruptedExceptions caught with message: {exc}")
 
     def chance_of_mount_succeeding(self, steed):
         if steed not in self.kb.get_rideable_steeds() or self.kb.is_slippery():
@@ -246,7 +235,7 @@ class Agent():
         return math.floor(level.get_agent_strength()/2)
     
     def feed_steed(self, level):
-        self.interact_with_element(level=level, element='pony', action="THROW",what="carrot", maxOffset=self._get_throw_range(level))
+        while self.interact_with_element(level=level, element='pony', action="THROW",what="carrot", maxOffset=self._get_throw_range(level)): pass
     
     def apply_saddle(self, level):
         self.interact_with_element(level=level, element='pony', action="APPLY",what="saddle", maxOffset=1)
@@ -304,18 +293,21 @@ class Agent():
 
 
     # --------- Explore subtask (DavideB) START ---------
-    def explore_subtask(self, level:Map, heuristic:callable = lambda t,s: manhattan_distance(t,s), render:bool = False, graphic:bool = False, delay:float = 0.5):
+    def explore_subtask(self, level:Map, heuristic:callable = lambda t,s: manhattan_distance(t,s), render:bool = False, graphic:bool = False, delay:float = 0.1):
         next_action = self.explore_step(level, heuristic)
         if next_action == '': # if there is nothing to explore
             searchGraph = MapGraph(level)
-            while not searchGraph.fullVisited() and not self.kb.query_for_interrupt('explore'):
+            if searchGraph.fullVisited(): # handle rectangular room case
+                self._perform_action(level=level,actionName='WAIT',graphic=graphic, delay=delay)
+            while not searchGraph.fullVisited():
                 next_action = self.search_step(searchGraph, level, heuristic)
-                self._perform_action(level=level,actionName=next_action,graphic=graphic)
+                self._perform_action(level=level,actionName=next_action,graphic=graphic, delay=delay)
                 searchGraph.update()
         else: # if there is something to explore
-            while next_action != '' and not self.kb.query_for_interrupt('explore'):
-                self._perform_action(level=level,actionName=next_action,graphic=graphic)
+            while next_action != '':
+                self._perform_action(level=level,actionName=next_action,graphic=graphic, delay=delay)
                 next_action = self.explore_step(level, heuristic)
+        self.kb.assert_full_visited()
     
     def search_step(self, searchGraph:MapGraph, level:Map, heuristic:callable = lambda t,s: manhattan_distance(t,s)):
         try:
@@ -360,6 +352,15 @@ class Agent():
         return actions_from_path(agent_pos, [next_cell])[0]
     
     # --------- Explore subtask END ---------
+
+
+
+    # --------- PickUp subtask START ---------
+
+    def pickUp(self, level:Map, render:bool = False, graphic:bool = False, delay:float = 0.1):
+        self._perform_action(level=level,actionName='PICKUP',graphic=graphic, delay=delay)
+    
+    # --------- PickUp subtask END ---------
 
 
 

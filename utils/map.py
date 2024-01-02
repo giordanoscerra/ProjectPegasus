@@ -112,7 +112,10 @@ class Map:
         return self.state['blstats'][8]
 
     def get_pony_position(self) -> (int,int):
-        return list(self.get_element_position('pony'))[0]
+        try:
+            return list(self.get_element_position('pony'))[0]
+        except exceptions.ElemNotFoundException:
+            return None
     
     def get_saddle_position(self) -> List[Tuple[int,int]]:
         return self.get_element_position('saddle')

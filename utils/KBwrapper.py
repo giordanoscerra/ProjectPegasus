@@ -117,6 +117,17 @@ class KBwrapper():
             
 
 
+    # ---------------- explore subtask related methods START ----------------
+            
+    def assert_full_visited(self):
+        tot = list(self._kb.query("fullyExplored(X)"))[0]['X'] + 1
+        self._kb.retractall("fullyExplored(_)")
+        self._kb.asserta(f"fullyExplored({tot})")
+
+    # ---------------- explore subtask related methods END ----------------
+        
+
+
     # ---------------- stepping_on related methods START ----------------
     def retractall_stepping_on(self):
         self._kb.retractall('stepping_on(agent,_,_)')
@@ -158,9 +169,11 @@ class KBwrapper():
     def retract_hostile(self, creature:str):
         category = self._get_key(creature, self._categories)
         if category == 'steed': 
-            self._kb.retractall(f'hostile({category})')
+            # Hopefully we'll only have one pony 
+            if bool(list(self._kb.query(f'hostile({creature})'))):
+                self._kb.retractall(f'hostile({creature})')
         else: 
-            self._kb.retractall(f'hostile({creature})')
+            print("For now, only hostility of steeds is supported")
 
     # Q: get_steed_tameness could be used for the same purpose,
     #   but maybe the KB messes up. Who knows.
@@ -218,16 +231,18 @@ class KBwrapper():
     def assert_saddled_steed(self, steed:str):
         category = self._get_key(steed, self._categories)
         if category == 'steed': 
-            self._kb.asserta(f'saddled({category})')
+            if not bool(list(self._kb.query(f'saddled({steed})'))):
+                self._kb.asserta(f'saddled({steed})')
         else: 
-            self._kb.asserta(f'saddled({steed})')
+            print("Sorry, only steeds can be saddled!")
           
     def retract_saddled_steed(self, steed:str):
         category = self._get_key(steed, self._categories)
         if category == 'steed': 
-            self._kb.retractall(f'saddled({category})')
+            if bool(list(self._kb.query(f'saddled({steed})'))):
+                self._kb.retractall(f'saddled({steed})')
         else: 
-            self._kb.retractall(f'saddled({steed})')
+            print("Sorry, only steeds can be saddled!")
     
     # ---------------- riding and saddled steed-related methods END ----------------
 
