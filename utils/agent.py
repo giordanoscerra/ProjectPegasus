@@ -108,6 +108,10 @@ class Agent():
                 portion = portion.strip('.')   
                 # Remove article
                 element = ' '.join(portion.split(' ')[1:])  
+                print(f'You see here a {element}')
+                for x in ['saddle', 'carrot']:
+                    if x in element:
+                        element = x
                 # assert position of element in the KB
                 x, y = self.kb.get_element_position_query(element='agent')[0]
                 self.kb.assert_element_position(element.replace(' ',''),x,y) 
