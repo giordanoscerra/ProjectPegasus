@@ -1,11 +1,11 @@
 import numpy as np
 import time
 import math
+import re
 from typing import List, Callable, Tuple
 from utils.KBwrapper import *
 from utils.map import Map
 from utils import exceptions
-# from utils.exceptions import *
 from utils.heuristics import *
 from utils.map_graph import MapGraph
 from .general import actions_from_path, are_aligned, are_close, decode
@@ -100,8 +100,11 @@ class Agent():
         asserts in the agent.kb if the agent is stepping on an item.
         '''
         #TODO: process other important messages, if any
-        submex_list = message.split('. ')
+        #submex_list = message.split('. ')
+        pattern = '|'.join(map(re.escape, ['.', '!']))
+        submex_list = re.split(pattern, message)
         for msg in submex_list:
+            msg = msg.lstrip(' ')
             if 'You see here' in msg:
                 # Remove "You see here" and trailing dot
                 portion = msg[msg.find('You see here ')+13:]
