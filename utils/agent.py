@@ -110,7 +110,7 @@ class Agent():
                 portion = portion.strip('.')   
                 # Remove article
                 element = ' '.join(portion.split(' ')[1:])  
-                print(f'You see here a {element}')
+                #print(f'You see here a {element}')
                 for x in ['saddle', 'carrot']:
                     if x in element:
                         element = x
