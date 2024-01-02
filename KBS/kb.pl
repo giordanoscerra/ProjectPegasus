@@ -31,6 +31,8 @@
 rideable(X) :- is_steed(X), saddled(X), \+ riding(agent,_), \+ hallucinating(agent), \+ wounded_legs(agent), \+ encumbered(agent), \+ (blind(agent), \+ telepathic(agent)), \+ punished(agent)
     , \+ trapped(agent), \+ (wearing(agent, Y), (rusty(Y); corroded(Y))). % I do not intend to implement everything but we can do what we can in the time we have, as a flex
 
+not_saddled_steed(Steed) :- \+ saddled(Steed), is_steed(Steed).
+
 % You will always fail and slip if any of the following apply:[3]
 % 
 %     You are confused.
@@ -88,15 +90,14 @@ action(feedSteed) :-
         )
     ).
 
-
 action(getSaddle) :- 
     saddles(X), X == 0, \+ stepping_on(agent,_,saddle), 
-    position(applicable,saddle,_,_), \+ saddled(Steed),
+    position(applicable,saddle,_,_), not_saddled_steed(Steed),
     (
         ( 
             tameness(Steed,T), 
-            max_tameness(MT),T >= MT,
-            is_steed(Steed)
+            max_tameness(MT),
+            T >= MT
         );
         (
             starvationRiding
@@ -105,8 +106,7 @@ action(getSaddle) :-
 
 action(applySaddle) :- 
     saddles(X), X > 0,
-    is_steed(Steed),
-    \+ saddled(Steed),
+    not_saddled_steed(Steed),
     position(steed, Steed, _, _),
     (
         (max_tameness(MT),tameness(Steed,T),T >= MT);
