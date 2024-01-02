@@ -152,7 +152,8 @@ class Agent():
                 if item in decode(string).lower():
                     count = decode(string).split(' ')[0]
                     if count.isdigit():
-                        interesting_collection[item] += int(count)
+                        if 'uncursed' not in decode(string).lower():
+                            interesting_collection[item] += int(count)
                     else:
                         # handle cases like 'a carrot' or 'an apple'
                         interesting_collection[item] += 1
@@ -303,6 +304,7 @@ class Agent():
         if not self.explore_step(level, heuristic): # if there is nothing to explore
             searchGraph = MapGraph(level)
             if searchGraph.fullVisited(): # handle rectangular room case
+                self.kb.assert_full_visited()
                 self._perform_action(level=level,actionName='WAIT',graphic=graphic, delay=delay)
             while not searchGraph.fullVisited(): # while there are places to search
                 self.search_step(searchGraph, level, heuristic, graphic, delay)

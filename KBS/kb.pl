@@ -71,7 +71,7 @@ action(feedSteed) :-
             )
         );
         (
-            starvationRiding, X > 0
+            starvationRiding
         )
     ).
 
