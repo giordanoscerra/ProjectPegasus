@@ -1,9 +1,3 @@
-from utils.general import decode
-import numpy as np
-# import os
-# import sys
-# import string
-from nle import nethack
 from pyswip import Prolog
 from utils import exceptions
 
@@ -78,6 +72,7 @@ class KBwrapper():
 
     # ---------------- element position related methods START ----------------     
     def get_element_position_query(self, element:str):
+        element = element.lower()   # pointless. Just to be sure
         if element in self._categories.keys():
             query_sentence = f'position({element},_,Row,Col)'
             err_sentence = f'any element in the {element} category '
@@ -107,19 +102,30 @@ class KBwrapper():
 
         category = self._get_key(element, self._categories)
         if category is None:
-            self._kb.retractall(f'position({element},{element},{x},{y})')
+            self._kb.retractall(f'position({element.lower()},{element.lower()},{x},{y})')
         else:
-            self._kb.retractall(f'position({category},{element},{x},{y})')
+            self._kb.retractall(f'position({category},{element.lower()},{x},{y})')
 
     def assert_element_position(self,element:str, x:int, y:int):
         category = self._get_key(element, self._categories)
         if category is None:
-            self._kb.asserta(f'position({element},{element},{x},{y})')
+            self._kb.asserta(f'position({element.lower()},{element.lower()},{x},{y})')
         else:
-            self._kb.asserta(f'position({category},{element},{x},{y})')
+            self._kb.asserta(f'position({category},{element.lower()},{x},{y})')
 
     # ---------------- element position related methods END ----------------
             
+
+
+    # ---------------- explore subtask related methods START ----------------
+            
+    def assert_full_visited(self):
+        tot = list(self._kb.query("fullyExplored(X)"))[0]['X'] + 1
+        self._kb.retractall("fullyExplored(_)")
+        self._kb.asserta(f"fullyExplored({tot})")
+
+    # ---------------- explore subtask related methods END ----------------
+        
 
 
     # ---------------- stepping_on related methods START ----------------
@@ -138,7 +144,7 @@ class KBwrapper():
         element = spaced_elem.replace(' ','')
         category = self._get_key(spaced_elem, self._categories)
         stepping_on_sentence = f'stepping_on(agent,{category},{element})' if category is None else f'stepping_on(agent,_,{element})'
-        return bool(self._kb.query(stepping_on_sentence))
+        return bool(list(self._kb.query(stepping_on_sentence)))
     
     # ---------------- stepping_on related methods END ----------------
 
@@ -148,21 +154,26 @@ class KBwrapper():
 
     # assert that a certain creature (or its category) is hostile in the kb.
     # It's ok like this for now: when we'll want to implement multiple steeds or good and bad monsters we'll modify this.
+    # It's not ok anymore, we have to modify it now.
     def assert_hostile(self, creature: str):
         category = self._get_key(creature, self._categories)
-        if category == 'steed': 
-            if not bool(list(self._kb.query(f'hostile({category})'))):
-                self._kb.asserta(f'hostile({category})')
-        else: 
+        if category == 'steed':
+            # Hopefully we'll only have one pony 
             if not bool(list(self._kb.query(f'hostile({creature})'))):
                 self._kb.asserta(f'hostile({creature})')
+        else: 
+            print("For now, only hostility of steeds is supported")
+            #if not bool(list(self._kb.query(f'hostile({creature})'))):
+            #    self._kb.asserta(f'hostile({creature})')
 
     def retract_hostile(self, creature:str):
         category = self._get_key(creature, self._categories)
         if category == 'steed': 
-            self._kb.retractall(f'hostile({category})')
+            # Hopefully we'll only have one pony 
+            if bool(list(self._kb.query(f'hostile({creature})'))):
+                self._kb.retractall(f'hostile({creature})')
         else: 
-            self._kb.retractall(f'hostile({creature})')
+            print("For now, only hostility of steeds is supported")
 
     # Q: get_steed_tameness could be used for the same purpose,
     #   but maybe the KB messes up. Who knows.
@@ -213,21 +224,25 @@ class KBwrapper():
     def query_riding(self, steed:str):
         category = self._get_key(steed, self._categories)
         if category == "steed": 
-          return bool(list(self._kb.query(f'riding(agent,steed')))
+          return bool(list(self._kb.query('riding(agent,steed')))
         else: 
           return bool(list(self._kb.query(f'riding(agent,{steed})'))) # when the steed is not a *steed* but, for example, a monster.
 
     def assert_saddled_steed(self, steed:str):
         category = self._get_key(steed, self._categories)
-        if category == 'steed': self._kb.asserta(f'saddled({category})')
-        else: self._kb.asserta(f'saddled({steed})')
+        if category == 'steed': 
+            if not bool(list(self._kb.query(f'saddled({steed})'))):
+                self._kb.asserta(f'saddled({steed})')
+        else: 
+            print("Sorry, only steeds can be saddled!")
           
     def retract_saddled_steed(self, steed:str):
         category = self._get_key(steed, self._categories)
         if category == 'steed': 
-            self._kb.retractall(f'saddled({category})')
+            if bool(list(self._kb.query(f'saddled({steed})'))):
+                self._kb.retractall(f'saddled({steed})')
         else: 
-            self._kb.retractall(f'saddled({steed})')
+            print("Sorry, only steeds can be saddled!")
     
     # ---------------- riding and saddled steed-related methods END ----------------
 
@@ -251,7 +266,8 @@ class KBwrapper():
         self._kb.asserta(f'health({health})')
 
     def update_quantity(self, item:str, quantity:int):
-        if item in ['carrot', 'apple', 'saddle']: item += 's'
+        if item in ['carrot', 'apple', 'saddle']: 
+            item += 's'
         self._kb.retractall(f'{item}(_)')
         self._kb.asserta(f'{item}({quantity})')
 
