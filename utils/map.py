@@ -41,6 +41,10 @@ class Map:
                     return item_char
         return None
     
+    def terminal_state(self) -> bool:
+        return self.state['blstats'][10] <= 0 or (self.get_agent_position() == self.get_pony_position())
+
+
     def apply_action(self,actionName: str, what:str = None, where:str = None):   
         if(self._get_action_id(action=actionName) == -1):
             raise Exception(f'Not valid action <{actionName}>')
@@ -58,7 +62,6 @@ class Map:
         self.state,reward,_,_ = self._env.step(self._get_action_id(action=actionName)) # action            
         if(what is not None): self.state,reward,_,_ = self._env.step(self._env.actions.index(ord(what)))# object
         if(where is not None): self.state,reward,_,_ = self._env.step(self._get_action_id(action=where)) # direction
-        #TODO: if a KB is used it should be updated here since we have a new state
 
         self.rewards.append(reward)
 

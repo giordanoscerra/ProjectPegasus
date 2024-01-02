@@ -6,3 +6,6 @@ class ElemNotInDestinationException(Exception):
 
 class SubtaskInterruptedException(Exception):
     pass
+
+class TerminalStateReachedException(Exception):
+    pass

@@ -175,6 +175,7 @@ class Agent():
         except exceptions.SubtaskInterruptedException as exc: pass
             # Oh nooo, someone passed the exception up to this level !!!! :O
             #print(f"SubtaskInterruptedExceptions caught with message: {exc}")
+        except exceptions.TerminalStateReachedException as exc: pass
 
     def chance_of_mount_succeeding(self, steed):
         if steed not in self.kb.get_rideable_steeds() or self.kb.is_slippery():
@@ -214,9 +215,11 @@ class Agent():
     def _perform_action(self, level: Map, actionName: str, what:str = None, where:str = None, show_steps:bool=True, graphic:bool = False, delay:float = 0.1):
         level.apply_action(actionName, what, where)
         self.actions_performed += 1
-        self.percept(level)
         if (show_steps):
             level.render(delay=delay, graphic=graphic)
+        if (level.terminal_state()):
+            raise exceptions.TerminalStateReachedException("Terminal state reached after performing an action.")
+        self.percept(level)
         interrupt = self.check_interrupt()
         if interrupt:
             # Situation changed, the plan is no good

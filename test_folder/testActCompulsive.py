@@ -32,14 +32,14 @@ def printProgressBar (iteration, total, prefix = '', suffix = '', decimals = 1, 
 
 if __name__ == "__main__":
     script_name = 'test_folder/testAct.py'  # The script to be run multiple times
-    number_of_times = 20              # How many times you want to run the script
+    number_of_times = 10              # How many times you want to run the script
     exit_codes = []
 
     for i in range(number_of_times):
-        printProgressBar(i, number_of_times, prefix = 'Progress:', suffix = 'Complete', length = 50)
+        #printProgressBar(i, number_of_times, prefix = 'Progress:', suffix = 'Complete', length = 50)
         exit_codes.append(subprocess.run(['python', script_name]).returncode)
 
-    printProgressBar(number_of_times, number_of_times, prefix = 'Progress:', suffix = 'Complete', length = 50)
+    #printProgressBar(number_of_times, number_of_times, prefix = 'Progress:', suffix = 'Complete', length = 50)
 
     print('The agent averaged', np.mean(exit_codes), 'actions to perform the task over',number_of_times,'iterations')
 
