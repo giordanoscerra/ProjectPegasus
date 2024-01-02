@@ -82,8 +82,6 @@ class Map:
                 description = decode(self.state['screen_descriptions'][i][j])
                 if(element in description):
                     positions.append((i,j))
-        #TODO: check if is stepping on before raising exception
-        #self.print_every_position()
         if(not positions): raise exceptions.ElemNotFoundException(f'no {element} is found in this state') 
         return positions
         
@@ -134,7 +132,7 @@ class Map:
         for i in range(len(self.state['screen_descriptions'])):
             for j in range(len(self.state['screen_descriptions'][0])):
                 description = decode(self.state['screen_descriptions'][i][j])
-                if(description != '' and description != 'floor of a room'):
+                if(description != '' and description != 'floor of a room' and description != 'wall' and description != 'dark part of a room'):
                     print(f'{description} in <{i},{j}>')
         
     # supposed that the distance between [pony] target and agent is <= 3

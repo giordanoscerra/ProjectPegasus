@@ -1,11 +1,11 @@
 import numpy as np
 import time
 import math
+import re
 from typing import List, Callable, Tuple
 from utils.KBwrapper import *
 from utils.map import Map
 from utils import exceptions
-# from utils.exceptions import *
 from utils.heuristics import *
 from utils.map_graph import MapGraph
 from .general import actions_from_path, are_aligned, are_close, decode
@@ -100,14 +100,21 @@ class Agent():
         asserts in the agent.kb if the agent is stepping on an item.
         '''
         #TODO: process other important messages, if any
-        submex_list = message.split('. ')
+        #submex_list = message.split('. ')
+        pattern = '|'.join(map(re.escape, ['.', '!']))
+        submex_list = re.split(pattern, message)
         for msg in submex_list:
+            msg = msg.lstrip(' ')
             if 'You see here' in msg:
                 # Remove "You see here" and trailing dot
                 portion = msg[msg.find('You see here ')+13:]
                 portion = portion.strip('.')   
                 # Remove article
                 element = ' '.join(portion.split(' ')[1:])  
+                print(f'You see here a {element}')
+                for x in ['saddle', 'carrot']:
+                    if x in element:
+                        element = x
                 # assert position of element in the KB
                 x, y = self.kb.get_element_position_query(element='agent')[0]
                 self.kb.assert_element_position(element.replace(' ',''),x,y) 
@@ -294,34 +301,54 @@ class Agent():
 
     # --------- Explore subtask (DavideB) START ---------
     def explore_subtask(self, level:Map, heuristic:callable = lambda t,s: manhattan_distance(t,s), render:bool = False, graphic:bool = False, delay:float = 0.1):
-        next_action = self.explore_step(level, heuristic)
-        if next_action == '': # if there is nothing to explore
+        if not self.explore_step(level, heuristic): # if there is nothing to explore
             searchGraph = MapGraph(level)
             if searchGraph.fullVisited(): # handle rectangular room case
                 self._perform_action(level=level,actionName='WAIT',graphic=graphic, delay=delay)
-            while not searchGraph.fullVisited():
-                next_action = self.search_step(searchGraph, level, heuristic)
-                self._perform_action(level=level,actionName=next_action,graphic=graphic, delay=delay)
-                searchGraph.update()
+            while not searchGraph.fullVisited(): # while there are places to search
+                self.search_step(searchGraph, level, heuristic, graphic, delay)
         else: # if there is something to explore
-            while next_action != '':
-                self._perform_action(level=level,actionName=next_action,graphic=graphic, delay=delay)
-                next_action = self.explore_step(level, heuristic)
+            while self.explore_step(level, heuristic): pass
         self.kb.assert_full_visited()
     
-    def search_step(self, searchGraph:MapGraph, level:Map, heuristic:callable = lambda t,s: manhattan_distance(t,s)):
+    def search_step(self, searchGraph:MapGraph, level:Map, heuristic:callable = lambda t,s: manhattan_distance(t,s), render:bool = False, graphic:bool = False, delay:float = 0.1):
+        agent_pos = self.kb.get_element_position_query('agent')[0]
+        closestUnsearched = heuristic(searchGraph.lastVisit, agent_pos)[0]
+        next_cells = a_star(level.get_map_as_nparray(),start=agent_pos, target=closestUnsearched, maxDistance=1, minDistance=1)[1:]
+        path = actions_from_path(agent_pos, next_cells)
+        for move in path:
+            new_agent_pos = agent_pos
+            while new_agent_pos == agent_pos: # wait until the agent moves
+                self._perform_action(level=level, actionName=move, show_steps=render, graphic=graphic, delay=delay)
+                new_agent_pos = self.kb.get_element_position_query('agent')[0]
+            agent_pos = new_agent_pos
+            if searchGraph.update(): # if something has been visited
+                break
+
+            
+    def explore_step(self, level: Map, heuristic: callable = lambda t,s: manhattan_distance(t,s), render:bool = False, graphic:bool = False, delay:float = 0.1) -> bool:
+        toExplore = self.get_unexplored_cells(level)
+        if len(toExplore) == 0:
+            return False
         try:
             agent_pos = self.kb.get_element_position_query('agent')[0]
-        except:
+        except exceptions.ElemNotFoundException:
             agent_pos = level.get_agent_position()
-        closestUnsearched = heuristic(searchGraph.lastVisit, agent_pos)[0]
-        next_cell = a_star(level.get_map_as_nparray(),start=agent_pos, target=closestUnsearched, maxDistance=1, minDistance=1)[1]
+        place = heuristic(list(toExplore), agent_pos)[0]
+        next_cells = a_star(level.get_map_as_nparray(),start=agent_pos, target=place, maxDistance=1, minDistance=1)[1:]
         #now we get the direction to go to reach the cell
-        return actions_from_path(agent_pos, [next_cell])[0]
-            
-        
+        path = actions_from_path(agent_pos, next_cells)
+        for move in path:
+            new_agent_pos = agent_pos
+            while new_agent_pos == agent_pos:
+                self._perform_action(level=level,actionName=move, show_steps=render, graphic=graphic, delay=delay)
+                new_agent_pos = self.kb.get_element_position_query('agent')[0]
+            agent_pos = new_agent_pos
+            if self.check_something_explored(level, toExplore):
+                return True
 
-    def explore_step(self, level: Map, heuristic: callable = lambda t,s: manhattan_distance(t,s)):
+    
+    def get_unexplored_cells(self, level: Map) -> set:
         toExplore = set()
         for i in range(len(level.state['screen_descriptions'])):
             for j in range(len(level.state['screen_descriptions'][0])):
@@ -338,19 +365,13 @@ class Agent():
                         toExplore.add((i-1,j))
                     if decode(level.state['screen_descriptions'][i+1][j]) == '':
                         toExplore.add((i+1,j))
-        # now we have a set of cells to explore
-        # we need to find the closest one
-        if len(toExplore) == 0:
-            return ''
-        try:
-            agent_pos = self.kb.get_element_position_query('agent')[0]
-        except exceptions.ElemNotFoundException:
-            agent_pos = level.get_agent_position()
-        place = heuristic(list(toExplore), agent_pos)[0]
-        next_cell = a_star(level.get_map_as_nparray(),start=agent_pos, target=place, maxDistance=1, minDistance=1)[1]
-        #now we get the direction to go to reach the cell
-        return actions_from_path(agent_pos, [next_cell])[0]
+        return toExplore
     
+    def check_something_explored(self, level: Map, ex_unexplored:set) -> bool:
+        for element in ex_unexplored:
+            if decode(level.state['screen_descriptions'][element[0]][element[1]]) != '':
+                return True
+
     # --------- Explore subtask END ---------
 
 
