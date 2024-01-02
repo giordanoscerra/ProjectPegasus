@@ -319,7 +319,7 @@ class Agent():
         for move in path:
             new_agent_pos = agent_pos
             while new_agent_pos == agent_pos: # wait until the agent moves
-                self._perform_action(level=level, actionName=move, render=render, graphic=graphic, delay=delay)
+                self._perform_action(level=level, actionName=move, show_steps=render, graphic=graphic, delay=delay)
                 new_agent_pos = self.kb.get_element_position_query('agent')[0]
             agent_pos = new_agent_pos
             if searchGraph.update(): # if something has been visited
@@ -341,11 +341,10 @@ class Agent():
         for move in path:
             new_agent_pos = agent_pos
             while new_agent_pos == agent_pos:
-                self._perform_action(level=level,actionName=move)
+                self._perform_action(level=level,actionName=move, show_steps=render, graphic=graphic, delay=delay)
                 new_agent_pos = self.kb.get_element_position_query('agent')[0]
             agent_pos = new_agent_pos
             if self.check_something_explored(level, toExplore):
-                print("Something has been explored")
                 return True
 
     
