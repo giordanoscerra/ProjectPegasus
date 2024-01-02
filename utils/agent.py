@@ -28,6 +28,7 @@ class Agent():
             "explore": self.explore_subtask,
         }
         self.current_subtask = None
+        self.actions_performed = 0
 
     def closest_element_position(self, element:str, distance:Callable=infinity_distance) -> Tuple[int,int]:
         '''Queries the kb for the position of all elements in the map, and
@@ -212,6 +213,7 @@ class Agent():
     
     def _perform_action(self, level: Map, actionName: str, what:str = None, where:str = None, show_steps:bool=True, graphic:bool = False, delay:float = 0.1):
         level.apply_action(actionName, what, where)
+        self.actions_performed += 1
         self.percept(level)
         if (show_steps):
             level.render(delay=delay, graphic=graphic)
@@ -298,7 +300,7 @@ class Agent():
 
     # --------- Explore subtask (DavideB) START ---------
     def explore_subtask(self, level:Map, heuristic:callable = lambda t,s: manhattan_distance(t,s), show_steps:bool = False, graphic:bool = False, delay:float = 0.1):
-        if not self.explore_step(level, heuristic): # if there is nothing to explore
+        if not self.explore_step(level=level, heuristic=heuristic, show_steps=show_steps, graphic=graphic, delay=delay): # if there is nothing to explore
             searchGraph = MapGraph(level)
             if searchGraph.fullVisited(): # handle rectangular room case
                 self.kb.assert_full_visited()

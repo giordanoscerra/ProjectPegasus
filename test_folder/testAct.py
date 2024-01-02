@@ -11,7 +11,9 @@ level = Map(pony=True, level=-1)
 agent = Agent()
 # this is important af
 agent.percept(level)
-level.render()
+#level.render()
 # let him ACT !!!!!!!!!
 while(level.get_agent_position() != level.get_pony_position()):
-    agent.act(level, show_steps=True, graphic=False, delay=0.5)
+    agent.act(level, show_steps=False, graphic=False, delay=0)
+
+exit(agent.actions_performed)
