@@ -89,7 +89,7 @@ class KBwrapper():
         if(pos_query == []):
             raise exceptions.ElemNotFoundException\
                 ('query for the position of '+err_sentence+'unsuccessful. '
-                 'Maybe they are not in the environment?')
+                 'Maybe they are not in the environment? Query sentence: '+query_sentence)
         else:
             return pos_query
         
@@ -255,7 +255,9 @@ class KBwrapper():
         self._kb.retractall(f'{item}(_)')
         self._kb.asserta(f'{item}({quantity})')
 
-
+    def query_quantity(self, item:str):
+        if item in ['carrot', 'apple', 'saddle']: item += 's'
+        return list(self._kb.query(f'{item}(X)'))[0]['X']
 
     # ---------------- has predicate related methods START ----------------
     def assert_has(self, owner:str, item:str):
