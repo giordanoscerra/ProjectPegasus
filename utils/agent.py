@@ -132,7 +132,7 @@ class Agent():
                     dropper = msg[4:msg.find(' drops a '+x)]
                     self.kb.retract_has(owner=dropper,item=x)
                 for steed in self.kb._categories['steed']:
-                    for synonimous in ['eats','devours','catches']:
+                    for synonimous in ['eats','devours']:
                         # we assume that 
                         if 'The '+steed+' '+synonimous in msg and x in msg:
                             print(f'Increase tameness of {steed} due to {synonimous}')
