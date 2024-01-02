@@ -37,7 +37,8 @@ class Map:
     def _get_item_char(self,item:str) -> Optional[str]:
         for item_char, stringa in zip(decode(self.state["inv_letters"]), self.state["inv_strs"]):
             if item in decode(stringa):
-                return item_char
+                if 'uncursed carrot' not in decode(stringa):
+                    return item_char
         return None
     
     def apply_action(self,actionName: str, what:str = None, where:str = None):   
@@ -82,8 +83,6 @@ class Map:
                 description = decode(self.state['screen_descriptions'][i][j])
                 if(element in description):
                     positions.append((i,j))
-        #TODO: check if is stepping on before raising exception
-        #self.print_every_position()
         if(not positions): raise exceptions.ElemNotFoundException(f'no {element} is found in this state') 
         return positions
         
@@ -134,7 +133,7 @@ class Map:
         for i in range(len(self.state['screen_descriptions'])):
             for j in range(len(self.state['screen_descriptions'][0])):
                 description = decode(self.state['screen_descriptions'][i][j])
-                if(description != '' and description != 'floor of a room'):
+                if(description != '' and description != 'floor of a room' and description != 'wall' and description != 'dark part of a room'):
                     print(f'{description} in <{i},{j}>')
         
     # supposed that the distance between [pony] target and agent is <= 3

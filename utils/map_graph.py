@@ -15,13 +15,15 @@ class MapGraph:
                 if(description == 'dark part of a room'):
                     self.lastVisit.add((i,j))
 
-    def update(self):
+    def update(self) -> bool:
         map = self.level.state['screen_descriptions']
-        for i in range(len(map)):
-            for j in range(len(map[0])):
-                description = decode(map[i][j])
-                if(description != 'dark part of a room'):
-                    self.lastVisit.discard((i,j))
+        updated = False
+        for unvisited in self.lastVisit.copy():
+            description = decode(map[unvisited[0]][unvisited[1]])
+            if(description != 'dark part of a room'):
+                updated = True
+                self.lastVisit.discard(unvisited)
+        return updated
 
     def fullVisited(self) -> bool:
         return len(self.lastVisit) == 0
