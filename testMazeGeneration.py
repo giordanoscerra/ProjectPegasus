@@ -8,7 +8,7 @@ def generate_ascii_map(width, height, wall_char='|', floor_char='.', outer_wall=
         for x in range(width):
             if outer_wall and (x == 0 or x == width - 1 or y == 0 or y == height - 1):
                 map_str += wall_char
-            elif random.random() < 0.3:  # 15% chance to place a wall, can be adjusted
+            elif random.random() < 0.3:  # 30% chance to place a wall, can be adjusted
                 map_str += wall_char
             else:
                 map_str += floor_char
