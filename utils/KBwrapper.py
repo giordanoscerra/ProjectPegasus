@@ -180,9 +180,10 @@ class KBwrapper():
     def query_hostile(self,creature:str='pony'):
         category = self._get_key(creature, self._categories)
         if category == 'steed':
-            return bool(list(self._kb.query(f'hostile({category})')))
-        else:
             return bool(list(self._kb.query(f'hostile({creature})')))
+        else:
+            print("For now, only hostility of steeds is supported")
+            #return bool(list(self._kb.query(f'hostile({creature})')))
     
     # ---------------- hostility-related methods END ----------------
 
