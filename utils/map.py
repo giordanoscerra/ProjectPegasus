@@ -135,49 +135,6 @@ class Map:
                 description = decode(self.state['screen_descriptions'][i][j])
                 if(description != '' and description != 'floor of a room' and description != 'wall' and description != 'dark part of a room'):
                     print(f'{description} in <{i},{j}>')
-        
-    # supposed that the distance between [pony] target and agent is <= 3
-    #TODO: reimplement considering get_element_position() returns a list
-    def align_with_target(self, target:str) -> str:
-        target_pos = self.get_element_position(element=target)
-        agent_pos = self.get_agent_position()
-        agent_pos = (agent_pos[0] - target_pos[0], agent_pos[1] - target_pos[1])
-        if agent_pos[0] == agent_pos[1] or -agent_pos[0] == agent_pos[1]:
-            return
-        if agent_pos[0] == 0 or agent_pos[1] == 0:
-            return
-        move = ''
-        if agent_pos[0] == 1:
-            move = 'N'
-        elif agent_pos[0] == -1:
-            move = 'S'
-        elif agent_pos[1] == 1:
-            move = 'W'
-        elif agent_pos[1] == -1:
-            move = 'E'
-        if move != '':
-            self.apply_action(move)
-
-    def align_with_pony(self):
-        return self.align_with_target(target='pony')
-    
-    def get_target_direction(self, target:str) -> str:
-        entity_pos = self.get_element_position(target)
-        agent_pos = self.get_element_position('Agent')
-        agent_pos = (agent_pos[0] - entity_pos[0], agent_pos[1] - entity_pos[1])
-        throw_direction = ''
-        if agent_pos[0] < 0:
-            throw_direction += 'S'
-        elif agent_pos[0] > 0:
-            throw_direction += 'N'
-        if agent_pos[1] < 0:
-            throw_direction += 'E'
-        elif agent_pos[1] > 0:
-            throw_direction += 'W'
-        return throw_direction
-    
-    def get_pony_direction(self):
-        return self.get_target_direction('pony')
 
     def print_inventory(self):
         for letter, stringa in \
@@ -186,19 +143,3 @@ class Map:
 
     def get_message(self):
         return decode(self.state["message"])
-    
-    # It was used to throw away all the carrots. Now is useless
-    def throw_all(self, item:str, direction:str, show_inventory:bool = False):
-        gen = (decode(s) for s in self.state["inv_strs"])
-        number = 0
-        for stringa in gen:
-            if item in stringa:
-                number = int(stringa.split(" ")[0])
-                break
-        if(number == 0):
-            raise Exception(f'Item {item} not in inventory')
-        for _ in range(number):
-            self.apply_action(actionName='THROW', what=item, where=direction)
-            if show_inventory:
-                self.render()
-                self.print_inventory()
