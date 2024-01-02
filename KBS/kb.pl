@@ -46,24 +46,9 @@ encumbered(agent) :- stressed(agent); strained(agent); overtaxed(agent); overloa
 
 %%% GENERAL SUBTASKS feel free to add other conditions or comments to suggest them
 
-action(pick) :-
-    stepping_on(agent,ObjClass,Obj),
-    is_pickable(ObjClass),
-    (
-        ( %the bject is a saddle
-            (Obj == saddle),
-            (
-                (max_tameness(MT), tameness(Steed,T), is_steed(Steed), carrots(X),  X + T >= MT); % can start mounting procedure
-                starvationRiding % there is nothing we can do to tame the pony
-            )
-        );
-        ( %the object is not a saddle
-            \+ (Obj == saddle)
-        )
-    ).
 
 action(getCarrot) :- 
-    carrots(X), is_steed(Steed), \+ stepping_on(agent,_,carrot), position(comestible,carrot,_,_), 
+    carrots(X), is_steed(Steed), position(comestible,carrot,_,_), 
     (
         (X == 0, hostile(Steed));
         (max_tameness(MT), tameness(Steed,T), MT - T > X, 
@@ -91,7 +76,7 @@ action(feedSteed) :-
     ).
 
 action(getSaddle) :- 
-    saddles(X), X == 0, \+ stepping_on(agent,_,saddle), 
+    saddles(X), X == 0, 
     position(applicable,saddle,_,_), is_steed(Steed), \+ saddled(Steed),
     (
         ( 
@@ -139,9 +124,9 @@ action(explore).
 %TODO: add conditions for enemies
 
 % if you can't prove that this is wrong please don't change it
-interrupt(getCarrot) :- \+ stepping_on(agent, comestible, carrot), \+ action(getCarrot).
+interrupt(getCarrot) :- \+ action(getCarrot).
 
-interrupt(getSaddle) :- \+ stepping_on(agent, applicable, saddle), \+ action(getSaddle).
+interrupt(getSaddle) :- \+ action(getSaddle).
 
 interrupt(feedSteed) :- 
     (carrots(X), X == 0);

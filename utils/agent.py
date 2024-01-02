@@ -4,7 +4,7 @@ import math
 import re
 from typing import List, Callable, Tuple
 from utils.KBwrapper import *
-from utils.map import Map
+from utils.map import Map, DIRECTIONS
 from utils import exceptions
 from utils.heuristics import *
 from utils.map_graph import MapGraph
@@ -26,7 +26,6 @@ class Agent():
             "applySaddle": self.apply_saddle,
             "rideSteed": self.ride_steed,
             "explore": self.explore_subtask,
-            "pick": self.pickUp,
         }
         self.current_subtask = None
 
@@ -219,7 +218,7 @@ class Agent():
         interrupt = self.check_interrupt()
         if interrupt:
             # Situation changed, the plan is no good
-            print(f"According to KB, the {self.current_subtask} has to be "
+            if (actionName in DIRECTIONS and self.current_subtask != 'explore'): print(f"According to KB, the {self.current_subtask} has to be "
                   f"interrupted after the action {actionName} that has just "
                   "been applied")
             raise exceptions.SubtaskInterruptedException("Exception raised after performing an action.")
@@ -288,7 +287,7 @@ class Agent():
             self._perform_action(level=level,actionName=action,what=what,where=direction,graphic=graphic)
             #print("is the steed hostile? " + str(bool(self.kbQuery('hostile(steed)'))))
         except exceptions.SubtaskInterruptedException as exc2:
-            print(f"SubtaskInterruptedExceptions caught with message: {exc2}")
+            #print(f"SubtaskInterruptedExceptions caught with message: {exc2}")
             return False    
         except Exception as exc3:
             #Here control returns to agent main action loop, we need another agent.act !
@@ -373,16 +372,6 @@ class Agent():
                 return True
 
     # --------- Explore subtask END ---------
-
-
-
-    # --------- PickUp subtask START ---------
-
-    def pickUp(self, level:Map, render:bool = False, graphic:bool = False, delay:float = 0.1):
-        self._perform_action(level=level,actionName='PICKUP',graphic=graphic, delay=delay)
-    
-    # --------- PickUp subtask END ---------
-
 
 
     # --------- General stuff for pathfinding ---------
