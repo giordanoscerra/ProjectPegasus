@@ -37,7 +37,8 @@ class Map:
     def _get_item_char(self,item:str) -> Optional[str]:
         for item_char, stringa in zip(decode(self.state["inv_letters"]), self.state["inv_strs"]):
             if item in decode(stringa):
-                return item_char
+                if 'uncursed carrot' not in decode(stringa):
+                    return item_char
         return None
     
     def apply_action(self,actionName: str, what:str = None, where:str = None):   
