@@ -134,7 +134,7 @@ class Agent():
                     for synonimous in ['eats','devours']:
                         # we assume that 
                         if 'The '+steed+' '+synonimous in msg and x in msg:
-                            print(f'Increase tameness of {steed} due to {synonimous}')
+                            #print(f'Increase tameness of {steed} due to {synonimous}')
                             self.kb.update_tameness(inc=1,steed=steed)
 
             for key, value in self.kb.encumbrance_messages.items():
@@ -162,19 +162,18 @@ class Agent():
 
     # --------- Percept-related methods END ---------
 
-    def act(self, level:Map):
+    def act(self, level:Map, show_steps:bool=True, graphic:bool = False, delay:float = 0.1):
         self.current_subtask = self.kb.query_for_action() # returns subtask to execute
-        print("\n\n UHM. the voices in my head are telling me to", self.current_subtask, "!!!!!!!!!!!!!!")
-        time.sleep(0.5)
+        #print("\n\n UHM. the voices in my head are telling me to", self.current_subtask, "!!!!!!!!!!!!!!")
         subtask = self.actions.get(self.current_subtask, lambda: None) # calls the function that executes the subtask
         if subtask is None: 
             raise Exception(f'Action {self.current_subtask} is not defined')
         #yeah so most of the time we just need the map, other stuff is optional
         try:
-            subtask(level)
-        except exceptions.SubtaskInterruptedException as exc:
+            subtask(level, show_steps=show_steps, graphic=graphic, delay=delay)
+        except exceptions.SubtaskInterruptedException as exc: pass
             # Oh nooo, someone passed the exception up to this level !!!! :O
-            print(f"SubtaskInterruptedExceptions caught with message: {exc}")
+            #print(f"SubtaskInterruptedExceptions caught with message: {exc}")
 
     def chance_of_mount_succeeding(self, steed):
         if steed not in self.kb.get_rideable_steeds() or self.kb.is_slippery():
@@ -211,7 +210,7 @@ class Agent():
         '''
         return self.kb.queryDirectly(query)
     
-    def _perform_action(self, level: Map, actionName: str, what:str = None, where:str = None, show_steps:bool=True, graphic:bool = False, delay:float = 0.5):
+    def _perform_action(self, level: Map, actionName: str, what:str = None, where:str = None, show_steps:bool=True, graphic:bool = False, delay:float = 0.1):
         level.apply_action(actionName, what, where)
         self.percept(level)
         if (show_steps):
@@ -219,39 +218,37 @@ class Agent():
         interrupt = self.check_interrupt()
         if interrupt:
             # Situation changed, the plan is no good
-            if (actionName in DIRECTIONS and self.current_subtask != 'explore'): print(f"According to KB, the {self.current_subtask} has to be "
-                  f"interrupted after the action {actionName} that has just "
-                  "been applied")
+            #if (actionName in DIRECTIONS and self.current_subtask != 'explore'):
+                #print(f"According to KB, the {self.current_subtask} has to be "f"interrupted after the action {actionName} that has just ""been applied")
             raise exceptions.SubtaskInterruptedException("Exception raised after performing an action.")
 
 
 
     # --------- Carrot-related subtasks (Andrea) START ---------
     
-    def get_carrot(self, level: Map, show_steps:bool=True, delay=0.5,
-                   heuristic: callable = lambda t,s: manhattan_distance([t],s)[1], graphic:bool = False):
-        while self.interact_with_element(level=level, element='carrot', action="PICKUP", maxOffset=0, graphic=graphic): pass
+    def get_carrot(self, level: Map, heuristic: callable = lambda t,s: manhattan_distance([t],s)[1], show_steps:bool=True, graphic:bool = False, delay:float = 0.1):
+        while self.interact_with_element(level=level, element='carrot', action="PICKUP", maxOffset=0, show_steps=show_steps, graphic=graphic, delay=delay): pass
 
 
     # --------- Saddle and ride subtask (Giordano) START ---------
-    def get_saddle(self, level:Map, heuristic:callable = lambda t,s: manhattan_distance([t],s)[1]):
-        self.interact_with_element(level=level, element='saddle', action="PICKUP", maxOffset=0)
+    def get_saddle(self, level:Map, heuristic:callable = lambda t,s: manhattan_distance([t],s)[1], show_steps:bool=True, graphic:bool = False, delay:float = 0.1):
+        self.interact_with_element(level=level, element='saddle', action="PICKUP", maxOffset=0, show_steps=show_steps, graphic=graphic, delay=delay)
     
     # Calculated from the table here: https://nethackwiki.com/wiki/Throw#Food for objects weighting less than 40
     def _get_throw_range(self, level:Map):
         return math.floor(level.get_agent_strength()/2)
     
-    def feed_steed(self, level):
-        while self.interact_with_element(level=level, element='pony', action="THROW",what="carrot", maxOffset=self._get_throw_range(level)): pass
+    def feed_steed(self, level, show_steps:bool=True, graphic:bool = False, delay:float = 0.1):
+        while self.interact_with_element(level=level, element='pony', action="THROW",what="carrot", maxOffset=self._get_throw_range(level), show_steps=show_steps, graphic=graphic, delay=delay): pass
     
-    def apply_saddle(self, level):
-        self.interact_with_element(level=level, element='pony', action="APPLY",what="saddle", maxOffset=1)
+    def apply_saddle(self, level, show_steps:bool=True, graphic:bool = False, delay:float = 0.1):
+        self.interact_with_element(level=level, element='pony', action="APPLY",what="saddle", maxOffset=1, show_steps=show_steps, graphic=graphic, delay=delay)
 
-    def ride_steed(self, level):
-        self.interact_with_element(level=level, element='pony', action="RIDE", maxOffset=1)
+    def ride_steed(self, level, show_steps:bool=True, graphic:bool = False, delay:float = 0.1):
+        self.interact_with_element(level=level, element='pony', action="RIDE", maxOffset=1, show_steps=show_steps, graphic=graphic, delay=delay)
 
     # To interact with the pony walking step by step, and each time recalculating the best step from zero
-    def interact_with_element(self, level: Map, element: str=None, action: str=None, what: str=None, maxOffset: int=1, show_steps:bool=True, delay=0.5,heuristic: callable = lambda t,s: manhattan_distance([t],s)[1], graphic:bool = False) -> bool:
+    def interact_with_element(self, level: Map, element: str=None, action: str=None, what: str=None, maxOffset: int=1, show_steps:bool=True, delay:float=0.1,heuristic: callable = lambda t,s: manhattan_distance([t],s)[1], graphic:bool = False) -> bool:
 
         try:
             # this baddie here could raise interestings exceptions if it's interrupted. be ready to catch 'em all !
@@ -264,10 +261,10 @@ class Agent():
                                             delay=delay, maxDistance=maxOffset, 
                                             dynamic=(element == 'pony'), graphic=graphic)
                     stop = True
-                except exceptions.ElemNotInDestinationException as exc1:
+                except exceptions.ElemNotInDestinationException as exc1: pass
                     # You sure about that? Catching this exception means the target moved. 
                     # We just need to call again the go_to_closer_element and try harder
-                    print(f"Caught ElemNotInDestinationException with message: {exc1}")
+                    #print(f"Caught ElemNotInDestinationException with message: {exc1}")
 
             direction = None
             if (maxOffset > 0):
@@ -285,14 +282,14 @@ class Agent():
                 elif delta[1] < 0:
                     direction += 'E'
 
-            self._perform_action(level=level,actionName=action,what=what,where=direction,graphic=graphic)
+            self._perform_action(level=level,actionName=action,what=what,where=direction,show_steps=show_steps,delay=delay,graphic=graphic)
             #print("is the steed hostile? " + str(bool(self.kbQuery('hostile(steed)'))))
         except exceptions.SubtaskInterruptedException as exc2:
             #print(f"SubtaskInterruptedExceptions caught with message: {exc2}")
             return False    
         except Exception as exc3:
             #Here control returns to agent main action loop, we need another agent.act !
-            print(f"Caught Exception with message: {exc3}")
+            #print(f"Caught Exception with message: {exc3}")
             return False   
         return True 
         
@@ -300,19 +297,19 @@ class Agent():
 
 
     # --------- Explore subtask (DavideB) START ---------
-    def explore_subtask(self, level:Map, heuristic:callable = lambda t,s: manhattan_distance(t,s), render:bool = False, graphic:bool = False, delay:float = 0.1):
+    def explore_subtask(self, level:Map, heuristic:callable = lambda t,s: manhattan_distance(t,s), show_steps:bool = False, graphic:bool = False, delay:float = 0.1):
         if not self.explore_step(level, heuristic): # if there is nothing to explore
             searchGraph = MapGraph(level)
             if searchGraph.fullVisited(): # handle rectangular room case
                 self.kb.assert_full_visited()
-                self._perform_action(level=level,actionName='WAIT',graphic=graphic, delay=delay)
+                self._perform_action(level=level,actionName='WAIT',show_steps=show_steps, graphic=graphic, delay=delay)
             while not searchGraph.fullVisited(): # while there are places to search
-                self.search_step(searchGraph, level, heuristic, graphic, delay)
+                self.search_step(searchGraph=searchGraph, level=level, heuristic=heuristic, show_steps=show_steps, graphic=graphic, delay=delay)
         else: # if there is something to explore
-            while self.explore_step(level, heuristic): pass
+            while self.explore_step(level=level, heuristic=heuristic, show_steps=show_steps, graphic=graphic, delay=delay): pass
         self.kb.assert_full_visited()
     
-    def search_step(self, searchGraph:MapGraph, level:Map, heuristic:callable = lambda t,s: manhattan_distance(t,s), render:bool = False, graphic:bool = False, delay:float = 0.1):
+    def search_step(self, searchGraph:MapGraph, level:Map, heuristic:callable = lambda t,s: manhattan_distance(t,s), show_steps:bool = False, graphic:bool = False, delay:float = 0.1):
         agent_pos = self.kb.get_element_position_query('agent')[0]
         closestUnsearched = heuristic(searchGraph.lastVisit, agent_pos)[0]
         next_cells = a_star(level.get_map_as_nparray(),start=agent_pos, target=closestUnsearched, maxDistance=1, minDistance=1)[1:]
@@ -320,14 +317,14 @@ class Agent():
         for move in path:
             new_agent_pos = agent_pos
             while new_agent_pos == agent_pos: # wait until the agent moves
-                self._perform_action(level=level, actionName=move, show_steps=render, graphic=graphic, delay=delay)
+                self._perform_action(level=level, actionName=move, show_steps=show_steps, graphic=graphic, delay=delay)
                 new_agent_pos = self.kb.get_element_position_query('agent')[0]
             agent_pos = new_agent_pos
             if searchGraph.update(): # if something has been visited
                 break
 
             
-    def explore_step(self, level: Map, heuristic: callable = lambda t,s: manhattan_distance(t,s), render:bool = False, graphic:bool = False, delay:float = 0.1) -> bool:
+    def explore_step(self, level: Map, heuristic: callable = lambda t,s: manhattan_distance(t,s), show_steps:bool = False, graphic:bool = False, delay:float = 0.1) -> bool:
         toExplore = self.get_unexplored_cells(level)
         if len(toExplore) == 0:
             return False
@@ -342,7 +339,7 @@ class Agent():
         for move in path:
             new_agent_pos = agent_pos
             while new_agent_pos == agent_pos:
-                self._perform_action(level=level,actionName=move, show_steps=render, graphic=graphic, delay=delay)
+                self._perform_action(level=level,actionName=move, show_steps=show_steps, graphic=graphic, delay=delay)
                 new_agent_pos = self.kb.get_element_position_query('agent')[0]
             agent_pos = new_agent_pos
             if self.check_something_explored(level, toExplore):
@@ -416,9 +413,8 @@ class Agent():
                             (f'Somebody got to {destination} before the agent'
                                 f' and took the {element}.')
             except exceptions.ElemNotFoundException as exc:
-                print(f"go_to_closer_element caught a ElemNotFoundException with message: {exc}")
-                print("This means that the element that was trying to be reached is not in "
-                        "sight anymore. ")
+                #print(f"go_to_closer_element caught a ElemNotFoundException with message: {exc}")
+                #print("This means that the element that was trying to be reached is not in sight anymore. ")
                 raise Exception("The best thing to do is to raise another exception that "
                                 "gets caught by interact_with_element, which in turn will "
                                 "give back control to agent.act")

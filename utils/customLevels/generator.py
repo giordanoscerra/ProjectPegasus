@@ -125,6 +125,39 @@ def _level_test_saddle_ride(pony:bool = True):
     lvl.wallify()
     return lvl.get_des()
 
+# https://rosettacode.org/wiki/Maze_generation
+def _make_maze(w:int=24, h:int=10):
+    vis = [[0] * w + [1] for _ in range(h)] + [[1] * (w + 1)]
+    ver = [["|.."] * w + ['|'] for _ in range(h)] + [[]]
+    hor = [["|||"] * w + ['|'] for _ in range(h + 1)]
+
+    def walk(x, y):
+        vis[y][x] = 1
+
+        d = [(x - 1, y), (x, y + 1), (x + 1, y), (x, y - 1)]
+        random.shuffle(d)
+        for (xx, yy) in d:
+            if vis[yy][xx]: continue
+            if xx == x: hor[max(y, yy)][x] = "|.."
+            if yy == y: ver[y][max(x, xx)] = "..."
+            walk(xx, yy)
+
+    walk(random.randrange(w), random.randrange(h))
+
+    s = ""
+    for (a, b) in zip(hor, ver):
+        s += ''.join(a + ['\n'] + b + ['\n'])
+    return s
+
+def _level_random_maze(pony:bool = True):
+    lvl = LevelGenerator(_make_maze(w=12, h=10))
+    #lvl.set_start_pos((2,9))
+    if(pony):
+        lvl.add_monster(name='pony', symbol="u", args=("peaceful", "awake"))
+    for _ in range(20):
+        lvl.add_object(name='carrot', symbol="%", place=None)
+    lvl.add_object(name='saddle', symbol="(")
+    return lvl.get_des()
 
 #def _actions():
 #    actions = tuple(nethack.CompassDirection) + (
@@ -141,7 +174,9 @@ def _level_test_saddle_ride(pony:bool = True):
 #    return actions
 
 def createLevel(level:int = 0, pony:bool = True,**kwargs):
-    if(level == 0):
+    if(level == -1):
+        lvl = _level_random_maze(pony)
+    elif(level == 0):
         lvl = _level_0(pony)
     elif(level == 1):
         lvl = _level_1(pony)
