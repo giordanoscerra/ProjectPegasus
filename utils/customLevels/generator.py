@@ -7,13 +7,32 @@ import os
 #sys.path.insert(1, os.path.join(sys.path[0], '..'))
 from utils.rewards import define_reward
 
+
+def generate_new_empty_spot(used_places:dict, dimX:int, dimY:int):
+    x = random.randint(0,dimX-1)
+    y = random.randint(0,dimY-1)
+    while((x,y) in used_places):
+        x = random.randint(0,dimX-1)
+        y = random.randint(0,dimY-1)
+    return (x,y)
+
 def _level_0(pony:bool = True):
+    used_places = {}
     lvl = LevelGenerator(w=20,h=15)
     for _ in range(15):
-        lvl.add_object(name='carrot', symbol="%", place=None)
+        rndPlace = generate_new_empty_spot(used_places, 20, 15)
+        lvl.add_object(name='carrot', symbol="%", place=rndPlace)
+        used_places[rndPlace] = True
     if(pony):
-            lvl.add_monster(name='pony', symbol="u", place=None, args=("hostile", "awake"))
-    lvl.add_object(name='saddle', symbol="(", place=None)
+        rndPlace = generate_new_empty_spot(used_places, 20, 15)
+        lvl.add_monster(name='pony', symbol="u", place=rndPlace, args=("hostile", "awake"))
+        used_places[rndPlace] = True
+    rndPlace = generate_new_empty_spot(used_places, 20, 15)
+    lvl.add_object(name='saddle', symbol="(", place=rndPlace)
+    used_places[rndPlace] = True
+    rndPlace = generate_new_empty_spot(used_places, 20, 15)
+    lvl.set_start_pos(rndPlace)
+
     lvl.wallify()
     return lvl.get_des()
 
