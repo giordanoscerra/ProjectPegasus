@@ -12,7 +12,6 @@ agent = Agent()
 # this is important af
 agent.percept(level)
 level.render()
-agent.act(level)
 # let him ACT !!!!!!!!!
 while(not level.is_episode_over()):
     agent.act(level)

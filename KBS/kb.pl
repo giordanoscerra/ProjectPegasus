@@ -6,12 +6,14 @@
 :- dynamic action_count/2.
 :- dynamic tameness/2.
 :- dynamic carrots/1.
+:- dynamic apples/1.
 :- dynamic saddles/1.
 :- dynamic riding/2. % riding(agent, steed), assert it when mounting, retract it when dismounting/slipping etc.
 :- dynamic burdened/1, stressed/1, strained/1, overtaxed/1, overloaded/1.
 :- dynamic unencumbered/1.
 :- dynamic saddled/1.
 :- dynamic fullyExplored/1.
+:- dynamic hungry/1.
 % semantics: has(ownerCategory,owner,ownedObjectCat,ownedObject)
 :- dynamic has/4.   % It could be recycled for the carrots(X) thing
 
@@ -46,6 +48,8 @@ encumbered(agent) :- stressed(agent); strained(agent); overtaxed(agent); overloa
 
 %%% GENERAL SUBTASKS feel free to add other conditions or comments to suggest them
 
+action(eat) :- 
+    hungry(agent).    
 
 action(getCarrot) :- 
     carrots(X), is_steed(Steed), position(comestible,carrot,_,_), 
@@ -124,9 +128,9 @@ action(explore).
 %TODO: add conditions for enemies
 
 % if you can't prove that this is wrong please don't change it
-interrupt(getCarrot) :- \+ action(getCarrot).
+interrupt(getCarrot) :- \+ action(getCarrot), hungry(agent).
 
-interrupt(getSaddle) :- \+ action(getSaddle).
+interrupt(getSaddle) :- \+ action(getSaddle), hungry(agent).
 
 interrupt(feedSteed) :- 
     (carrots(X), X == 0);
@@ -135,14 +139,14 @@ interrupt(feedSteed) :-
             (tameness(Steed,T), max_tameness(MT), T >= MT);
             (\+ position(_,Steed,_,_))
         )
-    ).
+    ), hungry(agent).
 
-interrupt(applySaddle) :- \+ action(applySaddle).
+interrupt(applySaddle) :- \+ action(applySaddle), hungry(agent).
 
-interrupt(rideSteed) :- \+ action(rideSteed).
+interrupt(rideSteed) :- \+ action(rideSteed), hungry(agent).
 
 %interrupt(explore) :- \+ action(explore).
-interrupt(explore) :- action(X), \+ (X == explore).
+interrupt(explore) :- action(X), \+ (X == explore), hungry(agent).
 
 
 
@@ -184,6 +188,7 @@ starvationRiding :- fullyExplored(X), X > 1, \+ position(comestible, carrot, _, 
 
 % if pony dies ???
 
+apples(0).
 carrots(0).
 saddles(0).
 % tameness is 1 at the beginning of the game

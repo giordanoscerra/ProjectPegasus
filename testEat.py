@@ -1,10 +1,15 @@
 from utils.map import Map
 from utils.agent import Agent
 
-# spawn labirinth level
-level = Map(pony=True, level=1)
+# spawn level
+level = Map(pony=True, level=-1)
 agent = Agent()
-# this percept could be useless
+# this is important af
 agent.percept(level)
-while(True):
-    agent.explore_subtask(level)
+level.render()
+# let him ACT !!!!!!!!!
+while(not level.is_episode_over()):
+    agent.act(level)
+
+print(level.rewards)
+exit(agent.actions_performed)
