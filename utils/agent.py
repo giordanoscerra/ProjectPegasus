@@ -43,7 +43,7 @@ class Agent():
 
 
     # --------- Percept-related methods START ---------
-    def percept(self, game_map:Map, interesting_item_list:list = ['carrot', 'saddle', 'pony', 'Agent', 'wall']) -> None:
+    def percept(self, game_map:Map, interesting_item_list:list = ['carrot', 'saddle', 'pony', 'Agent', 'wall', 'lichen']) -> None:
         '''Removes the position of all the items in interesting_item_list
         from the kb. Then scans the whole map, looking for such elements and
         inserting in the kb the position of the interesting items that 
@@ -254,7 +254,7 @@ class Agent():
         self.interact_with_element(level=level, element='pony', action="RIDE", maxOffset=1, show_steps=show_steps, graphic=graphic, delay=delay)
 
     def attack_enemy(self, level, enemy_name:str, show_steps:bool=True, graphic:bool=False, delay:float = 0.1):
-
+        enemy_name = prendi_X_da_attack(X) in kb
         self.interact_with_element(level=level, element=enemy_name, action='FIGHT', maxOffset = 1, show_steps=show_steps, graphic=graphic, delay=delay)
 
     # To interact with the pony walking step by step, and each time recalculating the best step from zero

@@ -75,6 +75,10 @@ action(feedSteed) :-
         )
     ).
 
+action(attackEnemy) :- attack(X).
+
+attack(Enemy) :- position(enemy,Enemy,RE,CE).
+
 action(getSaddle) :- 
     saddles(X), X == 0, 
     position(applicable,saddle,_,_), is_steed(Steed), \+ saddled(Steed),

@@ -8,7 +8,7 @@ class KBwrapper():
     # changes to this reflect to all KBwrapper objects 
     # (most probabily we'll have only one, so who cares...)
     _categories = {
-        'enemy': ['kobold', 'giant mummy', 'goblin'],
+        'enemy': ['kobold', 'giant mummy', 'goblin', 'lichen'],
         'comestible': ['apple', 'carrot', 'food ration'],
         'weapon': ['sword', 'lance', 'shield', 'dagger'],
         'applicable' : ['saddle'],
@@ -292,3 +292,13 @@ class KBwrapper():
         self._kb.retractall(f'has({ownerCategory},{owner},{itemCategory},{item})')
 
     # ---------------- has predicate related methods END ----------------
+
+
+
+    # ---------------- enemies-related methods START ----------------
+    def query_enemy_to_attack(self):
+        enemies_list = list(self._kb.query('attack(X)'))
+        coordinates_list = map
+        return enemies_list
+
+    # ---------------- enemies-related methods START ----------------

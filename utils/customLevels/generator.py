@@ -48,7 +48,7 @@ def _level_test_saddle_ride(pony:bool = True):
     lvl = LevelGenerator(w=20,h=20)
     lvl.set_start_pos((2,9))
     if(pony):
-            lvl.add_monster(name='pony', symbol="u", place=(2,7), args=("peaceful", "awake"))
+        lvl.add_monster(name='pony', symbol="u", place=(2,7), args=("peaceful", "awake"))
     lvl.add_object(name='saddle', symbol="(", place=(2,9))
     lvl.wallify()
     return lvl.get_des()
@@ -68,7 +68,7 @@ def _level_pony_paradise(pony:bool = True):
     lvl = LevelGenerator(w=17,h=15)
     lvl.set_start_pos((2,9))
     if(pony):
-            lvl.add_monster(name='pony', symbol="u", place=(2,7), args=("hostile", "awake"))
+        lvl.add_monster(name='pony', symbol="u", place=(2,7), args=("hostile", "awake"))
     for i in range(17):
         for j in range(15):
             if (i != 2 or j != 10):
@@ -95,7 +95,7 @@ def _level_74(pony:bool = True, peaceful:bool = True, enemy:bool = False):
         else:
             lvl.add_monster(name='pony', symbol="u", place=(14,11))
     if(enemy):
-        lvl.add_monster(name='kobold', place=None)
+        lvl.add_monster(name='lichen', place=None)
     lvl.add_object(name='saddle', symbol="(", place=None)
     lvl.set_start_pos((random.randint(1,14),random.randint(1,9)))
     lvl.wallify()
