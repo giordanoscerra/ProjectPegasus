@@ -127,9 +127,13 @@ class Agent():
                 if 'picks up a '+x in msg:
                     # 4: all those messages (hopefully!) start with 'The '
                     picker = msg[4:msg.find(' picks up a '+x)]
+                    if('pony' in picker):
+                        picker='pony'
                     self.kb.assert_has(owner=picker,item=x)
                 if 'drops a '+x in msg:
                     dropper = msg[4:msg.find(' drops a '+x)]
+                    if('pony' in dropper):
+                        dropper = 'pony'
                     self.kb.retract_has(owner=dropper,item=x)
                 for steed in self.kb._categories['steed']:
                     for synonimous in ['eats','devours']:
