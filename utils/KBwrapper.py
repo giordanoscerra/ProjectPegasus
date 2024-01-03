@@ -1,6 +1,6 @@
 from pyswip import Prolog
 from utils import exceptions
-
+from heuristics import infinity_distance
 
 class KBwrapper():
     # It is here on purpose: it is a class variable ("knowledge" shared
@@ -296,9 +296,23 @@ class KBwrapper():
 
 
     # ---------------- enemies-related methods START ----------------
+    
+    # I still have to test this
     def query_enemy_to_attack(self):
-        enemies_list = list(self._kb.query('attack(X)'))
-        coordinates_list = map
-        return enemies_list
+        enemies_list = list(self._kb.query('attack(X)'))['X']
+        print(enemies_list)
+        enemy_and_coordinates = []
+        coordinates = []
+        for enemy in enemies_list:
+            enemy_coord = self.get_element_position_query(enemy)
+            coordinates.append(enemy_coord)
+            enemy_and_coordinates.append([enemy, enemy_coord])
+        print(enemy_and_coordinates)
+        print(coordinates)
+        closest_coord,distance = infinity_distance(self.get_element_position_query('agent'), coordinates)
+        print(closest_coord)
+        closest_enemy = enemy_and_coordinates[coordinates.index(closest_coord)]
+        print(closest_enemy)
+        return closest_enemy, distance
 
-    # ---------------- enemies-related methods START ----------------
+    # ---------------- enemies-related methods END ----------------
