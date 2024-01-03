@@ -44,7 +44,7 @@ class Agent():
 
 
     # --------- Percept-related methods START ---------
-    def percept(self, game_map:Map, interesting_item_list:list = ['carrot', 'saddle', 'pony', 'Agent', 'wall', 'lichen', 'jackal']) -> None:
+    def percept(self, game_map:Map, interesting_item_list:list = ['carrot', 'saddle', 'pony', 'Agent', 'wall', 'lichen', 'jackal', 'goblin']) -> None:
         '''Removes the position of all the items in interesting_item_list
         from the kb. Then scans the whole map, looking for such elements and
         inserting in the kb the position of the interesting items that 
@@ -78,7 +78,9 @@ class Agent():
                                     self.kb.assert_hostile("pony")
                                 if "saddled" in description: 
                                     self.kb.assert_saddled_steed("pony")
-                            self.kb.assert_element_position(interesting_item.lower().replace(' ',''),i,j)
+                            if 'corpse' not in description:
+                                # Q: also removes position of the pony corpse
+                                self.kb.assert_element_position(interesting_item.lower().replace(' ',''),i,j)
         
         self.process_attributes(game_map=game_map)
         self.process_message(message=decode(game_map.state['message']))
@@ -177,7 +179,7 @@ class Agent():
 
     # --------- Percept-related methods END ---------
 
-    def act(self, level:Map, heuristic, show_steps:bool=True, graphic:bool = False, delay:float = 0.1, ):
+    def act(self, level:Map, heuristic:callable=manhattan_distance, show_steps:bool=True, graphic:bool = False, delay:float = 0.1, ):
         self.current_subtask = self.kb.query_for_action() # returns subtask to execute
         #print("\n\n UHM. the voices in my head are telling me to", self.current_subtask, "!!!!!!!!!!!!!!")
         #time.sleep(0.5)
@@ -186,7 +188,10 @@ class Agent():
             raise Exception(f'Action {self.current_subtask} is not defined')
         #yeah so most of the time we just need the map, other stuff is optional
         try:
-            subtask(level, show_steps=show_steps, graphic=graphic, delay=delay, heuristic = lambda t,s: heuristic([t],s)[1])
+            if self.current_subtask == "explore":
+                subtask(level, show_steps=show_steps, graphic=graphic, delay=delay, heuristic = heuristic)
+            else:    
+                subtask(level, show_steps=show_steps, graphic=graphic, delay=delay, heuristic = lambda t,s: heuristic([t],s)[1])
         except exceptions.SubtaskInterruptedException as exc: pass
             # Oh nooo, someone passed the exception up to this level !!!! :O
             #print(f"SubtaskInterruptedExceptions caught with message: {exc}")
@@ -333,7 +338,7 @@ class Agent():
 
 
     # --------- Explore subtask (DavideB) START ---------
-    def explore_subtask(self, level:Map, heuristic:callable = lambda t,s: manhattan_distance(t,s), show_steps:bool = False, graphic:bool = False, delay:float = 0.1):
+    def explore_subtask(self, level:Map, heuristic:callable = manhattan_distance, show_steps:bool = False, graphic:bool = False, delay:float = 0.1):
         if not self.explore_step(level=level, heuristic=heuristic, show_steps=show_steps, graphic=graphic, delay=delay): # if there is nothing to explore
             searchGraph = MapGraph(level)
             if searchGraph.fullVisited(): # handle rectangular room case
@@ -345,7 +350,7 @@ class Agent():
             while self.explore_step(level=level, heuristic=heuristic, show_steps=show_steps, graphic=graphic, delay=delay): pass
         self.kb.assert_full_visited()
     
-    def search_step(self, searchGraph:MapGraph, level:Map, heuristic:callable = lambda t,s: manhattan_distance(t,s), show_steps:bool = False, graphic:bool = False, delay:float = 0.1):
+    def search_step(self, searchGraph:MapGraph, level:Map, heuristic:callable = manhattan_distance, show_steps:bool = False, graphic:bool = False, delay:float = 0.1):
         agent_pos = self.kb.get_element_position_query('agent')[0]
         closestUnsearched = heuristic(searchGraph.lastVisit, agent_pos)[0]
         next_cells = a_star(level.get_map_as_nparray(),start=agent_pos, target=closestUnsearched, maxDistance=1, minDistance=1)[1:]
@@ -360,7 +365,7 @@ class Agent():
                 break
 
             
-    def explore_step(self, level: Map, heuristic: callable = lambda t,s: manhattan_distance(t,s), show_steps:bool = False, graphic:bool = False, delay:float = 0.1) -> bool:
+    def explore_step(self, level: Map, heuristic: callable = manhattan_distance, show_steps:bool = False, graphic:bool = False, delay:float = 0.1) -> bool:
         toExplore = self.get_unexplored_cells(level)
         if len(toExplore) == 0:
             return False
