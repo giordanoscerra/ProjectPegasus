@@ -12,7 +12,7 @@ def _level_0(pony:bool = True):
     for _ in range(15):
         lvl.add_object(name='carrot', symbol="%", place=None)
     if(pony):
-            lvl.add_monster(name='pony', symbol="u", place=None)
+            lvl.add_monster(name='pony', symbol="u", place=None, args=("hostile", "awake"))
     lvl.add_object(name='saddle', symbol="(", place=None)
     lvl.wallify()
     return lvl.get_des()
@@ -23,7 +23,7 @@ def _level_1(pony:bool = True):
     lvl = LevelGenerator(map=desDescription)
     #pony and carrots randomly placed in the second room
     if(pony):
-        lvl.add_monster(name='pony', symbol="u", place=(random.randint(13, 16), random.randint(5, 9)))
+        lvl.add_monster(name='pony', symbol="u", place=(random.randint(13, 16), random.randint(5, 9)), args=("hostile", "awake"))
     for _ in range(9):
         lvl.add_object(name='carrot', symbol="%", place=(random.randint(8, 16), random.randint(1, 9)))
     #carrot randomly placed near the agent
@@ -37,7 +37,7 @@ def _level_2(pony:bool = True):
     desDescription = open('utils/customLevels/level2.des', 'r').read()
     lvl = LevelGenerator(map=desDescription)
     if(pony):
-        lvl.add_monster(name='pony', symbol="u", place=(21,4))
+        lvl.add_monster(name='pony', symbol="u", place=(21,4), args=("hostile", "awake"))
     for _ in range(12):
         lvl.add_object(name='carrot', symbol="%", place=None)
     lvl.add_object(name='saddle', symbol="(", place=None)
@@ -57,7 +57,7 @@ def _level_3(pony:bool = True):
     desDescriton = open('utils/customLevels/level3.des', 'r').read()
     lvl = LevelGenerator(map=desDescriton)
     if(pony):
-        lvl.add_monster(name='pony', symbol="u", place=(31, 14))
+        lvl.add_monster(name='pony', symbol="u", place=(31, 14), args=("hostile", "awake"))
     for _ in range(5):
         lvl.add_object(name='carrot', symbol="%", place=None)
     lvl.add_object(name='saddle', symbol="(", place=None)
@@ -153,7 +153,7 @@ def _level_random_maze(pony:bool = True):
     lvl = LevelGenerator(_make_maze(w=12, h=10))
     #lvl.set_start_pos((2,9))
     if(pony):
-        lvl.add_monster(name='pony', symbol="u", args=("peaceful", "awake"))
+        lvl.add_monster(name='pony', symbol="u", args=("hostile", "awake"))
     for _ in range(20):
         lvl.add_object(name='carrot', symbol="%", place=None)
     lvl.add_object(name='saddle', symbol="(")
