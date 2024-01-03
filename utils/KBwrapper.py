@@ -303,7 +303,7 @@ class KBwrapper():
     
     # I still have to test this
     def query_enemy_to_attack(self):
-        enemies_list = list(self._kb.query('attack(X)'))['X']
+        enemies_list = list(self._kb.query('attack(Enemy)'))
         print(enemies_list)
         enemy_and_coordinates = []
         coordinates = []

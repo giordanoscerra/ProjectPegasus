@@ -253,8 +253,10 @@ class Agent():
     def ride_steed(self, level, show_steps:bool=True, graphic:bool = False, delay:float = 0.1):
         self.interact_with_element(level=level, element='pony', action="RIDE", maxOffset=1, show_steps=show_steps, graphic=graphic, delay=delay)
 
-    def attack_enemy(self, level, enemy_name:str, show_steps:bool=True, graphic:bool=False, delay:float = 0.1):
-        enemy_name = prendi_X_da_attack(X) in kb
+    def attack_enemy(self, level, # enemy_name:str,
+                      show_steps:bool=True, graphic:bool=False, delay:float = 0.1):
+        closest_enemy, distance = self.kb.query_enemy_to_attack() # closest enemy is a tuple [enemy_name,position] and distance is the distance from the agent
+        enemy_name = closest_enemy[0]
         self.interact_with_element(level=level, element=enemy_name, action='FIGHT', maxOffset = 1, show_steps=show_steps, graphic=graphic, delay=delay)
 
     # To interact with the pony walking step by step, and each time recalculating the best step from zero
