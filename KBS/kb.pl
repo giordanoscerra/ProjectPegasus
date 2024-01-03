@@ -6,12 +6,14 @@
 :- dynamic action_count/2.
 :- dynamic tameness/2.
 :- dynamic carrots/1.
+:- dynamic apples/1.
 :- dynamic saddles/1.
 :- dynamic riding/2. % riding(agent, steed), assert it when mounting, retract it when dismounting/slipping etc.
 :- dynamic burdened/1, stressed/1, strained/1, overtaxed/1, overloaded/1.
 :- dynamic unencumbered/1.
 :- dynamic saddled/1.
 :- dynamic fullyExplored/1.
+:- dynamic hungry/1.
 % semantics: has(ownerCategory,owner,ownedObjectCat,ownedObject)
 :- dynamic has/4.   % It could be recycled for the carrots(X) thing
 :- dynamic attack/1.
@@ -48,6 +50,11 @@ encumbered(agent) :- stressed(agent); strained(agent); overtaxed(agent); overloa
 %%% GENERAL SUBTASKS feel free to add other conditions or comments to suggest them
 
 action(attackEnemy) :- is_enemy(X), attack(X).
+
+action(eat) :- 
+    hungry(Z), Z>1, % hungry values are: 1 is normal, 2 is hungry, 3 is weak. 
+    apples(W), W>0,
+    \+ stepping_on(agent,_,_). % if no apples, bad news amigo
 
 action(getCarrot) :- 
     carrots(X), is_steed(Steed), position(comestible,carrot,_,_), 
@@ -146,9 +153,9 @@ attack(Enemy) :-
 %TODO: add conditions for enemies
 
 % if you can't prove that this is wrong please don't change it
-interrupt(getCarrot) :- \+ action(getCarrot).
+interrupt(getCarrot) :- \+ action(getCarrot); action(eat).
 
-interrupt(getSaddle) :- \+ action(getSaddle).
+interrupt(getSaddle) :- \+ action(getSaddle); action(eat).
 
 interrupt(feedSteed) :- 
     (carrots(X), X == 0);
@@ -157,14 +164,14 @@ interrupt(feedSteed) :-
             (tameness(Steed,T), max_tameness(MT), T >= MT);
             (\+ position(_,Steed,_,_))
         )
-    ).
+    ); action(eat).
 
-interrupt(applySaddle) :- \+ action(applySaddle).
+interrupt(applySaddle) :- \+ action(applySaddle); action(eat).
 
-interrupt(rideSteed) :- \+ action(rideSteed).
+interrupt(rideSteed) :- \+ action(rideSteed); action(eat).
 
 %interrupt(explore) :- \+ action(explore).
-interrupt(explore) :- action(X), \+ (X == explore).
+interrupt(explore) :- (action(X), \+ (X == explore)); action(eat).
 
 
 
@@ -209,6 +216,7 @@ starvationRiding :- fullyExplored(X), X > 1, \+ position(comestible, carrot, _, 
 
 % if pony dies ???
 
+apples(0).
 carrots(0).
 saddles(0).
 % tameness is 1 at the beginning of the game

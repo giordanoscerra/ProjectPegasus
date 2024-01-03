@@ -26,6 +26,7 @@ class Agent():
             "applySaddle": self.apply_saddle,
             "rideSteed": self.ride_steed,
             "explore": self.explore_subtask,
+            "eat": self.eat,
             "attackEnemy": self.attack_enemy,
         }
         self.current_subtask = None
@@ -94,9 +95,11 @@ class Agent():
         self.attributes["charisma"] = game_map.get_agent_charisma()
         self.attributes["dexterity"] = game_map.get_agent_dexterity()
         self.attributes["constitution"] = game_map.get_agent_constitution()
+        self.attributes["hunger"] = game_map.get_agent_hunger()
         self.attributes["riding"] = self.kb.query_riding("steed")
         self.attributes["carrying_capacity"] = 1000 if self.attributes["riding"] else (25*(self.attributes["strength"]+self.attributes["constitution"])) + 50
         self.kb.update_health(self.attributes["health"])
+        self.kb.update_hunger(self.attributes["hunger"])
 
     def process_message(self, message:str):
         '''Called by agent.percept(level). Reads the message and
@@ -173,6 +176,7 @@ class Agent():
     def act(self, level:Map, show_steps:bool=True, graphic:bool = False, delay:float = 0.1):
         self.current_subtask = self.kb.query_for_action() # returns subtask to execute
         #print("\n\n UHM. the voices in my head are telling me to", self.current_subtask, "!!!!!!!!!!!!!!")
+        #time.sleep(0.5)
         subtask = self.actions.get(self.current_subtask, lambda: None) # calls the function that executes the subtask
         if subtask is None: 
             raise Exception(f'Action {self.current_subtask} is not defined')
@@ -234,6 +238,9 @@ class Agent():
                 #print(f"According to KB, the {self.current_subtask} has to be "f"interrupted after the action {actionName} that has just ""been applied")
             raise exceptions.SubtaskInterruptedException("Exception raised after performing an action.")
 
+    # --------- Eat subtask (Giordano) START ---------
+    def eat(self, level: Map, heuristic: callable = lambda t,s: manhattan_distance([t],s)[1], show_steps:bool=True, graphic:bool = False, delay:float = 0.1):
+        self._perform_action(level=level,actionName='EAT',what='apple')
 
 
     # --------- Carrot-related subtasks (Andrea) START ---------

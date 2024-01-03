@@ -256,6 +256,9 @@ class KBwrapper():
     
     def is_agent_fumbling(self):
         return self._kb.query("fumbling(agent)")[0]
+
+    def is_agent_hungry(self):
+        return self._kb.query("hungry(agent)")[0]
     
     def update_encumbrance(self, encumbrance:str):
         for keys in self.encumbrance_messages.keys():
@@ -265,6 +268,10 @@ class KBwrapper():
     def update_health(self, health:int):
         self._kb.retractall('health(_)')
         self._kb.asserta(f'health({health})')
+    
+    def update_hunger(self, hunger:int):
+        self._kb.retractall('hungry(_)')
+        self._kb.asserta(f'hungry({hunger})')
 
     def update_quantity(self, item:str, quantity:int):
         if item in ['carrot', 'apple', 'saddle']: 
