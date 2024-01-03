@@ -179,8 +179,8 @@ class Agent():
 
     def act(self, level:Map, show_steps:bool=True, graphic:bool = False, delay:float = 0.1):
         self.current_subtask = self.kb.query_for_action() # returns subtask to execute
-        print("\n\n UHM. the voices in my head are telling me to", self.current_subtask, "!!!!!!!!!!!!!!")
-        time.sleep(0.5)
+        #print("\n\n UHM. the voices in my head are telling me to", self.current_subtask, "!!!!!!!!!!!!!!")
+        #time.sleep(0.5)
         subtask = self.actions.get(self.current_subtask, lambda: None) # calls the function that executes the subtask
         if subtask is None: 
             raise Exception(f'Action {self.current_subtask} is not defined')
