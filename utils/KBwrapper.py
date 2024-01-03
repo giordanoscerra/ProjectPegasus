@@ -1,6 +1,6 @@
 from pyswip import Prolog
 from utils import exceptions
-
+from utils.heuristics import infinity_distance
 
 class KBwrapper():
     # It is here on purpose: it is a class variable ("knowledge" shared
@@ -8,7 +8,7 @@ class KBwrapper():
     # changes to this reflect to all KBwrapper objects 
     # (most probabily we'll have only one, so who cares...)
     _categories = {
-        'enemy': ['kobold', 'giant mummy', 'goblin'],
+        'enemy': ['kobold', 'giant mummy', 'goblin', 'lichen'],
         'comestible': ['apple', 'carrot', 'food ration'],
         'weapon': ['sword', 'lance', 'shield', 'dagger'],
         'applicable' : ['saddle'],
@@ -256,6 +256,9 @@ class KBwrapper():
     
     def is_agent_fumbling(self):
         return self._kb.query("fumbling(agent)")[0]
+
+    def is_agent_hungry(self):
+        return self._kb.query("hungry(agent)")[0]
     
     def update_encumbrance(self, encumbrance:str):
         for keys in self.encumbrance_messages.keys():
@@ -265,6 +268,10 @@ class KBwrapper():
     def update_health(self, health:int):
         self._kb.retractall('health(_)')
         self._kb.asserta(f'health({health})')
+    
+    def update_hunger(self, hunger:int):
+        self._kb.retractall('hungry(_)')
+        self._kb.asserta(f'hungry({hunger})')
 
     def update_quantity(self, item:str, quantity:int):
         if item in ['carrot', 'apple', 'saddle']: 
@@ -292,3 +299,44 @@ class KBwrapper():
         self._kb.retractall(f'has({ownerCategory},{owner},{itemCategory},{item})')
 
     # ---------------- has predicate related methods END ----------------
+
+
+
+    # ---------------- enemies-related methods START ----------------
+    def isEnemy(self, element:str):
+        category = self._get_key(element, self._categories)
+        return category == 'enemy'
+    
+    
+    # I still have to test this
+    def query_enemy_to_attack(self):
+        enemies_list = list(self._kb.query('attack(Enemy)'))
+        enemies_list = list(map(lambda x: x['Enemy'], enemies_list))
+        #print('Enemies list: ',enemies_list)
+        enemy_and_coordinates = []
+        coordinates = []
+        for enemy in enemies_list:
+            # rough fix
+            enemy_coord = self.get_element_position_query(enemy)[0]
+            coordinates.append(enemy_coord)
+            enemy_and_coordinates.append((enemy, enemy_coord))
+        #print('Enemies with coords: ',enemy_and_coordinates)
+        #print('coords: ',coordinates)
+        closest_coord,distance = infinity_distance(toCompare=self.get_element_position_query('agent'), positions=coordinates)
+        #print(closest_coord)
+        closest_enemy = enemy_and_coordinates[coordinates.index(closest_coord)]
+        #print(closest_enemy)
+        return closest_enemy, distance
+
+    # ---------------- enemies-related methods END ----------------
+
+    # ---------------- blindness-related methods START ----------------
+
+    def assert_blindness(self):
+        self._kb.asserta('blind(_)')
+
+    def retract_blindness(self):
+        self._kb.retractall('blind(_)')
+
+    def is_agent_blind(self):
+        return bool(list(self._kb.query("blind(agent)")))

@@ -16,9 +16,9 @@ def generate_new_empty_spot(used_places:dict, dimX:int, dimY:int):
         y = random.randint(0,dimY-1)
     return (x,y)
 
-def _level_0(pony:bool = True):
-    used_places = {}
+def _level_0(pony:bool = True, enemy:bool=False):
     lvl = LevelGenerator(w=20,h=15)
+    used_places = {}
     for _ in range(15):
         rndPlace = generate_new_empty_spot(used_places, 20, 15)
         lvl.add_object(name='carrot', symbol="%", place=rndPlace)
@@ -29,14 +29,16 @@ def _level_0(pony:bool = True):
         used_places[rndPlace] = True
     rndPlace = generate_new_empty_spot(used_places, 20, 15)
     lvl.add_object(name='saddle', symbol="(", place=rndPlace)
+    if(enemy):
+        lvl.add_monster(name='lichen', place=None)
+        lvl.add_monster(name='jackal', place=None)
     used_places[rndPlace] = True
     rndPlace = generate_new_empty_spot(used_places, 20, 15)
     lvl.set_start_pos(rndPlace)
-
     lvl.wallify()
     return lvl.get_des()
 
-def _level_1(pony:bool = True):
+def _level_1(pony:bool = True, enemies:bool=False):
     #get content from level1.des
     desDescription = open('utils/customLevels/level1.des', 'r').read()
     lvl = LevelGenerator(map=desDescription)
@@ -46,12 +48,15 @@ def _level_1(pony:bool = True):
     for _ in range(9):
         lvl.add_object(name='carrot', symbol="%", place=(random.randint(8, 16), random.randint(1, 9)))
     #carrot randomly placed near the agent
+    if(enemies):
+        lvl.add_monster(name='jackal', place=None)
+        lvl.add_monster(name='lichen', place=None)
     lvl.add_object(name='carrot', symbol="%", place=(random.randint(1, 3), random.randint(4, 6)))
     lvl.add_object(name='saddle', symbol="(", place=None)
     lvl.set_start_pos((2,5))
     return lvl.get_des()
 
-def _level_2(pony:bool = True):
+def _level_2(pony:bool = True, enemies:bool=False):
     #get content from level1.des
     desDescription = open('utils/customLevels/level2.des', 'r').read()
     lvl = LevelGenerator(map=desDescription)
@@ -59,6 +64,9 @@ def _level_2(pony:bool = True):
         lvl.add_monster(name='pony', symbol="u", place=(21,4), args=("hostile", "awake"))
     for _ in range(12):
         lvl.add_object(name='carrot', symbol="%", place=None)
+    if(enemies):
+        lvl.add_monster(name='lichen', place=None)
+        lvl.add_monster(name='jackal', place=None)
     lvl.add_object(name='saddle', symbol="(", place=None)
     lvl.set_start_pos((2,9))
     return lvl.get_des()
@@ -67,18 +75,21 @@ def _level_test_saddle_ride(pony:bool = True):
     lvl = LevelGenerator(w=20,h=20)
     lvl.set_start_pos((2,9))
     if(pony):
-            lvl.add_monster(name='pony', symbol="u", place=(2,7), args=("peaceful", "awake"))
+        lvl.add_monster(name='pony', symbol="u", place=(2,7), args=("peaceful", "awake"))
     lvl.add_object(name='saddle', symbol="(", place=(2,9))
     lvl.wallify()
     return lvl.get_des()
 
-def _level_3(pony:bool = True):
+def _level_3(pony:bool = True, enemies:bool=False):
     desDescriton = open('utils/customLevels/level3.des', 'r').read()
     lvl = LevelGenerator(map=desDescriton)
     if(pony):
         lvl.add_monster(name='pony', symbol="u", place=(31, 14), args=("hostile", "awake"))
     for _ in range(5):
         lvl.add_object(name='carrot', symbol="%", place=None)
+    if(enemies):
+        lvl.add_monster(name='jackal', place=None)
+        lvl.add_monster(name='lichen', place=None)
     lvl.add_object(name='saddle', symbol="(", place=None)
     lvl.set_start_pos((2,2))
     return lvl.get_des()
@@ -87,7 +98,7 @@ def _level_pony_paradise(pony:bool = True):
     lvl = LevelGenerator(w=17,h=15)
     lvl.set_start_pos((2,9))
     if(pony):
-            lvl.add_monster(name='pony', symbol="u", place=(2,7), args=("hostile", "awake"))
+        lvl.add_monster(name='pony', symbol="u", place=(2,7), args=("hostile", "awake"))
     for i in range(17):
         for j in range(15):
             if (i != 2 or j != 10):
@@ -114,7 +125,7 @@ def _level_74(pony:bool = True, peaceful:bool = True, enemy:bool = False):
         else:
             lvl.add_monster(name='pony', symbol="u", place=(14,11))
     if(enemy):
-        lvl.add_monster(name='kobold', place=None)
+        lvl.add_monster(name='lichen', place=None)
     lvl.add_object(name='saddle', symbol="(", place=None)
     lvl.set_start_pos((random.randint(1,14),random.randint(1,9)))
     lvl.wallify()
@@ -196,13 +207,13 @@ def createLevel(level:int = 0, pony:bool = True,**kwargs):
     if(level == -1):
         lvl = _level_random_maze(pony)
     elif(level == 0):
-        lvl = _level_0(pony)
+        lvl = _level_0(pony, **kwargs)
     elif(level == 1):
-        lvl = _level_1(pony)
+        lvl = _level_1(pony, **kwargs)
     elif(level == 2):
-        lvl = _level_2(pony)
+        lvl = _level_2(pony, **kwargs)
     elif(level == 3):
-        lvl = _level_3(pony)
+        lvl = _level_3(pony, **kwargs)
     elif(level == 74):
         lvl = _level_74(pony,**kwargs)
     elif(level == 4):
