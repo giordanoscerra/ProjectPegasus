@@ -258,18 +258,21 @@ class Agent():
         self.interact_with_element(level=level, element=enemy_name, action='FIGHT', maxOffset = 1, show_steps=show_steps, graphic=graphic, delay=delay)
 
     # To interact with the pony walking step by step, and each time recalculating the best step from zero
-    def interact_with_element(self, level: Map, element: str=None, action: str=None, what: str=None, maxOffset: int=1, show_steps:bool=True, delay:float=0.1,heuristic: callable = lambda t,s: manhattan_distance([t],s)[1], graphic:bool = False) -> bool:
+    def interact_with_element(self, level: Map, element: str=None, 
+                              action: str=None, what: str=None, 
+                              maxOffset: int=1, show_steps:bool=True, delay:float=0.1,heuristic: callable = lambda t,s: manhattan_distance([t],s)[1], graphic:bool = False) -> bool:
 
         try:
             # this baddie here could raise interestings exceptions if it's interrupted. be ready to catch 'em all !
             stop = False
             while not stop:
                 try:
+                    dynamic = (element == 'pony') or self.kb.isEnemy(element)
                     self.go_to_closer_element(level, element=element, 
                                             heuristic=heuristic, 
                                             show_steps=show_steps, 
                                             delay=delay, maxDistance=maxOffset, 
-                                            dynamic=(element == 'pony'), graphic=graphic)
+                                            dynamic=dynamic, graphic=graphic)
                     stop = True
                 except exceptions.ElemNotInDestinationException as exc1: pass
                     # You sure about that? Catching this exception means the target moved. 
