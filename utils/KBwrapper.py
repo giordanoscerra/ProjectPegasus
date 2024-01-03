@@ -304,16 +304,18 @@ class KBwrapper():
     # I still have to test this
     def query_enemy_to_attack(self):
         enemies_list = list(self._kb.query('attack(Enemy)'))
-        print(enemies_list)
+        enemies_list = list(map(lambda x: x['Enemy'], enemies_list))
+        print('Enemies list: ',enemies_list)
         enemy_and_coordinates = []
         coordinates = []
         for enemy in enemies_list:
-            enemy_coord = self.get_element_position_query(enemy)
+            # rough fix
+            enemy_coord = self.get_element_position_query(enemy)[0]
             coordinates.append(enemy_coord)
-            enemy_and_coordinates.append([enemy, enemy_coord])
-        print(enemy_and_coordinates)
-        print(coordinates)
-        closest_coord,distance = infinity_distance(self.get_element_position_query('agent'), coordinates)
+            enemy_and_coordinates.append((enemy, enemy_coord))
+        print('Enemies with coords: ',enemy_and_coordinates)
+        print('coords: ',coordinates)
+        closest_coord,distance = infinity_distance(toCompare=self.get_element_position_query('agent'), positions=coordinates)
         print(closest_coord)
         closest_enemy = enemy_and_coordinates[coordinates.index(closest_coord)]
         print(closest_enemy)

@@ -78,16 +78,6 @@ action(feedSteed) :-
 
 action(attackEnemy) :- attack(X).
 
-attack(Enemy) :- 
-    position(enemy,Enemy,RE,CE), (
-        (is_close(RE,CE,RS,CS), 
-            is_steed(Steed), 
-            position(steed,Steed,RS,CS));
-        (has(enemy,Enemy,comestible,carrot),
-            \+ position(comestible,carrot,_,_)
-        )
-    ).
-
 action(getSaddle) :- 
     saddles(X), X == 0, 
     position(applicable,saddle,_,_), is_steed(Steed), \+ saddled(Steed),
@@ -118,6 +108,17 @@ action(rideSteed) :-
         (max_tameness(MT),tameness(Steed,T), T >= MT);
         (starvationRiding)
     ).
+
+attack(Enemy) :- 
+    position(enemy,Enemy,RE,CE). 
+    %(
+    %    (is_close(RE,CE,RS,CS), 
+    %        is_steed(Steed), 
+    %        position(steed,Steed,RS,CS));
+    %    (has(enemy,Enemy,comestible,carrot),
+    %        \+ position(comestible,carrot,_,_)
+    %    )
+    %).
 
 
 %we need to explore if the pony is/can_be tamed but we dont't know where it is

@@ -255,7 +255,7 @@ class Agent():
 
     def attack_enemy(self, level, # enemy_name:str,
                       show_steps:bool=True, graphic:bool=False, delay:float = 0.1):
-        closest_enemy, distance = self.kb.query_enemy_to_attack() # closest enemy is a tuple [enemy_name,position] and distance is the distance from the agent
+        closest_enemy, _ = self.kb.query_enemy_to_attack() # closest enemy is a tuple [enemy_name,position] and distance is the distance from the agent
         enemy_name = closest_enemy[0]
         self.interact_with_element(level=level, element=enemy_name, action='FIGHT', maxOffset = 1, show_steps=show_steps, graphic=graphic, delay=delay)
 
