@@ -7,7 +7,7 @@ from utils.agent import Agent
 from utils import exceptions
 
 # spawn level
-level = Map(pony=True, level=-1)
+level = Map(pony=True, level=2)
 agent = Agent()
 # this is important af
 agent.percept(level)
