@@ -158,12 +158,12 @@ class Agent():
             for item in interesting_items:
                 if item in decode(string).lower():
                     count = decode(string).split(' ')[0]
-                    if count.isdigit():
-                        if 'uncursed carrot' not in decode(string).lower():
+                    if 'uncursed carrot' not in decode(string).lower():
+                        if count.isdigit():
                             interesting_collection[item] += int(count)
-                    else:
-                        # handle cases like 'a carrot' or 'an apple'
-                        interesting_collection[item] += 1
+                        else:
+                            # handle cases like 'a carrot' or 'an apple'
+                            interesting_collection[item] += 1
         for item in interesting_collection:
             self.kb.update_quantity(item, interesting_collection[item])
 
