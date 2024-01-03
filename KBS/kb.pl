@@ -50,7 +50,8 @@ encumbered(agent) :- stressed(agent); strained(agent); overtaxed(agent); overloa
 
 action(eat) :- 
     hungry(Z), Z>1, % hungry values are: 1 is normal, 2 is hungry, 3 is weak. 
-    apples(W), W>0. % if no apples, bad news amigo
+    apples(W), W>0,
+    \+ stepping_on(agent,_,_). % if no apples, bad news amigo
 
 action(getCarrot) :- 
     carrots(X), is_steed(Steed), position(comestible,carrot,_,_), 

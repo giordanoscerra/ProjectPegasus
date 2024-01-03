@@ -19,7 +19,7 @@ agent.percept(level)
 level.render()
 # let him ACT !!!!!!!!!
 while(not level.is_episode_over()):
-    agent.act(level=level, delay=0.01)
+    agent.act(level=level, delay=0.0001)
 
 print(level.rewards)
 exit(agent.actions_performed)
