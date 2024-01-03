@@ -130,7 +130,13 @@ class Map:
         return self.state['chars']
     
     def is_episode_over(self) -> bool:
-        return self.done
+        if(self.done):
+            return True
+        if self.get_agent_position() == self.get_pony_position():
+            self.rewards.append(1000)
+            self.done = True
+            return True
+        return False
     
     # just an utility to check position during test
     def print_every_position(self):
@@ -140,7 +146,7 @@ class Map:
                 if(description != '' and description != 'floor of a room' and description != 'wall' and description != 'dark part of a room'):
                     print(f'{description} in <{i},{j}>')
 
-    def print_inventory(self):
+    def print_inventory(self): 
         for letter, stringa in \
             zip(decode(self.state["inv_letters"]), self.state["inv_strs"]):
             print(letter, " - ", decode(stringa))
