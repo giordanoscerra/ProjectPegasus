@@ -329,3 +329,14 @@ class KBwrapper():
         return closest_enemy, distance
 
     # ---------------- enemies-related methods END ----------------
+
+    # ---------------- blindness-related methods START ----------------
+
+    def assert_blindness(self):
+        self._kb.asserta('blind(_)')
+
+    def retract_blindness(self):
+        self._kb.retractall('blind(_)')
+
+    def is_agent_blind(self):
+        return bool(list(self._kb.query("blind(agent)")))
