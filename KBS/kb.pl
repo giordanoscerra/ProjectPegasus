@@ -180,7 +180,7 @@ max_tameness(20).
 % we should accept the fact that we cannot tame it (maybe he stole some carrots)
 % so we should try to ride it anyway
 fullyExplored(0).
-starvationRiding :- fullyExplored(X), X > 2, \+ position(comestible, carrot, _, _), carrots(0).
+starvationRiding :- fullyExplored(X), X > 1, \+ position(comestible, carrot, _, _), carrots(0).
 
 % if pony dies ???
 

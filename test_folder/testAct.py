@@ -18,3 +18,4 @@ while(not level.is_episode_over()):
     agent.act(level)
 
 print(level.rewards)
+exit(agent.actions_performed)
