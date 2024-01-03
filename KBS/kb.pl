@@ -49,8 +49,8 @@ encumbered(agent) :- stressed(agent); strained(agent); overtaxed(agent); overloa
 %%% GENERAL SUBTASKS feel free to add other conditions or comments to suggest them
 
 action(eat) :- 
-    hungry(X), X>1, % hungry values are: 1 is normal, 2 is hungry, 3 is weak. 
-    apples(Y), Y>0.
+    hungry(Z), Z>1, % hungry values are: 1 is normal, 2 is hungry, 3 is weak. 
+    apples(W), W>0. % if no apples, bad news amigo
 
 action(getCarrot) :- 
     carrots(X), is_steed(Steed), position(comestible,carrot,_,_), 
@@ -142,12 +142,12 @@ interrupt(feedSteed) :-
         )
     ), action(eat).
 
-interrupt(applySaddle) :- \+ action(applySaddle), action(eat).
+interrupt(applySaddle) :- \+ action(applySaddle); action(eat).
 
-interrupt(rideSteed) :- \+ action(rideSteed), action(eat).
+interrupt(rideSteed) :- \+ action(rideSteed); action(eat).
 
 %interrupt(explore) :- \+ action(explore).
-interrupt(explore) :- action(X), \+ (X == explore), action(eat).
+interrupt(explore) :- (action(X), \+ (X == explore)); action(eat).
 
 
 

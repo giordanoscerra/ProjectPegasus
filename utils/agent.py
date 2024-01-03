@@ -172,7 +172,7 @@ class Agent():
 
     # --------- Percept-related methods END ---------
 
-    def act(self, level:Map, show_steps:bool=True, graphic:bool = False, delay:float = 0.1):
+    def act(self, level:Map, show_steps:bool=True, graphic:bool = False, delay:float = 0.01):
         self.current_subtask = self.kb.query_for_action() # returns subtask to execute
         print("\n\n UHM. the voices in my head are telling me to", self.current_subtask, "!!!!!!!!!!!!!!")
         time.sleep(1)

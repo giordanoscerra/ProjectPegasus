@@ -2,7 +2,7 @@ from utils.map import Map
 from utils.agent import Agent
 
 # spawn level
-level = Map(pony=True, level=-1)
+level = Map(pony=False, level=-1)
 agent = Agent()
 # this is important af
 agent.percept(level)
