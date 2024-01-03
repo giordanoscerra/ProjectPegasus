@@ -157,7 +157,7 @@ class Agent():
                 if item in decode(string).lower():
                     count = decode(string).split(' ')[0]
                     if count.isdigit():
-                        if 'uncursed' not in decode(string).lower():
+                        if 'uncursed carrot' not in decode(string).lower():
                             interesting_collection[item] += int(count)
                     else:
                         # handle cases like 'a carrot' or 'an apple'
