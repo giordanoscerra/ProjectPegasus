@@ -208,6 +208,7 @@ max_tameness(20).
 is_enemy(lichen).
 is_enemy(javascript).
 is_enemy(jackal).
+is_enemy(newt).
 
 %%% INITIALIZATION %%%
 

@@ -44,7 +44,7 @@ class Agent():
 
 
     # --------- Percept-related methods START ---------
-    def percept(self, game_map:Map, interesting_item_list:list = ['carrot', 'saddle', 'pony', 'Agent', 'wall', 'lichen', 'jackal', 'goblin']) -> None:
+    def percept(self, game_map:Map, interesting_item_list:list = ['carrot', 'saddle', 'pony', 'Agent', 'wall', 'lichen', 'jackal', 'newt']) -> None:
         '''Removes the position of all the items in interesting_item_list
         from the kb. Then scans the whole map, looking for such elements and
         inserting in the kb the position of the interesting items that 

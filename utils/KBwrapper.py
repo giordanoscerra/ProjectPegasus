@@ -8,7 +8,7 @@ class KBwrapper():
     # changes to this reflect to all KBwrapper objects 
     # (most probabily we'll have only one, so who cares...)
     _categories = {
-        'enemy': ['kobold', 'giant mummy', 'goblin', 'lichen', 'jackal'],
+        'enemy': ['kobold', 'giant mummy', 'newt', 'lichen', 'jackal'],
         'comestible': ['apple', 'carrot', 'food ration'],
         'weapon': ['sword', 'lance', 'shield', 'dagger'],
         'applicable' : ['saddle'],
