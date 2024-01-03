@@ -1,6 +1,6 @@
 from pyswip import Prolog
 from utils import exceptions
-from heuristics import infinity_distance
+from utils.heuristics import infinity_distance
 
 class KBwrapper():
     # It is here on purpose: it is a class variable ("knowledge" shared
