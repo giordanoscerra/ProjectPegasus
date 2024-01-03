@@ -223,7 +223,7 @@ class Agent():
         self.actions_performed += 1
         if (show_steps):
             level.render(delay=delay, graphic=graphic)
-        if (level.terminal_state()):
+        if (level.is_episode_over()):
             raise exceptions.TerminalStateReachedException("Terminal state reached after performing an action.")
         self.percept(level)
         interrupt = self.check_interrupt()
