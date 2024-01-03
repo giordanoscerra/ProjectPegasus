@@ -1,0 +1,35 @@
+RANDOM MAZES:
+AvgSt: 485.7
+AvgWin: 0.89
+AvgStSucc: 430.8
+AvgStFail: 930.1
+
+LEVEL 0
+AvgSt: 101.7
+AvgWin: 0.97
+AvgStSucc: 73.4
+AvgStFail: 1018.0
+
+LEVEL 1
+AvgSt: 55.5
+AvgWin: 0.99
+AvgStSucc: 56.0
+AvgStFail: 10
+
+LEVEL 2
+AvgSt: 170.6
+AvgWin: 0.99
+AvgStSucc: 171.9
+AvgStFail: 37
+
+LEVEL 3
+AvgSt: 170.6
+AvgWin: 0.99
+AvgStSucc: 471.7
+AvgStFail: 392.8
+
+LEVEL 
+AvgSt: 
+AvgWin: 
+AvgStSucc: 
+AvgStFail: 
