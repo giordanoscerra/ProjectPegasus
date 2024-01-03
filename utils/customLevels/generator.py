@@ -95,9 +95,9 @@ def _level_74(pony:bool = True, peaceful:bool = True, enemy:bool = False):
         else:
             lvl.add_monster(name='pony', symbol="u", place=(14,11))
     if(enemy):
-        lvl.add_monster(name='lichen', place=(3,3))
+        lvl.add_monster(name='lichen', place=None)
     lvl.add_object(name='saddle', symbol="(", place=None)
-    lvl.set_start_pos((2,2))#(random.randint(1,14),random.randint(1,9)))
+    lvl.set_start_pos((random.randint(1,14),random.randint(1,9)))
     lvl.wallify()
     return lvl.get_des() 
 

@@ -47,6 +47,7 @@ encumbered(agent) :- stressed(agent); strained(agent); overtaxed(agent); overloa
 
 %%% GENERAL SUBTASKS feel free to add other conditions or comments to suggest them
 
+action(attackEnemy) :- is_enemy(X), attack(X).
 
 action(getCarrot) :- 
     carrots(X), is_steed(Steed), position(comestible,carrot,_,_), 
@@ -54,7 +55,7 @@ action(getCarrot) :-
         (X == 0, hostile(Steed));
         (max_tameness(MT), tameness(Steed,T), MT - T > X, 
         \+ hostile(Steed))
-    ).    % Can be stopped if danger (to implement)
+    ).    
 
 
 % The idea is: if the pony isn't in sight the agent can hoard carrots in the meantime
@@ -76,7 +77,6 @@ action(feedSteed) :-
         )
     ).
 
-action(attackEnemy) :- is_enemy(X), attack(X).
 
 action(getSaddle) :- 
     saddles(X), X == 0, 
