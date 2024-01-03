@@ -1,5 +1,6 @@
 import time
 import numpy as np
+import math
 
 from utils.customLevels.generator import createLevel
 
@@ -24,6 +25,7 @@ class Map:
         #leftmost_wall = self.state['pixel']
         #env.render()
         self._env = env
+        self.done = False
 
     #get the action number from high level string
     def _get_action_id(self, action: str) -> int:
@@ -40,7 +42,7 @@ class Map:
                 if 'uncursed carrot' not in decode(stringa):
                     return item_char
         return None
-    
+
     def apply_action(self,actionName: str, what:str = None, where:str = None):   
         if(self._get_action_id(action=actionName) == -1):
             raise Exception(f'Not valid action <{actionName}>')
@@ -54,11 +56,10 @@ class Map:
             #self.print_inventory()
             what = self._get_item_char(what)
             #print(f'Object <{what}> is in inventory')
-
-        self.state,reward,_,_ = self._env.step(self._get_action_id(action=actionName)) # action            
-        if(what is not None): self.state,reward,_,_ = self._env.step(self._env.actions.index(ord(what)))# object
-        if(where is not None): self.state,reward,_,_ = self._env.step(self._get_action_id(action=where)) # direction
-        #TODO: if a KB is used it should be updated here since we have a new state
+      
+        self.state,reward,self.done,_ = self._env.step(self._get_action_id(action=actionName)) # action 
+        if(what is not None): self.state,reward,self.done,_ = self._env.step(self._env.actions.index(ord(what)))# object
+        if(where is not None): self.state,reward,self.done,_ = self._env.step(self._get_action_id(action=where)) # direction
 
         self.rewards.append(reward)
 
@@ -96,7 +97,7 @@ class Map:
     def get_agent_health(self) -> int:
         current_health = self.state['blstats'][10]
         max_health = self.state['blstats'][11]
-        return int(current_health/max_health*100)
+        return math.floor((current_health/max_health)*100)
     
     def get_agent_strength(self) -> int:
         return self.state['blstats'][3] # https://arxiv.org/pdf/2006.13760.pdf
@@ -109,6 +110,9 @@ class Map:
     
     def get_agent_charisma(self) -> int:
         return self.state['blstats'][8]
+    
+    def get_agent_hunger(self) -> int:
+        return self.state['blstats'][21]
 
     def get_pony_position(self) -> (int,int):
         try:
@@ -127,6 +131,9 @@ class Map:
 
     def get_map_as_nparray(self) -> np.ndarray:
         return self.state['chars']
+    
+    def is_episode_over(self) -> bool:
+        return self.done
     
     # just an utility to check position during test
     def print_every_position(self):

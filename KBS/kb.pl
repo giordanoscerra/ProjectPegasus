@@ -6,14 +6,17 @@
 :- dynamic action_count/2.
 :- dynamic tameness/2.
 :- dynamic carrots/1.
+:- dynamic apples/1.
 :- dynamic saddles/1.
 :- dynamic riding/2. % riding(agent, steed), assert it when mounting, retract it when dismounting/slipping etc.
 :- dynamic burdened/1, stressed/1, strained/1, overtaxed/1, overloaded/1.
 :- dynamic unencumbered/1.
 :- dynamic saddled/1.
 :- dynamic fullyExplored/1.
+:- dynamic hungry/1.
 % semantics: has(ownerCategory,owner,ownedObjectCat,ownedObject)
 :- dynamic has/4.   % It could be recycled for the carrots(X) thing
+:- dynamic attack/1.
 
 % To translate into Prolog:
 % Chance of succeeding a mounting action is: 5 * (exp level + steed tameness)
@@ -46,13 +49,19 @@ encumbered(agent) :- stressed(agent); strained(agent); overtaxed(agent); overloa
 
 %%% GENERAL SUBTASKS feel free to add other conditions or comments to suggest them
 
+action(attackEnemy) :- is_enemy(X), attack(X).
+
+action(eat) :- 
+    hungry(Z), Z>1, % hungry values are: 1 is normal, 2 is hungry, 3 is weak. 
+    apples(W), W>0,
+    \+ stepping_on(agent,_,_). % if no apples, bad news amigo
 
 action(getCarrot) :- 
     carrots(X), is_steed(Steed), position(comestible,carrot,_,_), 
     (
         (X == 0, hostile(Steed));
         (max_tameness(MT), tameness(Steed,T), MT - T > X, 
-        \+ hostile(Steed))
+        (\+ hostile(Steed); \+ position(_,Steed,_,_)))
     ).    % Can be stopped if danger (to implement)
 
 
@@ -74,6 +83,7 @@ action(feedSteed) :-
             starvationRiding
         )
     ).
+
 
 action(getSaddle) :- 
     saddles(X), X == 0, 
@@ -106,7 +116,6 @@ action(rideSteed) :-
         (starvationRiding)
     ).
 
-
 %we need to explore if the pony is/can_be tamed but we dont't know where it is
 %we need to explore if the pony is not tamed and we don't have carrots
 %we need to explore if the pony is tame but has our saddle
@@ -120,13 +129,33 @@ action(rideSteed) :-
 %%%    ).
 action(explore).
 
+attack(Enemy) :- 
+    is_enemy(Enemy),
+    position(enemy,Enemy,RE,CE), 
+    (
+        (
+            is_steed(Steed), 
+            position(steed,Steed,RS,CS),
+            is_close(RE,CE,RS,CS) 
+        );
+        (
+            has(enemy,Enemy,comestible,carrot),
+            \+ position(comestible,carrot,_,_)
+        );
+        (
+            position(agent,_,RA,CA),
+            is_close(RE,CE,RA,CA)    
+        )
+    ).
+
+
 %%% INTERRUPT CONDITIONS
 %TODO: add conditions for enemies
 
 % if you can't prove that this is wrong please don't change it
-interrupt(getCarrot) :- \+ action(getCarrot).
+interrupt(getCarrot) :- \+ action(getCarrot); action(eat); action(attackEnemy).
 
-interrupt(getSaddle) :- \+ action(getSaddle).
+interrupt(getSaddle) :- \+ action(getSaddle); action(eat); action(attackEnemy).
 
 interrupt(feedSteed) :- 
     (carrots(X), X == 0);
@@ -135,14 +164,14 @@ interrupt(feedSteed) :-
             (tameness(Steed,T), max_tameness(MT), T >= MT);
             (\+ position(_,Steed,_,_))
         )
-    ).
+    ); action(eat); action(attackEnemy).
 
-interrupt(applySaddle) :- \+ action(applySaddle).
+interrupt(applySaddle) :- \+ action(applySaddle); action(eat); action(attackEnemy).
 
-interrupt(rideSteed) :- \+ action(rideSteed).
+interrupt(rideSteed) :- \+ action(rideSteed); action(eat); action(attackEnemy).
 
 %interrupt(explore) :- \+ action(explore).
-interrupt(explore) :- action(X), \+ (X == explore).
+interrupt(explore) :- (action(X), \+ (X == explore)).
 
 
 
@@ -174,16 +203,20 @@ is_steed(pony).
 %is_steed(warhorse).
 max_tameness(20).
 
+is_enemy(lichen).
+
+
 %%% INITIALIZATION %%%
 
 % if we have explored the map 3 times and the pony is not tamed
 % we should accept the fact that we cannot tame it (maybe he stole some carrots)
 % so we should try to ride it anyway
 fullyExplored(0).
-starvationRiding :- fullyExplored(X), X > 2, \+ position(comestible, carrot, _, _), carrots(0).
+starvationRiding :- fullyExplored(X), X > 1, \+ position(comestible, carrot, _, _), carrots(0).
 
 % if pony dies ???
 
+apples(0).
 carrots(0).
 saddles(0).
 % tameness is 1 at the beginning of the game

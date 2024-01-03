@@ -101,7 +101,7 @@ if test_choice.upper() == 'P':
     assert all(lista)
     print('testCarrot with pickup_carrot successfully completed')
 elif test_choice.upper() == 'T':
-    level = Map(level = 74, pony=True, peaceful=False, enemy=False)
+    level = Map(level = 74, pony=True, peaceful=False, enemy=True)
     knight = Agent() 
 
     eat_all_carrots(knight,level)

@@ -7,39 +7,48 @@ import os
 #sys.path.insert(1, os.path.join(sys.path[0], '..'))
 from utils.rewards import define_reward
 
-def _level_0(pony:bool = True):
+def _level_0(pony:bool = True, enemy:bool=False):
     lvl = LevelGenerator(w=20,h=15)
     for _ in range(15):
         lvl.add_object(name='carrot', symbol="%", place=None)
     if(pony):
-            lvl.add_monster(name='pony', symbol="u", place=None)
+        lvl.add_monster(name='pony', symbol="u", place=None, args=("hostile", "awake"))
+    if(enemy):
+        lvl.add_monster(name='lichen', place=None)
+        lvl.add_monster(name='jackal', place=None)
     lvl.add_object(name='saddle', symbol="(", place=None)
     lvl.wallify()
     return lvl.get_des()
 
-def _level_1(pony:bool = True):
+def _level_1(pony:bool = True, enemies:bool=False):
     #get content from level1.des
     desDescription = open('utils/customLevels/level1.des', 'r').read()
     lvl = LevelGenerator(map=desDescription)
     #pony and carrots randomly placed in the second room
     if(pony):
-        lvl.add_monster(name='pony', symbol="u", place=(random.randint(13, 16), random.randint(5, 9)))
+        lvl.add_monster(name='pony', symbol="u", place=(random.randint(13, 16), random.randint(5, 9)), args=("hostile", "awake"))
     for _ in range(9):
         lvl.add_object(name='carrot', symbol="%", place=(random.randint(8, 16), random.randint(1, 9)))
     #carrot randomly placed near the agent
+    if(enemies):
+        lvl.add_monster(name='jackal', place=None)
+        lvl.add_monster(name='lichen', place=None)
     lvl.add_object(name='carrot', symbol="%", place=(random.randint(1, 3), random.randint(4, 6)))
     lvl.add_object(name='saddle', symbol="(", place=None)
     lvl.set_start_pos((2,5))
     return lvl.get_des()
 
-def _level_2(pony:bool = True):
+def _level_2(pony:bool = True, enemies:bool=False):
     #get content from level1.des
     desDescription = open('utils/customLevels/level2.des', 'r').read()
     lvl = LevelGenerator(map=desDescription)
     if(pony):
-        lvl.add_monster(name='pony', symbol="u", place=(21,4))
+        lvl.add_monster(name='pony', symbol="u", place=(21,4), args=("hostile", "awake"))
     for _ in range(12):
         lvl.add_object(name='carrot', symbol="%", place=None)
+    if(enemies):
+        lvl.add_monster(name='lichen', place=None)
+        lvl.add_monster(name='jackal', place=None)
     lvl.add_object(name='saddle', symbol="(", place=None)
     lvl.set_start_pos((2,9))
     return lvl.get_des()
@@ -48,18 +57,21 @@ def _level_test_saddle_ride(pony:bool = True):
     lvl = LevelGenerator(w=20,h=20)
     lvl.set_start_pos((2,9))
     if(pony):
-            lvl.add_monster(name='pony', symbol="u", place=(2,7), args=("peaceful", "awake"))
+        lvl.add_monster(name='pony', symbol="u", place=(2,7), args=("peaceful", "awake"))
     lvl.add_object(name='saddle', symbol="(", place=(2,9))
     lvl.wallify()
     return lvl.get_des()
 
-def _level_3(pony:bool = True):
+def _level_3(pony:bool = True, enemies:bool=False):
     desDescriton = open('utils/customLevels/level3.des', 'r').read()
     lvl = LevelGenerator(map=desDescriton)
     if(pony):
-        lvl.add_monster(name='pony', symbol="u", place=(31, 14))
+        lvl.add_monster(name='pony', symbol="u", place=(31, 14), args=("hostile", "awake"))
     for _ in range(5):
         lvl.add_object(name='carrot', symbol="%", place=None)
+    if(enemies):
+        lvl.add_monster(name='jackal', place=None)
+        lvl.add_monster(name='lichen', place=None)
     lvl.add_object(name='saddle', symbol="(", place=None)
     lvl.set_start_pos((2,2))
     return lvl.get_des()
@@ -68,7 +80,7 @@ def _level_pony_paradise(pony:bool = True):
     lvl = LevelGenerator(w=17,h=15)
     lvl.set_start_pos((2,9))
     if(pony):
-            lvl.add_monster(name='pony', symbol="u", place=(2,7), args=("hostile", "awake"))
+        lvl.add_monster(name='pony', symbol="u", place=(2,7), args=("hostile", "awake"))
     for i in range(17):
         for j in range(15):
             if (i != 2 or j != 10):
@@ -95,7 +107,7 @@ def _level_74(pony:bool = True, peaceful:bool = True, enemy:bool = False):
         else:
             lvl.add_monster(name='pony', symbol="u", place=(14,11))
     if(enemy):
-        lvl.add_monster(name='kobold', place=None)
+        lvl.add_monster(name='lichen', place=None)
     lvl.add_object(name='saddle', symbol="(", place=None)
     lvl.set_start_pos((random.randint(1,14),random.randint(1,9)))
     lvl.wallify()
@@ -125,6 +137,39 @@ def _level_test_saddle_ride(pony:bool = True):
     lvl.wallify()
     return lvl.get_des()
 
+# https://rosettacode.org/wiki/Maze_generation
+def _make_maze(w:int=24, h:int=10):
+    vis = [[0] * w + [1] for _ in range(h)] + [[1] * (w + 1)]
+    ver = [["|.."] * w + ['|'] for _ in range(h)] + [[]]
+    hor = [["|||"] * w + ['|'] for _ in range(h + 1)]
+
+    def walk(x, y):
+        vis[y][x] = 1
+
+        d = [(x - 1, y), (x, y + 1), (x + 1, y), (x, y - 1)]
+        random.shuffle(d)
+        for (xx, yy) in d:
+            if vis[yy][xx]: continue
+            if xx == x: hor[max(y, yy)][x] = "|.."
+            if yy == y: ver[y][max(x, xx)] = "..."
+            walk(xx, yy)
+
+    walk(random.randrange(w), random.randrange(h))
+
+    s = ""
+    for (a, b) in zip(hor, ver):
+        s += ''.join(a + ['\n'] + b + ['\n'])
+    return s
+
+def _level_random_maze(pony:bool = True):
+    lvl = LevelGenerator(_make_maze(w=12, h=10))
+    #lvl.set_start_pos((2,9))
+    if(pony):
+        lvl.add_monster(name='pony', symbol="u", args=("hostile", "awake"))
+    for _ in range(20):
+        lvl.add_object(name='carrot', symbol="%", place=None)
+    lvl.add_object(name='saddle', symbol="(")
+    return lvl.get_des()
 
 #def _actions():
 #    actions = tuple(nethack.CompassDirection) + (
@@ -141,14 +186,16 @@ def _level_test_saddle_ride(pony:bool = True):
 #    return actions
 
 def createLevel(level:int = 0, pony:bool = True,**kwargs):
-    if(level == 0):
-        lvl = _level_0(pony)
+    if(level == -1):
+        lvl = _level_random_maze(pony)
+    elif(level == 0):
+        lvl = _level_0(pony, **kwargs)
     elif(level == 1):
-        lvl = _level_1(pony)
+        lvl = _level_1(pony, **kwargs)
     elif(level == 2):
-        lvl = _level_2(pony)
+        lvl = _level_2(pony, **kwargs)
     elif(level == 3):
-        lvl = _level_3(pony)
+        lvl = _level_3(pony, **kwargs)
     elif(level == 74):
         lvl = _level_74(pony,**kwargs)
     elif(level == 4):

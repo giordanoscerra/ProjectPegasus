@@ -7,12 +7,14 @@ from utils.agent import Agent
 from utils import exceptions
 
 # spawn level
-level = Map(pony=True, level=3)
+level = Map(pony=True, level=-1)
 agent = Agent()
 # this is important af
 agent.percept(level)
 level.render()
 # let him ACT !!!!!!!!!
-while(level.get_agent_position() != level.get_pony_position()):
-    agent.act(level)
-    level.render()
+while(not level.is_episode_over()):
+    agent.act(level, show_steps=True, graphic=False, delay=0.0)
+
+print(level.rewards)
+exit(agent.actions_performed)
