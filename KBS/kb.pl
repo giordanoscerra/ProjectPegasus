@@ -49,7 +49,8 @@ encumbered(agent) :- stressed(agent); strained(agent); overtaxed(agent); overloa
 %%% GENERAL SUBTASKS feel free to add other conditions or comments to suggest them
 
 action(eat) :- 
-    hungry(agent).    
+    hungry(X), X>1, % hungry values are: 1 is normal, 2 is hungry, 3 is weak. 
+    apples(Y), Y>0.
 
 action(getCarrot) :- 
     carrots(X), is_steed(Steed), position(comestible,carrot,_,_), 
@@ -128,9 +129,9 @@ action(explore).
 %TODO: add conditions for enemies
 
 % if you can't prove that this is wrong please don't change it
-interrupt(getCarrot) :- \+ action(getCarrot), hungry(agent).
+interrupt(getCarrot) :- \+ action(getCarrot), action(eat).
 
-interrupt(getSaddle) :- \+ action(getSaddle), hungry(agent).
+interrupt(getSaddle) :- \+ action(getSaddle), action(eat).
 
 interrupt(feedSteed) :- 
     (carrots(X), X == 0);
@@ -139,14 +140,14 @@ interrupt(feedSteed) :-
             (tameness(Steed,T), max_tameness(MT), T >= MT);
             (\+ position(_,Steed,_,_))
         )
-    ), hungry(agent).
+    ), action(eat).
 
-interrupt(applySaddle) :- \+ action(applySaddle), hungry(agent).
+interrupt(applySaddle) :- \+ action(applySaddle), action(eat).
 
-interrupt(rideSteed) :- \+ action(rideSteed), hungry(agent).
+interrupt(rideSteed) :- \+ action(rideSteed), action(eat).
 
 %interrupt(explore) :- \+ action(explore).
-interrupt(explore) :- action(X), \+ (X == explore), hungry(agent).
+interrupt(explore) :- action(X), \+ (X == explore), action(eat).
 
 
 
@@ -191,6 +192,7 @@ starvationRiding :- fullyExplored(X), X > 1, \+ position(comestible, carrot, _, 
 apples(0).
 carrots(0).
 saddles(0).
+hungry(0).
 % tameness is 1 at the beginning of the game
 %tameness(steed, 1).
 tameness(pony, 1).

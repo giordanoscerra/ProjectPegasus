@@ -110,6 +110,9 @@ class Map:
     
     def get_agent_charisma(self) -> int:
         return self.state['blstats'][8]
+    
+    def get_agent_hunger(self) -> int:
+        return self.state['blstats'][21]
 
     def get_pony_position(self) -> (int,int):
         try:
