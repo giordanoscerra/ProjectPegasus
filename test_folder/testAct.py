@@ -14,6 +14,6 @@ agent.percept(level)
 #level.render()
 # let him ACT !!!!!!!!!
 while(not level.terminal_state()):
-    agent.act(level, show_steps=True, graphic=False, delay=0)
+    agent.act(level, show_steps=False, graphic=False, delay=0)
 
 exit(agent.actions_performed)
