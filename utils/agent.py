@@ -26,6 +26,7 @@ class Agent():
             "applySaddle": self.apply_saddle,
             "rideSteed": self.ride_steed,
             "explore": self.explore_subtask,
+            "attackEnemy": self.attack_enemy,
         }
         self.current_subtask = None
         self.actions_performed = 0
@@ -73,7 +74,7 @@ class Agent():
                                 else: 
                                     self.kb.assert_hostile("pony")
                                 if "saddled" in description: 
-                                  self.kb.assert_saddled_steed("pony")
+                                    self.kb.assert_saddled_steed("pony")
                             self.kb.assert_element_position(interesting_item.lower().replace(' ',''),i,j)
         
         self.process_attributes(game_map=game_map)
@@ -251,6 +252,10 @@ class Agent():
 
     def ride_steed(self, level, show_steps:bool=True, graphic:bool = False, delay:float = 0.1):
         self.interact_with_element(level=level, element='pony', action="RIDE", maxOffset=1, show_steps=show_steps, graphic=graphic, delay=delay)
+
+    def attack_enemy(self, level, enemy_name:str, show_steps:bool=True, graphic:bool=False, delay:float = 0.1):
+
+        self.interact_with_element(level=level, element=enemy_name, action='FIGHT', maxOffset = 1, show_steps=show_steps, graphic=graphic, delay=delay)
 
     # To interact with the pony walking step by step, and each time recalculating the best step from zero
     def interact_with_element(self, level: Map, element: str=None, action: str=None, what: str=None, maxOffset: int=1, show_steps:bool=True, delay:float=0.1,heuristic: callable = lambda t,s: manhattan_distance([t],s)[1], graphic:bool = False) -> bool:
