@@ -16,6 +16,7 @@
 :- dynamic hungry/1.
 % semantics: has(ownerCategory,owner,ownedObjectCat,ownedObject)
 :- dynamic has/4.   % It could be recycled for the carrots(X) thing
+:- dynamic attack/1.
 
 % To translate into Prolog:
 % Chance of succeeding a mounting action is: 5 * (exp level + steed tameness)
@@ -47,6 +48,8 @@ unencumbered(agent) :- \+ burdened(agent), \+ stressed(agent), \+ strained(agent
 encumbered(agent) :- stressed(agent); strained(agent); overtaxed(agent); overloaded(agent). %no burdened?
 
 %%% GENERAL SUBTASKS feel free to add other conditions or comments to suggest them
+
+action(attackEnemy) :- is_enemy(X), attack(X).
 
 action(eat) :- 
     hungry(Z), Z>1, % hungry values are: 1 is normal, 2 is hungry, 3 is weak. 
@@ -81,6 +84,7 @@ action(feedSteed) :-
         )
     ).
 
+
 action(getSaddle) :- 
     saddles(X), X == 0, 
     position(applicable,saddle,_,_), is_steed(Steed), \+ saddled(Steed),
@@ -112,7 +116,6 @@ action(rideSteed) :-
         (starvationRiding)
     ).
 
-
 %we need to explore if the pony is/can_be tamed but we dont't know where it is
 %we need to explore if the pony is not tamed and we don't have carrots
 %we need to explore if the pony is tame but has our saddle
@@ -125,6 +128,26 @@ action(rideSteed) :-
 %%%        (X < MT - T, \+ position(comestible, carrot, _, _))
 %%%    ).
 action(explore).
+
+attack(Enemy) :- 
+    is_enemy(Enemy),
+    position(enemy,Enemy,RE,CE), 
+    (
+        (
+            is_steed(Steed), 
+            position(steed,Steed,RS,CS),
+            is_close(RE,CE,RS,CS) 
+        );
+        (
+            has(enemy,Enemy,comestible,carrot),
+            \+ position(comestible,carrot,_,_)
+        );
+        (
+            position(agent,_,RA,CA),
+            is_close(RE,CE,RA,CA)    
+        )
+    ).
+
 
 %%% INTERRUPT CONDITIONS
 %TODO: add conditions for enemies
@@ -179,6 +202,9 @@ is_steed(pony).
 %is_steed(horse).
 %is_steed(warhorse).
 max_tameness(20).
+
+is_enemy(lichen).
+
 
 %%% INITIALIZATION %%%
 

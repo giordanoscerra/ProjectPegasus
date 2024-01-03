@@ -26,7 +26,8 @@ class Agent():
             "applySaddle": self.apply_saddle,
             "rideSteed": self.ride_steed,
             "explore": self.explore_subtask,
-            "eat": self.eat
+            "eat": self.eat,
+            "attackEnemy": self.attack_enemy,
         }
         self.current_subtask = None
         self.actions_performed = 0
@@ -43,7 +44,7 @@ class Agent():
 
 
     # --------- Percept-related methods START ---------
-    def percept(self, game_map:Map, interesting_item_list:list = ['carrot', 'saddle', 'pony', 'Agent', 'wall']) -> None:
+    def percept(self, game_map:Map, interesting_item_list:list = ['carrot', 'saddle', 'pony', 'Agent', 'wall', 'lichen']) -> None:
         '''Removes the position of all the items in interesting_item_list
         from the kb. Then scans the whole map, looking for such elements and
         inserting in the kb the position of the interesting items that 
@@ -76,7 +77,7 @@ class Agent():
                                 else: 
                                     self.kb.assert_hostile("pony")
                                 if "saddled" in description: 
-                                  self.kb.assert_saddled_steed("pony")
+                                    self.kb.assert_saddled_steed("pony")
                             self.kb.assert_element_position(interesting_item.lower().replace(' ',''),i,j)
         
         self.process_attributes(game_map=game_map)
@@ -265,19 +266,28 @@ class Agent():
     def ride_steed(self, level, show_steps:bool=True, graphic:bool = False, delay:float = 0.1):
         self.interact_with_element(level=level, element='pony', action="RIDE", maxOffset=1, show_steps=show_steps, graphic=graphic, delay=delay)
 
+    def attack_enemy(self, level, # enemy_name:str,
+                      show_steps:bool=True, graphic:bool=False, delay:float = 0.1):
+        closest_enemy, _ = self.kb.query_enemy_to_attack() # closest enemy is a tuple [enemy_name,position] and distance is the distance from the agent
+        enemy_name = closest_enemy[0]
+        self.interact_with_element(level=level, element=enemy_name, action='FIGHT', maxOffset = 1, show_steps=show_steps, graphic=graphic, delay=delay)
+
     # To interact with the pony walking step by step, and each time recalculating the best step from zero
-    def interact_with_element(self, level: Map, element: str=None, action: str=None, what: str=None, maxOffset: int=1, show_steps:bool=True, delay:float=0.1,heuristic: callable = lambda t,s: manhattan_distance([t],s)[1], graphic:bool = False) -> bool:
+    def interact_with_element(self, level: Map, element: str=None, 
+                              action: str=None, what: str=None, 
+                              maxOffset: int=1, show_steps:bool=True, delay:float=0.1,heuristic: callable = lambda t,s: manhattan_distance([t],s)[1], graphic:bool = False) -> bool:
 
         try:
             # this baddie here could raise interestings exceptions if it's interrupted. be ready to catch 'em all !
             stop = False
             while not stop:
                 try:
+                    dynamic = (element == 'pony') or self.kb.isEnemy(element)
                     self.go_to_closer_element(level, element=element, 
                                             heuristic=heuristic, 
                                             show_steps=show_steps, 
                                             delay=delay, maxDistance=maxOffset, 
-                                            dynamic=(element == 'pony'), graphic=graphic)
+                                            dynamic=dynamic, graphic=graphic)
                     stop = True
                 except exceptions.ElemNotInDestinationException as exc1: pass
                     # You sure about that? Catching this exception means the target moved. 
