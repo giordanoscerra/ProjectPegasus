@@ -153,9 +153,9 @@ attack(Enemy) :-
 %TODO: add conditions for enemies
 
 % if you can't prove that this is wrong please don't change it
-interrupt(getCarrot) :- \+ action(getCarrot); action(eat).
+interrupt(getCarrot) :- \+ action(getCarrot); action(eat); action(attackEnemy).
 
-interrupt(getSaddle) :- \+ action(getSaddle); action(eat).
+interrupt(getSaddle) :- \+ action(getSaddle); action(eat); action(attackEnemy).
 
 interrupt(feedSteed) :- 
     (carrots(X), X == 0);
@@ -164,14 +164,14 @@ interrupt(feedSteed) :-
             (tameness(Steed,T), max_tameness(MT), T >= MT);
             (\+ position(_,Steed,_,_))
         )
-    ); action(eat).
+    ); action(eat); action(attackEnemy).
 
-interrupt(applySaddle) :- \+ action(applySaddle); action(eat).
+interrupt(applySaddle) :- \+ action(applySaddle); action(eat); action(attackEnemy).
 
-interrupt(rideSteed) :- \+ action(rideSteed); action(eat).
+interrupt(rideSteed) :- \+ action(rideSteed); action(eat); action(attackEnemy).
 
 %interrupt(explore) :- \+ action(explore).
-interrupt(explore) :- (action(X), \+ (X == explore)); action(eat).
+interrupt(explore) :- (action(X), \+ (X == explore)).
 
 
 
