@@ -129,9 +129,9 @@ action(explore).
 %TODO: add conditions for enemies
 
 % if you can't prove that this is wrong please don't change it
-interrupt(getCarrot) :- \+ action(getCarrot), action(eat).
+interrupt(getCarrot) :- \+ action(getCarrot); action(eat).
 
-interrupt(getSaddle) :- \+ action(getSaddle), action(eat).
+interrupt(getSaddle) :- \+ action(getSaddle); action(eat).
 
 interrupt(feedSteed) :- 
     (carrots(X), X == 0);
@@ -140,7 +140,7 @@ interrupt(feedSteed) :-
             (tameness(Steed,T), max_tameness(MT), T >= MT);
             (\+ position(_,Steed,_,_))
         )
-    ), action(eat).
+    ); action(eat).
 
 interrupt(applySaddle) :- \+ action(applySaddle); action(eat).
 
@@ -192,7 +192,6 @@ starvationRiding :- fullyExplored(X), X > 1, \+ position(comestible, carrot, _, 
 apples(0).
 carrots(0).
 saddles(0).
-hungry(0).
 % tameness is 1 at the beginning of the game
 %tameness(steed, 1).
 tameness(pony, 1).
