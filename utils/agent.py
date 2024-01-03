@@ -111,6 +111,10 @@ class Agent():
         submex_list = re.split(pattern, message)
         for msg in submex_list:
             msg = msg.lstrip(' ')
+            if 'Everything' and 'dark' in msg:
+                self.kb.assert_blindness()
+            if 'see' and 'again' in msg:
+                self.kb.retract_blindness()
             if 'You see here' in msg:
                 # Remove "You see here" and trailing dot
                 portion = msg[msg.find('You see here ')+13:]
@@ -175,8 +179,8 @@ class Agent():
 
     def act(self, level:Map, show_steps:bool=True, graphic:bool = False, delay:float = 0.1):
         self.current_subtask = self.kb.query_for_action() # returns subtask to execute
-        #print("\n\n UHM. the voices in my head are telling me to", self.current_subtask, "!!!!!!!!!!!!!!")
-        #time.sleep(0.5)
+        print("\n\n UHM. the voices in my head are telling me to", self.current_subtask, "!!!!!!!!!!!!!!")
+        time.sleep(0.5)
         subtask = self.actions.get(self.current_subtask, lambda: None) # calls the function that executes the subtask
         if subtask is None: 
             raise Exception(f'Action {self.current_subtask} is not defined')
@@ -240,7 +244,11 @@ class Agent():
 
     # --------- Eat subtask (Giordano) START ---------
     def eat(self, level: Map, heuristic: callable = lambda t,s: manhattan_distance([t],s)[1], show_steps:bool=True, graphic:bool = False, delay:float = 0.1):
-        self._perform_action(level=level,actionName='EAT',what='apple')
+        if (self.kb.is_agent_blind()):
+            print("I WANT A DAMN CARROT CUZ IM BLIND FAM!!!!!!")
+            self._perform_action(level=level,actionName='EAT',what='carrot')
+        else:
+            self._perform_action(level=level,actionName='EAT',what='apple')
 
 
     # --------- Carrot-related subtasks (Andrea) START ---------
