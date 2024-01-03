@@ -77,4 +77,5 @@ def define_reward():
                   'You mount the saddled nightmare', 
                   'You mount the saddled night mare']
     reward_manager.add_message_event(msgs=mountsmsgs, reward=1000, repeatable=False ,terminal_required=True, terminal_sufficient=True)
+    reward_manager.add_event(GetCarrotsEvent())
     return reward_manager

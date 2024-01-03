@@ -15,6 +15,7 @@ agent.percept(level)
 while(not level.is_episode_over()):
     agent.act(level, show_steps=False, graphic=False, delay=0.0)
 
+print(level.rewards)
 #save stats on a file called stats.txt
 stats = open("stats.txt", "a")
 stats.write(f'rewards:<{str(level.rewards[-1])}> steps:<{str(len(level.rewards))}>\n')
