@@ -42,17 +42,22 @@ class GetCarrotsEvent(Event):
         pass
 
 class MountEvent(Event):
-    def __init__(self, reward = 100, repeatable = False, terminal_required = True, terminal_sufficient = True):
+    def __init__(self, reward = 100, repeatable = True, terminal_required = True, terminal_sufficient = True):
         super().__init__(reward, repeatable, terminal_required, terminal_sufficient)
 
     def check(self, env, previous_observation, action, observation):
+        prev_msg = (
+            previous_observation[env._original_observation_keys.index("message")]
+            .tobytes()
+            .decode("utf-8")
+        )
         del previous_observation
         curr_msg = (
             observation[env._original_observation_keys.index("message")]
             .tobytes()
             .decode("utf-8")
         )
-        return self.reward if "You mount the" in curr_msg else 0
+        return self.reward if "You mount the" in [curr_msg,prev_msg] else 0
     
     def reset(self):
         pass
@@ -60,6 +65,16 @@ class MountEvent(Event):
 # This defines the reward manager, passed to the environment as a variable during initialization
 def define_reward():
     reward_manager = RewardManager()
-    reward_manager.add_event(MountEvent())
-    reward_manager.add_event(GetCarrotsEvent())
+    # reward_manager.add_event(MountEvent())
+    mountsmsgs = ['You mount the saddled pony', 
+                  'You mount the saddled horse', 
+                  'You mount the saddled warhorse', 
+                  'You mount the saddled ki-rin', 
+                  'You mount the saddled silver unicorn', 
+                  'You mount the saddled winged unicorn', 
+                  'You mount the saddled black unicorn', 
+                  'You mount the saddled pegasus', 
+                  'You mount the saddled nightmare', 
+                  'You mount the saddled night mare']
+    reward_manager.add_message_event(msgs=mountsmsgs, reward=1000, repeatable=False ,terminal_required=True, terminal_sufficient=True)
     return reward_manager

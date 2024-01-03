@@ -47,6 +47,8 @@ class Agent():
         inserting in the kb the position of the interesting items that 
         have been found.      
         '''
+        # When the episode ends all values in the blstats and other pointers are deleted.
+        if game_map.is_episode_over(): return
 
         # escamotage per fare il retract della posizione di tutti gli elementi :D
         # self.kb.retract_element_position('_')   
@@ -134,7 +136,7 @@ class Agent():
                     for synonimous in ['eats','devours']:
                         # we assume that 
                         if 'The '+steed+' '+synonimous in msg and x in msg:
-                            print(f'Increase tameness of {steed} due to {synonimous}')
+                            # print(f'Increase tameness of {steed} due to {synonimous}')
                             self.kb.update_tameness(inc=1,steed=steed)
 
             for key, value in self.kb.encumbrance_messages.items():
