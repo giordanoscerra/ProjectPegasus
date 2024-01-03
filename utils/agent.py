@@ -49,6 +49,8 @@ class Agent():
         inserting in the kb the position of the interesting items that 
         have been found.      
         '''
+        # When the episode ends all values in the blstats and other pointers are deleted.
+        if game_map.is_episode_over(): return
 
         # escamotage per fare il retract della posizione di tutti gli elementi :D
         # self.kb.retract_element_position('_')   
@@ -128,15 +130,19 @@ class Agent():
                 if 'picks up a '+x in msg:
                     # 4: all those messages (hopefully!) start with 'The '
                     picker = msg[4:msg.find(' picks up a '+x)]
+                    if('pony' in picker):
+                        picker='pony'
                     self.kb.assert_has(owner=picker,item=x)
                 if 'drops a '+x in msg:
                     dropper = msg[4:msg.find(' drops a '+x)]
+                    if('pony' in dropper):
+                        dropper = 'pony'
                     self.kb.retract_has(owner=dropper,item=x)
                 for steed in self.kb._categories['steed']:
                     for synonimous in ['eats','devours']:
                         # we assume that 
                         if 'The '+steed+' '+synonimous in msg and x in msg:
-                            #print(f'Increase tameness of {steed} due to {synonimous}')
+                            # print(f'Increase tameness of {steed} due to {synonimous}')
                             self.kb.update_tameness(inc=1,steed=steed)
 
             for key, value in self.kb.encumbrance_messages.items():
@@ -153,12 +159,12 @@ class Agent():
             for item in interesting_items:
                 if item in decode(string).lower():
                     count = decode(string).split(' ')[0]
-                    if count.isdigit():
-                        if 'uncursed' not in decode(string).lower():
+                    if 'uncursed carrot' not in decode(string).lower():
+                        if count.isdigit():
                             interesting_collection[item] += int(count)
-                    else:
-                        # handle cases like 'a carrot' or 'an apple'
-                        interesting_collection[item] += 1
+                        else:
+                            # handle cases like 'a carrot' or 'an apple'
+                            interesting_collection[item] += 1
         for item in interesting_collection:
             self.kb.update_quantity(item, interesting_collection[item])
 
@@ -218,7 +224,7 @@ class Agent():
         self.actions_performed += 1
         if (show_steps):
             level.render(delay=delay, graphic=graphic)
-        if (level.terminal_state()):
+        if (level.is_episode_over()):
             raise exceptions.TerminalStateReachedException("Terminal state reached after performing an action.")
         self.percept(level)
         interrupt = self.check_interrupt()
