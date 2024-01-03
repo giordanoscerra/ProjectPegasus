@@ -177,7 +177,7 @@ class Agent():
 
     # --------- Percept-related methods END ---------
 
-    def act(self, level:Map, show_steps:bool=True, graphic:bool = False, delay:float = 0.1):
+    def act(self, level:Map, heuristic, show_steps:bool=True, graphic:bool = False, delay:float = 0.1, ):
         self.current_subtask = self.kb.query_for_action() # returns subtask to execute
         #print("\n\n UHM. the voices in my head are telling me to", self.current_subtask, "!!!!!!!!!!!!!!")
         #time.sleep(0.5)
@@ -186,7 +186,7 @@ class Agent():
             raise Exception(f'Action {self.current_subtask} is not defined')
         #yeah so most of the time we just need the map, other stuff is optional
         try:
-            subtask(level, show_steps=show_steps, graphic=graphic, delay=delay)
+            subtask(level, show_steps=show_steps, graphic=graphic, delay=delay, heuristic = lambda t,s: heuristic([t],s)[1])
         except exceptions.SubtaskInterruptedException as exc: pass
             # Oh nooo, someone passed the exception up to this level !!!! :O
             #print(f"SubtaskInterruptedExceptions caught with message: {exc}")
@@ -254,31 +254,31 @@ class Agent():
     # --------- Carrot-related subtasks (Andrea) START ---------
     
     def get_carrot(self, level: Map, heuristic: callable = lambda t,s: manhattan_distance([t],s)[1], show_steps:bool=True, graphic:bool = False, delay:float = 0.1):
-        while self.interact_with_element(level=level, element='carrot', action="PICKUP", maxOffset=0, show_steps=show_steps, graphic=graphic, delay=delay): pass
+        while self.interact_with_element(level=level, element='carrot', action="PICKUP", maxOffset=0, show_steps=show_steps, graphic=graphic, delay=delay, heuristic=heuristic): pass
 
 
     # --------- Saddle and ride subtask (Giordano) START ---------
     def get_saddle(self, level:Map, heuristic:callable = lambda t,s: manhattan_distance([t],s)[1], show_steps:bool=True, graphic:bool = False, delay:float = 0.1):
-        self.interact_with_element(level=level, element='saddle', action="PICKUP", maxOffset=0, show_steps=show_steps, graphic=graphic, delay=delay)
+        self.interact_with_element(level=level, element='saddle', action="PICKUP", maxOffset=0, show_steps=show_steps, graphic=graphic, delay=delay, heuristic=heuristic)
     
     # Calculated from the table here: https://nethackwiki.com/wiki/Throw#Food for objects weighting less than 40
     def _get_throw_range(self, level:Map):
         return math.floor(level.get_agent_strength()/2)
     
-    def feed_steed(self, level, show_steps:bool=True, graphic:bool = False, delay:float = 0.1):
-        while self.interact_with_element(level=level, element='pony', action="THROW",what="carrot", maxOffset=self._get_throw_range(level), show_steps=show_steps, graphic=graphic, delay=delay): pass
+    def feed_steed(self, level, show_steps:bool=True, graphic:bool = False, delay:float = 0.1, heuristic:callable = lambda t,s: manhattan_distance([t],s)[1]):
+        while self.interact_with_element(level=level, element='pony', action="THROW",what="carrot", maxOffset=self._get_throw_range(level), show_steps=show_steps, graphic=graphic, delay=delay, heuristic=heuristic): pass
     
-    def apply_saddle(self, level, show_steps:bool=True, graphic:bool = False, delay:float = 0.1):
-        self.interact_with_element(level=level, element='pony', action="APPLY",what="saddle", maxOffset=1, show_steps=show_steps, graphic=graphic, delay=delay)
+    def apply_saddle(self, level, show_steps:bool=True, graphic:bool = False, delay:float = 0.1, heuristic:callable = lambda t,s: manhattan_distance([t],s)[1]):
+        self.interact_with_element(level=level, element='pony', action="APPLY",what="saddle", maxOffset=1, show_steps=show_steps, graphic=graphic, delay=delay, heuristic=heuristic)
 
-    def ride_steed(self, level, show_steps:bool=True, graphic:bool = False, delay:float = 0.1):
-        self.interact_with_element(level=level, element='pony', action="RIDE", maxOffset=1, show_steps=show_steps, graphic=graphic, delay=delay)
+    def ride_steed(self, level, show_steps:bool=True, graphic:bool = False, delay:float = 0.1, heuristic:callable = lambda t,s: manhattan_distance([t],s)[1]):
+        self.interact_with_element(level=level, element='pony', action="RIDE", maxOffset=1, show_steps=show_steps, graphic=graphic, delay=delay, heuristic=heuristic)
 
     def attack_enemy(self, level, # enemy_name:str,
-                      show_steps:bool=True, graphic:bool=False, delay:float = 0.1):
+                      show_steps:bool=True, graphic:bool=False, delay:float = 0.1, heuristic:callable = lambda t,s: manhattan_distance([t],s)[1]):
         closest_enemy, _ = self.kb.query_enemy_to_attack() # closest enemy is a tuple [enemy_name,position] and distance is the distance from the agent
         enemy_name = closest_enemy[0]
-        self.interact_with_element(level=level, element=enemy_name, action='FIGHT', maxOffset = 1, show_steps=show_steps, graphic=graphic, delay=delay)
+        self.interact_with_element(level=level, element=enemy_name, action='FIGHT', maxOffset = 1, show_steps=show_steps, graphic=graphic, delay=delay, heuristic=heuristic)
 
     # To interact with the pony walking step by step, and each time recalculating the best step from zero
     def interact_with_element(self, level: Map, element: str=None, 

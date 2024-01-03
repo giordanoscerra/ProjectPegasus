@@ -1,5 +1,6 @@
 from utils.map import Map
 from utils.agent import Agent
+from utils.heuristics import *
 
 '''
 FOR BETTER VISIBILITY DECOMMENT ROW 177 AND 178 IN AGENT.PY
@@ -19,7 +20,7 @@ agent.percept(level)
 level.render()
 # let him ACT !!!!!!!!!
 while(not level.is_episode_over()):
-    agent.act(level=level, delay=0.01)
+    agent.act(level=level, delay=0.01, heuristic=manhattan_distance)
 
 print(level.rewards)
 exit(agent.actions_performed)
