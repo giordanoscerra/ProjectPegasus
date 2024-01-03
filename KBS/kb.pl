@@ -14,6 +14,7 @@
 :- dynamic fullyExplored/1.
 % semantics: has(ownerCategory,owner,ownedObjectCat,ownedObject)
 :- dynamic has/4.   % It could be recycled for the carrots(X) thing
+:- dynamic attack/1.
 
 % To translate into Prolog:
 % Chance of succeeding a mounting action is: 5 * (exp level + steed tameness)
@@ -77,7 +78,15 @@ action(feedSteed) :-
 
 action(attackEnemy) :- attack(X).
 
-attack(Enemy) :- position(enemy,Enemy,RE,CE).
+attack(Enemy) :- 
+    position(enemy,Enemy,RE,CE), (
+        (is_close(RE,CE,RS,CS), 
+            is_steed(Steed), 
+            position(steed,Steed,RS,CS));
+        (has(enemy,Enemy,comestible,carrot),
+            \+ position(comestible,carrot,_,_)
+        )
+    ).
 
 action(getSaddle) :- 
     saddles(X), X == 0, 

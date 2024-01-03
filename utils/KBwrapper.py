@@ -296,6 +296,10 @@ class KBwrapper():
 
 
     # ---------------- enemies-related methods START ----------------
+    def isEnemy(self, element:str):
+        category = self._get_key(element, self._categories)
+        return category == 'enemy'
+    
     
     # I still have to test this
     def query_enemy_to_attack(self):
