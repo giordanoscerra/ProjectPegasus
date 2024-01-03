@@ -246,9 +246,9 @@ class Agent():
     def eat(self, level: Map, heuristic: callable = lambda t,s: manhattan_distance([t],s)[1], show_steps:bool=True, graphic:bool = False, delay:float = 0.1):
         if (self.kb.is_agent_blind()):
             print("I WANT A DAMN CARROT CUZ IM BLIND FAM!!!!!!")
-            self._perform_action(level=level,actionName='EAT',what='carrot')
+            self._perform_action(level=level,actionName='EAT',what='carrot', show_steps=show_steps, graphic=graphic, delay=delay)
         else:
-            self._perform_action(level=level,actionName='EAT',what='apple')
+            self._perform_action(level=level,actionName='EAT',what='apple', show_steps=show_steps, graphic=graphic, delay=delay)
 
 
     # --------- Carrot-related subtasks (Andrea) START ---------
