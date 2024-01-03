@@ -9,4 +9,5 @@ agent = Agent()
 agent.percept(game_map=level)
 level.render()
 
-agent.attack_enemy(level)
+print('KB tells the agent to: ', agent.kb.query_for_action())
+#agent.attack_enemy(level)

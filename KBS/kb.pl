@@ -76,7 +76,7 @@ action(feedSteed) :-
         )
     ).
 
-action(attackEnemy) :- attack(X).
+action(attackEnemy) :- is_enemy(X), attack(X).
 
 action(getSaddle) :- 
     saddles(X), X == 0, 
@@ -109,18 +109,6 @@ action(rideSteed) :-
         (starvationRiding)
     ).
 
-attack(Enemy) :- 
-    position(enemy,Enemy,RE,CE). 
-    %(
-    %    (is_close(RE,CE,RS,CS), 
-    %        is_steed(Steed), 
-    %        position(steed,Steed,RS,CS));
-    %    (has(enemy,Enemy,comestible,carrot),
-    %        \+ position(comestible,carrot,_,_)
-    %    )
-    %).
-
-
 %we need to explore if the pony is/can_be tamed but we dont't know where it is
 %we need to explore if the pony is not tamed and we don't have carrots
 %we need to explore if the pony is tame but has our saddle
@@ -133,6 +121,26 @@ attack(Enemy) :-
 %%%        (X < MT - T, \+ position(comestible, carrot, _, _))
 %%%    ).
 action(explore).
+
+attack(Enemy) :- 
+    is_enemy(Enemy),
+    position(enemy,Enemy,RE,CE), 
+    (
+        (
+            is_steed(Steed), 
+            position(steed,Steed,RS,CS),
+            is_close(RE,CE,RS,CS) 
+        );
+        (
+            has(enemy,Enemy,comestible,carrot),
+            \+ position(comestible,carrot,_,_)
+        );
+        (
+            position(agent,_,RA,CA),
+            is_close(RE,CE,RA,CA)    
+        )
+    ).
+
 
 %%% INTERRUPT CONDITIONS
 %TODO: add conditions for enemies
@@ -187,6 +195,9 @@ is_steed(pony).
 %is_steed(horse).
 %is_steed(warhorse).
 max_tameness(20).
+
+is_enemy(lichen).
+
 
 %%% INITIALIZATION %%%
 
