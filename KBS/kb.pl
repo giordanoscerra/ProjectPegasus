@@ -206,7 +206,8 @@ is_steed(pony).
 max_tameness(20).
 
 is_enemy(lichen).
-
+is_enemy(javascript).
+is_enemy(jackal).
 
 %%% INITIALIZATION %%%
 
