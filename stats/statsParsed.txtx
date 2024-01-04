@@ -1,9 +1,9 @@
 ---------- BASE AGENT TEST ----------
-RANDOM MAZES:
-AvgSt: 485.7
-AvgWin: 0.89
-AvgStSucc: 430.8
-AvgStFail: 930.1
+LEVEL -1
+AvgSt: 428.9
+AvgWin: 0.95
+AvgStSucc: 413.7
+AvgStFail: 718.8
 
 LEVEL 0
 AvgSt: 101.7
@@ -31,10 +31,10 @@ AvgStFail: 379.0
 
 ---------- TEST EAT ----------
 LEVEL -1
-AvgSt: 
-AvgWin: 
-AvgStSucc: 
-AvgStFail: 
+AvgSt: 477.0
+AvgWin: 0.92
+AvgStSucc: 445.1
+AvgStFail: 870.4
 
 LEVEL 0
 AvgSt: 107.5
@@ -62,40 +62,31 @@ AvgStFail: 569.3
 
 ---------- TEST ENEMY ----------
 
-LEVEL 
+LEVEL -1
 AvgSt: 
 AvgWin: 
 AvgStSucc: 
 AvgStFail: 
 
-LEVEL 
+LEVEL 0
+AvgSt: 79.0
+AvgWin: 0.68
+AvgStSucc: 82.0
+AvgStFail: 72.6
+
+LEVEL 1
 AvgSt: 
 AvgWin: 
 AvgStSucc: 
 AvgStFail: 
 
-LEVEL 
-AvgSt: 
-AvgWin: 
-AvgStSucc: 
-AvgStFail: 
+LEVEL 2
+AvgSt: 140.7
+AvgWin: 0.95
+AvgStSucc: 146.2
+AvgStFail: 24.0
 
-LEVEL 
-AvgSt: 
-AvgWin: 
-AvgStSucc: 
-AvgStFail: 
-
----------- TEST HEURISTICS ----------
-
-
-LEVEL 
-AvgSt: 
-AvgWin: 
-AvgStSucc: 
-AvgStFail: 
-
-LEVEL 
+LEVEL 3
 AvgSt: 
 AvgWin: 
 AvgStSucc: 
@@ -104,13 +95,28 @@ AvgStFail:
 ---------- TEST HEURISTICS ----------
 
 
-LEVEL 
+LEVEL 2
 AvgSt: 
 AvgWin: 
 AvgStSucc: 
 AvgStFail: 
 
-LEVEL 
+LEVEL 3
+AvgSt: 
+AvgWin: 
+AvgStSucc: 
+AvgStFail: 
+
+---------- TEST HEURISTICS ----------
+
+
+LEVEL 2
+AvgSt: 
+AvgWin: 
+AvgStSucc: 
+AvgStFail: 
+
+LEVEL 3
 AvgSt: 
 AvgWin: 
 AvgStSucc: 
