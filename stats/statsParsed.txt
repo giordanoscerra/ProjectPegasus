@@ -113,10 +113,10 @@ AvgStSucc:
 AvgStFail: 
 
 LEVEL 2
-AvgSt: 
-AvgWin: 
-AvgStSucc: 
-AvgStFail: 
+AvgSt: 127.7
+AvgWin: 0.86
+AvgStSucc: 144.2
+AvgStFail: 26.2
 
 LEVEL 3
 AvgSt: 
