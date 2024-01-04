@@ -24,10 +24,10 @@ AvgStSucc: 171.9
 AvgStFail: 37
 
 LEVEL 3
-AvgSt: 170.6
-AvgWin: 0.99
-AvgStSucc: 471.7
-AvgStFail: 392.8
+AvgSt: 285.7
+AvgWin: 0.91
+AvgStSucc: 276.1
+AvgStFail: 379.0
 
 ---------- TEST EAT ----------
 LEVEL -1
@@ -55,6 +55,53 @@ AvgStSucc: 168.5
 AvgStFail: nan
 
 LEVEL 3
+AvgSt: 305.0
+AvgWin: 0.91
+AvgStSucc: 277.6
+AvgStFail: 569.3
+
+---------- TEST ENEMY ----------
+
+LEVEL 
+AvgSt: 
+AvgWin: 
+AvgStSucc: 
+AvgStFail: 
+
+LEVEL 
+AvgSt: 
+AvgWin: 
+AvgStSucc: 
+AvgStFail: 
+
+LEVEL 
+AvgSt: 
+AvgWin: 
+AvgStSucc: 
+AvgStFail: 
+
+LEVEL 
+AvgSt: 
+AvgWin: 
+AvgStSucc: 
+AvgStFail: 
+
+--
+
+
+LEVEL 
+AvgSt: 
+AvgWin: 
+AvgStSucc: 
+AvgStFail: 
+
+LEVEL 
+AvgSt: 
+AvgWin: 
+AvgStSucc: 
+AvgStFail: 
+
+LEVEL 
 AvgSt: 
 AvgWin: 
 AvgStSucc: 
