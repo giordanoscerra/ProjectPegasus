@@ -51,12 +51,12 @@ encumbered(agent) :- stressed(agent); strained(agent); overtaxed(agent); overloa
 
 %action(attackEnemy) :- is_enemy(X), attack(X).
 
-%action(eat) :- 
-%    (hungry(Z), Z>1, % hungry values are: 1 is normal, 2 is hungry, 3 is weak. 
-%    apples(W), W>0,
-%    \+ stepping_on(agent,_,_));% if no apples, bad news amigo
-%    blind(agent),
-%    carrots(P), P>0. % blind? eat a carrot ! no carrot? aiaiai amigo...
+action(eat) :- 
+    (hungry(Z), Z>1, % hungry values are: 1 is normal, 2 is hungry, 3 is weak. 
+    apples(W), W>0,
+    \+ stepping_on(agent,_,_));% if no apples, bad news amigo
+    blind(agent),
+    carrots(P), P>0. % blind? eat a carrot ! no carrot? aiaiai amigo...
 
 action(getCarrot) :- 
     carrots(X), is_steed(Steed), position(comestible,carrot,_,_), 
