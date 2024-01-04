@@ -16,7 +16,7 @@ def handler(signum, frame):
 signal.signal(signal.SIGTERM, handler)
 
 # spawn level
-level = Map(pony=True, level=1, enemies=True)
+level = Map(pony=True, level=3, enemies=True)
 agent = Agent()
 # this is important af
 agent.percept(level)
