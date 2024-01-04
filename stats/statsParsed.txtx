@@ -75,10 +75,10 @@ AvgStSucc: 82.0
 AvgStFail: 72.6
 
 LEVEL 1
-AvgSt: 
-AvgWin: 
-AvgStSucc: 
-AvgStFail: 
+AvgSt: 62.5
+AvgWin: 0.49
+AvgStSucc: 60.1
+AvgStFail: 64.8
 
 LEVEL 2
 AvgSt: 140.7
@@ -87,10 +87,10 @@ AvgStSucc: 146.2
 AvgStFail: 24.0
 
 LEVEL 3
-AvgSt: 
-AvgWin: 
-AvgStSucc: 
-AvgStFail: 
+AvgSt: 276.0
+AvgWin: 0.87
+AvgStSucc: 281.9
+AvgStFail: 234.7
 
 ---------- TEST HEURISTICS ----------
 
