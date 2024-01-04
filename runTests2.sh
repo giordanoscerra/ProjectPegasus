@@ -13,11 +13,14 @@ function ProgressBar {
 printf "\rProgress : [${_fill// /#}${_empty// /-}] ${_progress}%%"
 
 }
+
+doalarm () { perl -e 'alarm shift; exec @ARGV' "$@"; }
+
 _start=1
 _end=200
 for i in $(seq ${_start} ${_end})
 do
     ProgressBar ${i} ${_end}
-    echo -n "$i: " >> ./stats.txt
-    timeout 30 python ./test_folder/testAct.py
+    echo -n "$i: " >> ./stats2.txt
+    timeout 30 python ./test_folder/testAct2.py
 done

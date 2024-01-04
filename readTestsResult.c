@@ -17,8 +17,8 @@ int main() {
     FILE *fp;
     char buff[255];
 
-    fp = fopen("stats.txt", "r");
-    int tot_episodes = 100;
+    fp = fopen("./stats/L3YANE.txt", "r");
+    int tot_episodes = 2000;
     int tot_steps = 0;
     float tot_reward = 0;
     int steps_on_success = 0;
