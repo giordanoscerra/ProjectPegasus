@@ -285,6 +285,7 @@ class KBwrapper():
 
     # ---------------- has predicate related methods START ----------------
     def assert_has(self, owner:str, item:str):
+        owner=owner.replace(' ','')
         ownerCategory = self._get_key(owner, self._categories) if self._get_key(owner ,self._categories) is not None else owner
         itemCategory = self._get_key(item, self._categories) if self._get_key(item ,self._categories) is not None else item
         self._kb.asserta(f'has({ownerCategory},{owner},{itemCategory},{item})')
@@ -310,7 +311,7 @@ class KBwrapper():
     
     # I still have to test this
     def query_enemy_to_attack(self):
-        enemies_list = list(self._kb.query('attack(Enemy)'))
+        enemies_list = list(self._kb.query('attack(enemy,Enemy)'))
         enemies_list = list(map(lambda x: x['Enemy'], enemies_list))
         #print('Enemies list: ',enemies_list)
         enemy_and_coordinates = []
