@@ -58,7 +58,7 @@ result_df = result_df.round(2)
 excel_file_path = 'stats/results.xlsx'
 result_df = result_df.T
 # Sort the DataFrame based on the inverse alphabetic order of the index
-df_sorted = result_df.sort_index(ascending=False)
+df_sorted = result_df.sort_index(ascending=True)
 df_sorted.to_excel(excel_file_path, index=True)
 
 
