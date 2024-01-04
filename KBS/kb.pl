@@ -49,7 +49,7 @@ encumbered(agent) :- stressed(agent); strained(agent); overtaxed(agent); overloa
 
 %%% GENERAL SUBTASKS feel free to add other conditions or comments to suggest them
 
-%action(attackEnemy) :- is_enemy(X), attack(X).
+action(attackEnemy) :- attack(enemy, _).
 
 %action(eat) :- 
 %    (hungry(Z), Z>1, % hungry values are: 1 is normal, 2 is hungry, 3 is weak. 

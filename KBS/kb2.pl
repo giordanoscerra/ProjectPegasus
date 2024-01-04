@@ -16,7 +16,7 @@
 :- dynamic hungry/1.
 % semantics: has(ownerCategory,owner,ownedObjectCat,ownedObject)
 :- dynamic has/4.   % It could be recycled for the carrots(X) thing
-:- dynamic attack/1.
+:- dynamic attack/2.
 
 % To translate into Prolog:
 % Chance of succeeding a mounting action is: 5 * (exp level + steed tameness)
@@ -49,14 +49,14 @@ encumbered(agent) :- stressed(agent); strained(agent); overtaxed(agent); overloa
 
 %%% GENERAL SUBTASKS feel free to add other conditions or comments to suggest them
 
-%action(attackEnemy) :- is_enemy(X), attack(X).
+action(attackEnemy) :- attack(enemy, _).
 
-action(eat) :- 
-    (hungry(Z), Z>1, % hungry values are: 1 is normal, 2 is hungry, 3 is weak. 
-    apples(W), W>0,
-    \+ stepping_on(agent,_,_));% if no apples, bad news amigo
-    blind(agent),
-    carrots(P), P>0. % blind? eat a carrot ! no carrot? aiaiai amigo...
+%action(eat) :- 
+%    (hungry(Z), Z>1, % hungry values are: 1 is normal, 2 is hungry, 3 is weak. 
+%    apples(W), W>0,
+%    \+ stepping_on(agent,_,_));% if no apples, bad news amigo
+%   blind(agent),
+%   carrots(P), P>0. % blind? eat a carrot ! no carrot? aiaiai amigo...
 
 action(getCarrot) :- 
     carrots(X), is_steed(Steed), position(comestible,carrot,_,_), 
