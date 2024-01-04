@@ -42,20 +42,28 @@ for file_path in file_list:
     failures = (df[df['Rewards'] < 1000])['Steps'].mean()
     #print(failures)
     success = (df[df['Rewards'] >= 1000])['Steps'].mean()
-    #print(success)
+    success_amount = len(df[df['Rewards'] >= 1000])
+    tot = len(df)
+    success_rate = success_amount/tot
     # Extract the file name without extension
     file_name = os.path.splitext(os.path.basename(file_path))[0]
-    med_df = pd.DataFrame([failures, success])
+    med_df = pd.DataFrame([failures, success, success_rate])
     result_df[file_name] = med_df 
 
 
-result_df.index = ['Steps On Failure', 'Steps On Success']
-result_df = result_df.fillna("0")
+result_df.index = ['Steps On Failure', 'Steps On Success', 'Success Rate']
+#result_df = result_df.fillna("0")
 result_df = result_df.round(2)
 # Save the final DataFrame to an Excel file
 excel_file_path = 'stats/results.xlsx'
 result_df = result_df.T
-result_df.to_excel(excel_file_path, index=True)
+# Sort the DataFrame based on the inverse alphabetic order of the index
+df_sorted = result_df.sort_index(ascending=False)
+df_sorted.to_excel(excel_file_path, index=True)
+
+
+'''
+PLOTTING IS MOMENTANEALLY IN STAND BY
 
 # Convert columns to numeric (remove non-numeric values like '0')
 result_df = result_df.apply(pd.to_numeric, errors='coerce')
@@ -71,3 +79,4 @@ plt.legend(['Steps On Failure', 'Steps On Success'])
 
 # Show the plot
 plt.show()
+'''
