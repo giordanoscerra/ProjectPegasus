@@ -75,6 +75,7 @@ class Map:
             display.display(plt.gcf())
             print(bytes(self.state['message']).decode('utf-8').rstrip('\x00'))
             display.clear_output(wait=True)
+            plt.close()
     
     # This function is used only by the testagent.py script
     def get_element_position(self, element:str) -> List[Tuple[int,int]]:
