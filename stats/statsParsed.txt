@@ -1,5 +1,5 @@
 ---------- BASE AGENT TEST ----------
-RANDOM MAZES:
+LEVEL -1
 AvgSt: 485.7
 AvgWin: 0.89
 AvgStSucc: 430.8
