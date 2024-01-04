@@ -95,10 +95,10 @@ AvgStFail: 234.7
 ---------- TEST EAT ENEMY ----------
 
 LEVEL -1
-AvgSt: 
-AvgWin: 
-AvgStSucc: 
-AvgStFail: 
+AvgSt: 447.9
+AvgWin: 0.95
+AvgStSucc: 421.2
+AvgStFail: 955.2
 
 LEVEL 0
 AvgSt: 110.8
@@ -124,20 +124,20 @@ AvgWin: 0.87
 AvgStSucc: 280.8
 AvgStFail: 171.3
 
----------- TEST HEURISTICS ----------
+---------- TEST HEURISTICS INFINITY ----------
 
 
 LEVEL 2
-AvgSt: 
-AvgWin: 
-AvgStSucc: 
-AvgStFail: 
+AvgSt: 134.1
+AvgWin: 0.99
+AvgStSucc: 130.4
+AvgStFail: 506.0
 
 LEVEL 3
-AvgSt: 
-AvgWin: 
-AvgStSucc: 
-AvgStFail: 
+AvgSt: 312.0
+AvgWin: 0.094
+AvgStSucc: 305.9
+AvgStFail: 416.8
 
 ---------- TEST HEURISTICS ----------
 
