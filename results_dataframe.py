@@ -3,7 +3,7 @@ import re
 import os
 
 # Specify the path to your text file
-file_list = ['stats/L3YANE', 'stats/L2NANE', 'stats/L3YANE', 'stats/L3NANE']
+file_list = ['stats/L2YANE', 'stats/L2NANE', 'stats/L3YANE', 'stats/L3NANE']
 
 result_df = pd.DataFrame()
 
@@ -36,18 +36,19 @@ for file in file_list:
     print(df)
     # Count the number of rows where "Rewards" < 1000
     failures = (df[df['Rewards'] < 1000])['Steps'].mean()
-    print(failures)
+    #print(failures)
     success = (df[df['Rewards'] >= 1000])['Steps'].mean()
-    print(success)
-    exit()
+    #print(success)
     # Extract the file name without extension
     file_name = os.path.splitext(os.path.basename(file_path))[0]
-    # Compute the average of each column
-    column_averages = df.mean()
-    result_df[file_name] = column_averages
+    med_df = pd.DataFrame([failures, success])
+    result_df[file_name] = med_df 
+    # Display the result DataFrame
+    print(result_df)
 
 
-result_df.index = ['Rewards', 'Steps']
+result_df.index = ['Steps On Failure', 'Steps On Success']
+result_df = result_df.fillna("no failures!")
 result_df = result_df.round(2)
 # Save the final DataFrame to an Excel file
 excel_file_path = 'stats/results.xlsx'
