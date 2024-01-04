@@ -54,6 +54,7 @@ result_df = result_df.fillna("0")
 result_df = result_df.round(2)
 # Save the final DataFrame to an Excel file
 excel_file_path = 'stats/results.xlsx'
+result_df = result_df.T
 result_df.to_excel(excel_file_path, index=True)
 
 # Convert columns to numeric (remove non-numeric values like '0')
