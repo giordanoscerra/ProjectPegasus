@@ -149,7 +149,6 @@ class Agent():
                     self.kb.retract_has(owner=dropper,item=x)
                 for steed in self.kb._categories['steed']:
                     for synonimous in ['eats','devours']:
-                        # we assume that 
                         if 'The '+steed+' '+synonimous in msg and x in msg:
                             # print(f'Increase tameness of {steed} due to {synonimous}')
                             self.kb.update_tameness(inc=1,steed=steed)
@@ -179,7 +178,7 @@ class Agent():
 
     # --------- Percept-related methods END ---------
 
-    def act(self, level:Map, heuristic:callable=manhattan_distance, show_steps:bool=True, graphic:bool = False, delay:float = 0.1, ):
+    def act(self, level:Map, heuristic:callable=manhattan_distance, show_steps:bool=True, graphic:bool = False, delay:float = 0.1):
         self.current_subtask = self.kb.query_for_action() # returns subtask to execute
         #print("\n\n UHM. the voices in my head are telling me to", self.current_subtask, "!!!!!!!!!!!!!!")
         #time.sleep(0.5)
