@@ -17,8 +17,8 @@ int main() {
     FILE *fp;
     char buff[255];
 
-    fp = fopen("stats.txt", "r");
-    int tot_episodes = 100;
+    fp = fopen("./stats2.txt", "r");
+    int tot_episodes = 200;
     int tot_steps = 0;
     float tot_reward = 0;
     int steps_on_success = 0;

@@ -1,0 +1,161 @@
+---------- BASE AGENT TEST ----------
+LEVEL -1
+AvgSt: 428.9
+AvgWin: 0.95
+AvgStSucc: 413.7
+AvgStFail: 718.8
+
+LEVEL 0
+AvgSt: 101.7
+AvgWin: 0.97
+AvgStSucc: 73.4
+AvgStFail: 1018.0
+
+LEVEL 1
+AvgSt: 55.5
+AvgWin: 0.99
+AvgStSucc: 56.0
+AvgStFail: 10
+
+LEVEL 2
+AvgSt: 126.0
+AvgWin: 1.00
+AvgStSucc: 127.9
+AvgStFail: nan
+
+LEVEL 3
+AvgSt: 285.7
+AvgWin: 0.91
+AvgStSucc: 276.1
+AvgStFail: 379.0
+
+---------- TEST EAT ----------
+LEVEL -1
+AvgSt: 477.0
+AvgWin: 0.92
+AvgStSucc: 445.1
+AvgStFail: 870.4
+
+LEVEL 0
+AvgSt: 107.5
+AvgWin: 0.98
+AvgStSucc: 75.2
+AvgStFail: 1687.0
+
+LEVEL 1
+AvgSt: 55.4
+AvgWin: 0.99
+AvgStSucc: 55.8
+AvgStFail: 12.0
+
+LEVEL 2
+AvgSt: 127.9
+AvgWin: 1.00
+AvgStSucc: 127.9
+AvgStFail: nan
+
+LEVEL 3
+AvgSt: 305.0
+AvgWin: 0.91
+AvgStSucc: 277.6
+AvgStFail: 569.3
+
+---------- TEST ENEMY ----------
+
+LEVEL -1
+AvgSt: 431.0
+AvgWin: 0.92
+AvgStSucc: 435.3
+AvgStFail: 381.8
+
+LEVEL 0
+AvgSt: 79.0
+AvgWin: 0.68
+AvgStSucc: 82.0
+AvgStFail: 72.6
+
+LEVEL 1
+AvgSt: 62.5
+AvgWin: 0.49
+AvgStSucc: 60.1
+AvgStFail: 64.8
+
+LEVEL 2
+AvgSt: 140.7
+AvgWin: 0.95
+AvgStSucc: 146.2
+AvgStFail: 24.0
+
+LEVEL 3
+AvgSt: 276.0
+AvgWin: 0.87
+AvgStSucc: 281.9
+AvgStFail: 234.7
+
+---------- TEST EAT ENEMY ----------
+
+LEVEL -1
+AvgSt: 447.9
+AvgWin: 0.95
+AvgStSucc: 421.2
+AvgStFail: 955.2
+
+LEVEL 0
+AvgSt: 110.8
+AvgWin: 0.69
+AvgStSucc: 81.3
+AvgStFail: 177.9
+
+LEVEL 1
+AvgSt: 50.0
+AvgWin: 0.63
+AvgStSucc: 63.8
+AvgStFail: 26.0
+
+LEVEL 2
+AvgSt: 127.7
+AvgWin: 0.86
+AvgStSucc: 144.2
+AvgStFail: 26.2
+
+LEVEL 3
+AvgSt: 267.1
+AvgWin: 0.87
+AvgStSucc: 280.8
+AvgStFail: 171.3
+
+---------- TEST HEURISTICS INFINITY ----------
+
+
+LEVEL 2
+AvgSt: 134.1
+AvgWin: 0.99
+AvgStSucc: 130.4
+AvgStFail: 506.0
+
+LEVEL 3
+AvgSt: 312.0
+AvgWin: 0.094
+AvgStSucc: 305.9
+AvgStFail: 416.8
+
+---------- TEST HEURISTICS ----------
+
+
+LEVEL 2
+AvgSt: 
+AvgWin: 
+AvgStSucc: 
+AvgStFail: 
+
+LEVEL 3
+AvgSt: 
+AvgWin: 
+AvgStSucc: 
+AvgStFail: 
+
+LEVEL 
+AvgSt: 
+AvgWin: 
+AvgStSucc: 
+AvgStFail: 

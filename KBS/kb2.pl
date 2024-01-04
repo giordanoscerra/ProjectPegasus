@@ -64,7 +64,7 @@ action(getCarrot) :-
         (X == 0, hostile(Steed));
         (max_tameness(MT), tameness(Steed,T), MT - T > X, 
         (\+ hostile(Steed); \+ position(_,Steed,_,_)))
-    ).   
+    ).    % Can be stopped if danger (to implement)
 
 
 % The idea is: if the pony isn't in sight the agent can hoard carrots in the meantime
@@ -131,8 +131,8 @@ action(rideSteed) :-
 %%%    ).
 action(explore).
 
-attack(enemy,Enemy) :- 
-    %is_enemy(Enemy),
+attack(Enemy) :- 
+    is_enemy(Enemy),
     position(enemy,Enemy,RE,CE), 
     (
         (
@@ -204,6 +204,11 @@ is_steed(pony).
 %is_steed(horse).
 %is_steed(warhorse).
 max_tameness(20).
+
+is_enemy(lichen).
+is_enemy(javascript).
+is_enemy(jackal).
+is_enemy(newt).
 
 %%% INITIALIZATION %%%
 
