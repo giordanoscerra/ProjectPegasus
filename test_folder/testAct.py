@@ -16,14 +16,15 @@ def handler(signum, frame):
 signal.signal(signal.SIGTERM, handler)
 
 # spawn level
-level = Map(pony=True, level=0, enemies=False)
+level = Map(pony=True, level=2, enemies=True)
 agent = Agent()
 # this is important af
 agent.percept(level)
 # let him ACT !!!!!!!!!
 while(not level.is_episode_over()):
-    agent.act(level, show_steps=False, graphic=False, delay=0.0)
+    agent.act(level, show_steps=True, graphic=False, delay=0.0)
 
+print(level.rewards)
 #save stats on a file called stats.txt
 stats = open("stats.txt", "a")
 stats.write(f'rewards:<{str(level.rewards[-1])}> steps:<{str(len(level.rewards))}>\n')

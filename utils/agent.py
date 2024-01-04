@@ -204,7 +204,7 @@ class Agent():
         # increased by a certain amount (in our case 1) everytime the agent feeds the steed. It starts as 1 and can go up to 20.
         # The tameness of new pets depends on their species, not on the method of taming. They usually start with 5. +1 everytime they eat
         steed_tameness = self.kb.get_steed_tameness(steed) # did not yet test this
-        return 100/(5 * (exp_lvl + steed_tameness))
+        return (5 * (exp_lvl + steed_tameness))/100
     
     # returns an approximate of the "chance" variable calculated in steed.c of the nethack code https://github.com/NetHack/NetHack/blob/NetHack-3.6.0_Release/src/steed.c
     # if a random number picked between 0 and 100 is lower than the chance variable, the agent will mount the steed.

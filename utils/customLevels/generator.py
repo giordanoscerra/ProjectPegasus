@@ -118,7 +118,7 @@ def _level_desolation():
     lvl.wallify()
     return lvl.get_des()
 
-def _level_74(pony:bool = True, peaceful:bool = True, enemy:bool = False):
+def _level_74(pony:bool = True, peaceful:bool = True, enemies:bool = False):
     desDescription = open('utils/customLevels/level74.des', 'r').read()
     lvl = LevelGenerator(desDescription)
     for _ in range(5):
@@ -128,7 +128,7 @@ def _level_74(pony:bool = True, peaceful:bool = True, enemy:bool = False):
             lvl.add_monster(name='pony', symbol="u", place=(14,11), args=('peaceful',))
         else:
             lvl.add_monster(name='pony', symbol="u", place=(14,11))
-    if(enemy):
+    if(enemies):
         lvl.add_monster(name='lichen', place=None)
         lvl.add_monster(name='newt', place=None)
     lvl.add_object(name='saddle', symbol="(", place=None)
