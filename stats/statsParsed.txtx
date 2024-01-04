@@ -86,7 +86,7 @@ AvgWin:
 AvgStSucc: 
 AvgStFail: 
 
---
+---------- TEST HEURISTICS ----------
 
 
 LEVEL 
@@ -94,6 +94,15 @@ AvgSt:
 AvgWin: 
 AvgStSucc: 
 AvgStFail: 
+
+LEVEL 
+AvgSt: 
+AvgWin: 
+AvgStSucc: 
+AvgStFail: 
+
+---------- TEST HEURISTICS ----------
+
 
 LEVEL 
 AvgSt: 
