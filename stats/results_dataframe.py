@@ -53,7 +53,7 @@ for file_path in file_list:
 
 result_df.index = ['Steps On Failure', 'Steps On Success', 'Success Rate']
 #result_df = result_df.fillna("0")
-result_df = result_df.round(2)
+result_df = result_df.round(3)
 # Save the final DataFrame to an Excel file
 excel_file_path = 'stats/results.xlsx'
 result_df = result_df.T
