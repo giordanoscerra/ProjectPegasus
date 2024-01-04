@@ -18,10 +18,10 @@ AvgStSucc: 56.0
 AvgStFail: 10
 
 LEVEL 2
-AvgSt: 170.6
-AvgWin: 0.99
-AvgStSucc: 171.9
-AvgStFail: 37
+AvgSt: 126.0
+AvgWin: 1.00
+AvgStSucc: 127.9
+AvgStFail: nan
 
 LEVEL 3
 AvgSt: 285.7
@@ -49,9 +49,9 @@ AvgStSucc: 55.8
 AvgStFail: 12.0
 
 LEVEL 2
-AvgSt: 168.5
+AvgSt: 127.9
 AvgWin: 1.00
-AvgStSucc: 168.5
+AvgStSucc: 127.9
 AvgStFail: nan
 
 LEVEL 3
