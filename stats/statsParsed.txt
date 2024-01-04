@@ -63,10 +63,10 @@ AvgStFail: 569.3
 ---------- TEST ENEMY ----------
 
 LEVEL -1
-AvgSt: 
-AvgWin: 
-AvgStSucc: 
-AvgStFail: 
+AvgSt: 431.0
+AvgWin: 0.92
+AvgStSucc: 435.3
+AvgStFail: 381.8
 
 LEVEL 0
 AvgSt: 79.0
@@ -91,6 +91,38 @@ AvgSt: 276.0
 AvgWin: 0.87
 AvgStSucc: 281.9
 AvgStFail: 234.7
+
+---------- TEST EAT ENEMY ----------
+
+LEVEL -1
+AvgSt: 
+AvgWin: 
+AvgStSucc: 
+AvgStFail: 
+
+LEVEL 0
+AvgSt: 110.8
+AvgWin: 0.69
+AvgStSucc: 81.3
+AvgStFail: 177.9
+
+LEVEL 1
+AvgSt: 
+AvgWin: 
+AvgStSucc: 
+AvgStFail: 
+
+LEVEL 2
+AvgSt: 
+AvgWin: 
+AvgStSucc: 
+AvgStFail: 
+
+LEVEL 3
+AvgSt: 
+AvgWin: 
+AvgStSucc: 
+AvgStFail: 
 
 ---------- TEST HEURISTICS ----------
 
